@@ -14,17 +14,28 @@
     <div class="row mb-3">
       <div class="col pl-1 pr-1 overflow-hidden player1">
         <div class="float-left text-center w-100">
-          <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+          <player
+            :playerData="myData"
+            :isShowPlayerStatus="isShowPlayerStatus"
+          ></player>
         </div>
         <div id="player1-flush" class="flush-area"></div>
         <!-- 得点時フラッシュ -->
       </div>
-      <div id="player1-score" class="col-1 p-0 text-center d-flex align-items-center">
+      <div
+        id="player1-score"
+        class="col-1 p-0 text-center d-flex align-items-center"
+      >
         <span class="score">{{ myData.score }}</span>
         <!-- 自分の得点 -->
       </div>
-      <div class="col-auto p-0 d-flex align-items-center font-weight-bold">:</div>
-      <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
+      <div class="col-auto p-0 d-flex align-items-center font-weight-bold">
+        :
+      </div>
+      <div
+        id="player2-score"
+        class="col-1 p-0 text-center d-flex align-items-center"
+      >
         <span class="score">{{ oppData.score }}</span>
         <!-- 相手の得点 -->
       </div>
@@ -35,7 +46,12 @@
               <div class="spinner-grow text-info" role="status"></div>
               <span class="text-info">相手を探しています...</span>
             </div>
-            <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
+            <player
+              v-else
+              :playerData="oppData"
+              :isShowPlayerStatus="isShowPlayerStatus"
+              @blink="blink"
+            ></player>
           </transition>
         </div>
         <div id="player2-flush" class="flush-area"></div>
@@ -80,18 +96,37 @@
     <!-- End: 対戦終了後の表示エリア -->
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">注意!</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">対戦中です！<br />対戦画面から離れてもよろしいですか？</div>
+          <div class="modal-body">
+            対戦中です！<br />対戦画面から離れてもよろしいですか？
+          </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              キャンセル
+            </button>
             <button type="button" class="btn btn-primary" id="next">OK</button>
           </div>
         </div>
@@ -102,17 +137,14 @@
 
 <script>
 import Player from "@/components/battle/Player.vue";
-import Question from "@/components/battle/Question.vue";
-import Confetti from "@/components//battle/Confetti";
-import Review from "@/components//battle/Review";
 import { mapState } from "vuex";
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
   components: {
     player: Player,
-    question: Question,
-    confetti: Confetti,
-    review: Review,
+    question: () => import(/* webpackChunkName: "question" */ '../components/battle/Question.vue'),
+    confetti: () => import(/* webpackChunkName: "confetti" */ '../components/battle/Confetti.vue'),
+    review: () => import(/* webpackChunkName: "review" */ '../components/battle/Review.vue'),
   },
   data() {
     return {
@@ -201,23 +233,23 @@ export default {
     },
   },
   beforeMount() {
-    console.log("--- BattleComponent: beforeMount ---");
+    // console.log("--- BattleComponent: beforeMount ---");
 
     // サインインユーザであるか確認してname、photoUrlをセットする
     if (this.auth.currentUser == null) {
       this.myData.name = "げすとさん";
-      this.myData.photoUrl = "https://firebasestorage.googleapis.com/v0/b/feapmaster-5b5ad.appspot.com/o/userImage%2FBear.png?alt=media&token=e2d0ccda-ef87-4c8e-882c-4d341708ca7d";
+      this.myData.photoUrl = "/img/Bear.png";
     } else {
       this.myData.name = this.auth.currentUser.displayName;
       this.myData.photoUrl = this.auth.currentUser.photoUrl;
     }
   },
   mounted() {
-    console.log("--- Battle: mounted ---");
+    // console.log("--- Battle: mounted ---");
     this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
-    console.log("--- BattleComponent: beforeRouteLeave ---");
+    // console.log("--- BattleComponent: beforeRouteLeave ---");
 
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
     if (this.isPlaying) {
@@ -230,7 +262,7 @@ export default {
   methods: {
     /*** 対戦相手を検索する ***/
     search() {
-      console.log("Methods: search");
+      // console.log("Methods: search");
       this.message_num = 0; // 「待機中...」
       this.question_now = 0;
       this.isSearching = true;
@@ -258,12 +290,12 @@ export default {
         .then((querySnapshot) => {
           if (querySnapshot.empty) {
             // 空き部屋が無い場合の処理
-            console.log("空室無し");
+            // console.log("空室無し");
             this.isHost = true; // ホストで参加
             this.createRoom(); // 部屋を作成する
           } else {
             // 空き部屋がある場合の処理
-            console.log("空室有り");
+            // console.log("空室有り");
             this.isHost = false; // ゲストで参加
             this.room = querySnapshot.docs[0].ref;
             this.room.update({
@@ -274,7 +306,7 @@ export default {
             this.createObserver(this.room); // リアルタイムリスナー作成
             this.oppData.name = querySnapshot.docs[0].get("host_name");
             this.oppData.photoUrl = querySnapshot.docs[0].get("host_photoUrl");
-            if (this.oppData.photoUrl == null) this.oppData.photoUrl = "https://firebasestorage.googleapis.com/v0/b/feapmaster-5b5ad.appspot.com/o/userImage%2FSquirrel.png?alt=media&token=2c1249f6-4182-4f05-948e-17cbc6387e12";
+            if (this.oppData.photoUrl == null) this.oppData.photoUrl = "/img/Squirrel.png";
             this.questionRefs = querySnapshot.docs[0].get("questions"); // 問題の参照を保存
 
             // 少し待ってから実行
@@ -338,13 +370,13 @@ export default {
 
     /*** 部屋ドキュメントのリアルタイムリスナーを作成する ***/
     createObserver(room) {
-      console.log("Methods: createObserver");
+      // console.log("Methods: createObserver");
       this.unsubscribe = room.onSnapshot((snapshot) => {
         const data = snapshot.data();
 
         // 自身がホストの場合、相手の名前を更新する
         if (this.isSearching && this.isHost && data.guest_name != null) {
-          console.log("対戦相手が入室しました");
+          // console.log("対戦相手が入室しました");
           this.oppData.name = data.guest_name;
           this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "https://firebasestorage.googleapis.com/v0/b/feapmaster-5b5ad.appspot.com/o/userImage%2FSquirrel.png?alt=media&token=2c1249f6-4182-4f05-948e-17cbc6387e12";
           this.isSearching = false;
@@ -384,7 +416,7 @@ export default {
 
     /*** 対戦相手が見つかった(部屋入室後)後の処理 ***/
     searched() {
-      console.log("Methods: searched");
+      // console.log("Methods: searched");
       this.isPlaying = true; // ステータス:対戦中
       this.isSearching = false; // 検索を終えて対戦相手の画像を出現させる
 
@@ -428,7 +460,7 @@ export default {
 
     /*** 対戦を開始する ***/
     startBattle() {
-      console.log("Methods: startBattle");
+      // console.log("Methods: startBattle");
       const message = $("#message span");
       this.message_num++; // 「対戦を開始します」
 
@@ -470,7 +502,7 @@ export default {
 
     /*** 次の問題へ進む ***/
     nextQuestion() {
-      console.log("Methods: nextQuestion");
+      // console.log("Methods: nextQuestion");
 
       if (this.question_now < this.NUM_QUESTION) {
         this.question_now++; // 次の問題へ
@@ -545,7 +577,7 @@ export default {
 
     /*** 回答タイマー開始 ***/
     startTimer() {
-      console.log("Methods: startTimer");
+      // console.log("Methods: startTimer");
 
       this.timerId = setInterval(() => {
         this.$store.commit("timer_countdown"); // カウントダウン
@@ -574,7 +606,7 @@ export default {
 
     /*** 勝敗判定: 時間制限を過ぎた | 両者の回答が揃った ***/
     judge() {
-      console.log("Methods: judge");
+      // console.log("Methods: judge");
 
       // フラッシュを取り除く
       document.getElementById("player1-flush").classList.remove("flush");
@@ -638,7 +670,7 @@ export default {
 
     /*** 全問題が終了後 ***/
     endBattle() {
-      console.log("Methods: endBattle");
+      // console.log("Methods: endBattle");
       const message = $("#message span");
       this.isPlaying = false; // ステータス: 対戦終了
       clearInterval(this.blinkIntervalId);
@@ -683,7 +715,7 @@ export default {
 
     /*** もう一度対戦を行う ***/
     restart() {
-      console.log("Methods: restart");
+      // console.log("Methods: restart");
       this.isShowConfetti = false; // 花吹雪を消す
       this.isShowRestart = false; // もう一度/振り返り のエリアを消す
       // スコアをフェードアウトする
@@ -706,7 +738,7 @@ export default {
 
     /*** モーダルの実行処理 ***/
     execModal(next) {
-      console.log("Methods: execModal");
+      // console.log("Methods: execModal");
       document.getElementById("next").onclick = () => {
         $("body").removeClass("modal-open");
         $(".modal-backdrop").remove();
@@ -740,7 +772,7 @@ export default {
 
     /*** QuestionComponent - 回答時の処理 ***/
     selected(ans) {
-      console.log("Methods: selected");
+      // console.log("Methods: selected");
 
       // 自分の回答をFirebaseに反映する
       if (this.isHost) {
@@ -784,7 +816,7 @@ export default {
   @at-root {
     @font-face {
       font-family: "Lifestyle Rounded M54";
-      src: url("../assets/font/Lifestyle Rounded M54.ttf");
+      src: url("/font/Lifestyle Rounded M54.ttf");
     }
   }
 }
@@ -802,7 +834,12 @@ export default {
   width: 20%;
 }
 .flush {
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 25%, #ffd1f9 50%, rgba(255, 255, 255, 0) 75%);
+  background-image: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 25%,
+    #ffd1f9 50%,
+    rgba(255, 255, 255, 0) 75%
+  );
   animation: slide_line 1.5s ease-in-out forwards;
   @keyframes slide_line {
     from {

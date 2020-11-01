@@ -202,7 +202,7 @@ export default {
   @at-root {
     @font-face {
       font-family: Mamelon-4HiRegular;
-      src: url("../../assets/font/Mamelon-4HiRegular.otf");
+      src: url("/font/Mamelon-4HiRegular.otf");
     }
   }
 }

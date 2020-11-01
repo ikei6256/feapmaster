@@ -4,13 +4,13 @@
     <router-link :to="{ name: 'Battle' }">
       <button class="btn btn-primary">バトル!</button>
     </router-link>
-    <router-link :to="{ name: 'test' }">
+    <router-link :to="{ name: 'Test' }">
       <button class="btn btn-outline-success">テスト</button>
     </router-link>
-    <router-link :to="{ name: 'test2' }">
+    <router-link :to="{ name: 'Test2' }">
       <button class="btn btn-outline-success">テスト2</button>
     </router-link>
-    <router-link :to="{ name: 'test3' }">
+    <router-link :to="{ name: 'Test3' }">
       <button class="btn btn-outline-success">テスト3</button>
     </router-link>
     <button id="addRoom" type="button" class="btn btn-outline-warning">テスト部屋追加</button>
@@ -21,7 +21,7 @@
 import firebase from '../firebase';
 export default {
   mounted() {
-    console.log("--- Home: mounted ---");
+    // console.log("--- Home: mounted ---");
 
     const db = firebase.firestore();
 

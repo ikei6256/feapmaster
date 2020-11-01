@@ -39,6 +39,9 @@
         </div>
       </div>
     </div>
+
+    <hr>
+    <button class="btn btn-outline-dark">ア</button>
   </div>
 </template>
 
