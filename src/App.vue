@@ -1,19 +1,30 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <header-component></header-component>
+    <transition name="fade" mode="out-in">
+      <router-view />
+    </transition>
   </div>
 </template>
+
+<script>
+import Header from "@/components/Header.vue";
+export default {
+  components: {
+    "header-component": Header,
+  },
+  mounted() {
+    console.log("--- App: mounted ---");
+  }
+};
+</script>
 
 <style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  // text-align: center;
   color: #2c3e50;
 }
 
@@ -28,5 +39,40 @@
       color: #42b983;
     }
   }
+}
+
+/*
+ * 画面遷移のアニメーション
+ */
+.fade {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.35s ease-in-out;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+
+/*
+ * 少し遅くしたフェードアウト/フェードイン
+ */
+.fade-slow {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.75s ease-in-out;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+
+/*
+ * opacity
+ */
+.opacity-0 {
+  opacity: 0;
 }
 </style>
