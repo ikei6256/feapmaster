@@ -259,6 +259,10 @@ export default {
       this.routeLeave(next);
     }
   },
+  beforeDestroy() {
+    // 自分がホストかつ部屋が存在する場合部屋を削除
+
+  },
   methods: {
     /*** 対戦相手を検索する ***/
     search() {
