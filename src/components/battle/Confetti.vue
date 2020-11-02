@@ -8,7 +8,7 @@ export default {
     isShowConfetti: Boolean,
   },
   mounted() {
-    console.log("--- Confetti: mounted ---");
+    // console.log("--- Confetti: mounted ---");
 
     // 紙吹雪 https://codepen.io/ma_suwa/pen/oNXxQxZ
     (function () {

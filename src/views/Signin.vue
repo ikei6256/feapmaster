@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import firebaseui from 'firebaseui';
 require('@/firebase-config');
 var app = null;
@@ -28,21 +28,21 @@ export default {
     };
   },
   created() {
-    console.log("--- Signin: created ---");
+    // console.log("--- Signin: created ---");
     this.auth = firebase.auth();
     app = this;
   },
   mounted() {
-    console.log("--- Signin: mounted ---");
+    // console.log("--- Signin: mounted ---");
 
     app.auth.onAuthStateChanged(function (user) {
       // ここの処理が行われるまで画面をスピナーで隠しても良い
       if (user) {
-        console.log("ログインしています");
+        // console.log("ログインしています");
         document.getElementById("signin").style.display = "none"; // サインイン消失
         document.getElementById("signout").style.display = "block"; // サインアウト出現
       } else {
-        console.log("ログインしていません");
+        // console.log("ログインしていません");
         document.getElementById("signout").style.display = "none"; // サインアウト消失
         document.getElementById("signin").style.display = "block"; // サインイン出現
         app.loadFirebaseUi();
@@ -55,7 +55,7 @@ export default {
         .signOut()
         .then(function () {
           // Sign-out successful.
-          console.log("signed out");
+          // console.log("signed out");
           document.getElementById("signout").style.display = "none"; // サインアウト消失
           document.getElementById("signin").style.display = "block"; // サインイン出現
           app.loadFirebaseUi();
@@ -68,7 +68,7 @@ export default {
   }, // mounted
   // Start: beforeRouteLeave
   beforeRouteLeave(to, from, next) {
-    console.log("---LoginComponent: beforeRouteLeave---");
+    // console.log("---LoginComponent: beforeRouteLeave---");
     // this.$unloadScript("https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth__ja.js")
     //   .then(function () {
     //     console.log("unload script(Firebase UI).");
@@ -79,7 +79,7 @@ export default {
     if (this.firebaseUi != null) {
       this.firebaseUi.delete();
       this.firebaseUi = null;
-      console.log("deleted firebase UI");
+      // console.log("deleted firebase UI");
     }
 
     next();
@@ -88,7 +88,7 @@ export default {
   methods: {
     // Start: loadFirebaseUi
     loadFirebaseUi() {
-      console.log("Methods - loadFirebaseUi");
+      // console.log("Methods - loadFirebaseUi");
       // const app = this;
 
       this.$loadScript("https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth__ja.js")
@@ -109,7 +109,7 @@ export default {
                 // The widget is rendered.
                 // Hide the loader.
                 document.getElementById("loader").style.display = "none";
-                console.log("rendered Firebase UI");
+                // console.log("rendered Firebase UI");
               },
               // signInSuccessWithAuthResultがtrueを返す時signInSuccessUrlがRequiredになる
               signInSuccessWithAuthResult: function (authResult, redirectUrl) {
@@ -117,7 +117,7 @@ export default {
                 // Return type determines whether we continue the redirect automatically
                 // or whether we leave that to developer to handle.
 
-                console.log("signInSuccessWithAuthResult", authResult, redirectUrl);
+                // console.log("signInSuccessWithAuthResult", authResult, redirectUrl);
                 app.auth = firebase.auth();
 
                 document.getElementById("signin").style.display = "none"; // サインイン消失
@@ -125,15 +125,15 @@ export default {
 
                 app.firebaseUi.delete();
                 app.firebaseUi = null;
-                console.log("deleted Firebase UI");
+                // console.log("deleted Firebase UI");
 
                 app
                   .$unloadScript("https://www.gstatic.com/firebasejs/ui/4.6.1/firebase-ui-auth__ja.js")
                   .then(function () {
-                    console.log("unload script(Firebase UI).");
+                    // console.log("unload script(Firebase UI).");
                   })
                   .catch(function () {
-                    console.log("failed to unload script(Firebase UI)");
+                    // console.log("failed to unload script(Firebase UI)");
                   });
 
                 // return true;
@@ -142,7 +142,7 @@ export default {
           });
         })
         .catch(function () {
-          console.log("failed to load Firebase UI");
+          // console.log("failed to load Firebase UI");
         });
     }, // End: loadFirebaseUi
   }, // End: Methods

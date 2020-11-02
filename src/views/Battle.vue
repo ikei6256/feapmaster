@@ -382,7 +382,7 @@ export default {
         if (this.isSearching && this.isHost && data.guest_name != null) {
           // console.log("対戦相手が入室しました");
           this.oppData.name = data.guest_name;
-          this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "https://firebasestorage.googleapis.com/v0/b/feapmaster-5b5ad.appspot.com/o/userImage%2FSquirrel.png?alt=media&token=2c1249f6-4182-4f05-948e-17cbc6387e12";
+          this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "/img/Squirrel.png";
           this.isSearching = false;
           // 少し待ってから実行
           setTimeout(() => {

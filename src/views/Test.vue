@@ -12,7 +12,7 @@
 var timer = null;
 export default {
   mounted() {
-    console.log("--- Test: mounted ---");
+    // console.log("--- Test: mounted ---");
 
     document.getElementById("btn-alert").onclick = function () {
       this.disabled = true;
@@ -20,7 +20,7 @@ export default {
         '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span>Loading...';
 
       // beforeDestroyでclearTimeoutする
-      console.log('5秒後にアラート');
+      // console.log('5秒後にアラート');
       timer = setTimeout(() => {
         alert('TestComponent: alert');
         timer = null;
@@ -30,12 +30,12 @@ export default {
     };
   },
   beforeRouteLeave(to, from, next) {
-    console.log("--- Test: beforeRouteLeave ---");
+    // console.log("--- Test: beforeRouteLeave ---");
 
     if (timer) {
       clearTimeout(timer);
       timer = null;
-      console.log('タイマーをリセットしました。');
+      // console.log('タイマーをリセットしました。');
     }
 
     next();

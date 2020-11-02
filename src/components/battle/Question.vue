@@ -181,11 +181,11 @@ export default {
     },
   },
   mounted() {
-    console.log("--- Question: mounted ---");
+    // console.log("--- Question: mounted ---");
   },
   methods: {
     selected(ans) {
-      console.log("--- Question - Methods: selected ---");
+      // console.log("--- Question - Methods: selected ---");
 
       // ボタンの色を変更する処理
 

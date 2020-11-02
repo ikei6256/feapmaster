@@ -16,11 +16,7 @@
 <script>
 export default {
   mounted() {
-    console.log("--- Header: mounted ---");
+    // console.log("--- Header: mounted ---");
   }
 }
 </script>
-
-// <style lang="scss">
-
-// </style>

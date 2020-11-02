@@ -96,7 +96,7 @@ export default {
     };
   },
   mounted() {
-    console.log("--- Review: mounted ---");
+    // console.log("--- Review: mounted ---");
   }
 };
 </script>

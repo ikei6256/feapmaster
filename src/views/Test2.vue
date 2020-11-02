@@ -5,7 +5,7 @@
 <script>
 export default {
   mounted() {
-    console.log("--- Test2: mounted---");
+    // console.log("--- Test2: mounted---");
 
     // const db = firebase.firestore();
     // const rooms = db.collection("rooms");

@@ -79,11 +79,11 @@ export default {
     };
   },
   mounted() {
-    console.log("--- Test3: mounted ---");
+    // console.log("--- Test3: mounted ---");
 
     const button = document.getElementById("button");
     button.onclick = function () {
-      console.log("クリックしました");
+      // console.log("クリックしました");
       // button.onclick = null;
     };
   },

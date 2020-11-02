@@ -21,7 +21,7 @@ export default {
     },
   },
   mounted() {
-    console.log("--- ProgressBar: mounted ---");
+    // console.log("--- ProgressBar: mounted ---");
   },
 };
 </script>
