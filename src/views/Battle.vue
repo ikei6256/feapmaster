@@ -796,6 +796,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import url('https://fonts.googleapis.com/css2?family=Itim&display=swap');
 .messageArea {
   padding: 0.3em 1em;
   margin-bottom: 1em;
@@ -816,13 +817,7 @@ export default {
   color: midnightblue;
   font-size: 2.5rem;
   line-height: 1;
-  font-family: "Lifestyle Rounded M54", Helvetica, sans-serif;
-  @at-root {
-    @font-face {
-      font-family: "Lifestyle Rounded M54";
-      src: url("/font/Lifestyle Rounded M54.ttf");
-    }
-  }
+  font-family: 'Itim', cursive;
 }
 .loading {
   top: 50%;

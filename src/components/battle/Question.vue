@@ -31,7 +31,7 @@
           <div class="option pb-1">
             <button
               @click="selected(1)"
-              class="btn btn-outline-dark btn-option mamelon"
+              class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
               ア
@@ -47,7 +47,7 @@
           <div class="option pb-1">
             <button
               @click="selected(2)"
-              class="btn btn-outline-dark btn-option mamelon"
+              class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
               イ
@@ -63,7 +63,7 @@
           <div class="option pb-1">
             <button
               @click="selected(3)"
-              class="btn btn-outline-dark btn-option mamelon"
+              class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
               ウ
@@ -79,7 +79,7 @@
           <div class="option">
             <button
               @click="selected(4)"
-              class="btn btn-outline-dark btn-option mamelon"
+              class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
               エ
@@ -100,7 +100,7 @@
         <div v-if="isShowJudge" class="result">
           <p class="correctAns">
             正答
-            <span class="correctAns-option mamelon">{{
+            <span class="correctAns-option">{{
               option[question.correctAns - 1]
             }}</span>
             <!-- 勝敗結果 -->
@@ -125,7 +125,7 @@
           <p class="myResult">
             {{ myData.name }}
             <span v-if="myData.select != null">
-              <span class="myResult-select mamelon">{{
+              <span class="myResult-select">{{
                 option[myData.select - 1]
               }}</span>
               [タイム: {{ myData.time | to_ms }}]
@@ -135,7 +135,7 @@
           <p class="oppAns">
             {{ oppData.name }}
             <span v-if="oppData.select != null">
-              <span class="oppResult-select mamelon">{{
+              <span class="oppResult-select">{{
                 option[oppData.select - 1]
               }}</span>
               [タイム: {{ oppData.time | to_ms }}]
@@ -197,15 +197,6 @@ export default {
 </script>
 
 <style lang="scss">
-.mamelon {
-  font-family: Mamelon-4HiRegular;
-  @at-root {
-    @font-face {
-      font-family: Mamelon-4HiRegular;
-      src: url("/font/Mamelon-4HiRegular.otf");
-    }
-  }
-}
 .questionArea {
   min-height: 30rem;
   padding: 1rem;
