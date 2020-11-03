@@ -30,7 +30,7 @@
           </div>
           <div class="option pb-1">
             <button
-              @click="selected(1)"
+              @click="selected($event, 1)"
               class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
@@ -46,7 +46,7 @@
           </div>
           <div class="option pb-1">
             <button
-              @click="selected(2)"
+              @click="selected($event, 2)"
               class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
@@ -62,7 +62,7 @@
           </div>
           <div class="option pb-1">
             <button
-              @click="selected(3)"
+              @click="selected($event, 3)"
               class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
@@ -78,7 +78,7 @@
           </div>
           <div class="option">
             <button
-              @click="selected(4)"
+              @click="selected($event, 4)"
               class="btn btn-outline-dark btn-option"
               :disabled="myData.status != 'selecting'"
             >
@@ -150,6 +150,7 @@
 
 <script>
 import ProgressBar from "./ProgressBar";
+// import $ from 'jquery';
 export default {
   components: {
     progressbar: ProgressBar,
@@ -184,11 +185,11 @@ export default {
     // console.log("--- Question: mounted ---");
   },
   methods: {
-    selected(ans) {
+    selected(event, ans) {
       // console.log("--- Question - Methods: selected ---");
 
       // ボタンの色を変更する処理
-
+      console.log(event);
 
       this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
     },
@@ -242,5 +243,111 @@ export default {
 }
 .myResult {
   font-weight: bold;
+}
+
+/* ******************************
+RIPPLES EFFECT
+****************************** */
+.ripples {
+  overflow: hidden;
+  position: relative;
+}
+.waves {
+  position: absolute;
+  display: block;
+  border-radius: 100%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+}
+.ripple {
+  animation: ripple 30s linear;
+  @keyframes ripple {
+    100% {
+      opacity: 0;
+      transform: scale(2.5);
+    }
+  }
+}
+
+/* ******************************
+BUTTONS
+****************************** */
+.btn {
+  overflow: hidden;
+  // cursor: pointer;
+  position: relative;
+  z-index: 10;
+  // display: inline-block;
+  // height: 36px;
+  // line-height: 36px;
+  // vertical-align: middle;
+  // border: none;
+  // padding: 0 16px;
+  white-space: nowrap;
+  // letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  // text-align: center;
+  // font-weight: 400;
+  // font-size: 14px;
+  // color: #212121;
+  // background-image: none;
+  // background-color: #E0E0E0;
+
+  // -webkit-border-radius: 2px;
+  // -moz-border-radius: 2px;
+  // border-radius: 2px;
+
+  // -webkit-box-shadow: none;
+  // -moz-box-shadow: none;
+  // box-shadow: none;
+
+  // -webkit-transition: all 0.2s ease;
+  // -moz-transition: all 0.2s ease;
+  // -o-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+
+  // -ms-touch-action: manipulation;
+  touch-action: manipulation;
+
+  // -webkit-user-select: none;
+  // -moz-user-select: none;
+  // -ms-user-select: none;
+  // user-select: none;
+
+  // -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* ----- BUTTON STATES ----- */
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: none;
+}
+
+.btn:hover,
+.btn:focus,
+.btn.focus {
+  // color: #212121;
+  text-decoration: none;
+}
+
+.btn:active,
+.btn.active {
+  outline: 0;
+  background-image: none;
+}
+
+.btn.disabled,
+.btn[disabled],
+fieldset[disabled] .btn {
+  // cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+  filter: alpha(opacity=50);
 }
 </style>
