@@ -17,62 +17,62 @@
       </div>
 
       <div :id="'collapse' + index" class="collapse" :aria-labelledby="'heading' + index" data-parent="#accordion">
-        <div class="card-body">
+        <div class="card-body pl-2 pr-2 pl-md-3 pr-md-3">
           <div class="question pb-2 mb-2">
             <div class="row ml-0 mr-0">
-              <div class="col-auto p-0"><span class="toi pr-1 pl-1 mr-2">問</span></div>
-              <div class="col p-0">{{ question.body }}</div>
+              <div class="col-auto pl-0 pr-0 mr-2"><span class="toi p-1">問</span></div>
+              <div class="col pl-0 pr-0">{{ question.body }}</div>
             </div>
             <div v-if="question.questionImageUrl != null" class="text-center pt-2">
               <img :src="question.questionImageUrl" alt="問題イメージ" />
             </div>
           </div>
           <div v-if="question.answerAllImageUrl != null">
-            <img :src="question.answerAllImageUrl" alt="回答用イメージ" class="pb-1">
+            <img :src="question.answerAllImageUrl" alt="回答用イメージ" class="mb-1" style="max-width: 100%;">
           </div>
           <div class="mb-2 pb-2 options">
-            <p class="mb-1 ml-1">
-              <span class="mr-3">ア</span>
-              <span v-if="question.option1 != 'ア'">{{ question.option1 }}</span>
+            <div class="row ml-0 mr-0 mb-1">
+              <div class="col-auto pl-0 pr-0 mr-2"><span class="p-1">ア</span></div>
+              <div v-if="question.option1 != 'ア'" class="col pl-0 pr-0">{{ question.option1 }}</div>
               <img
                 v-if="question.answerImageUrl1 != null"
                 :src="question.answerImageUrl1"
                 alt="回答用イメージその1"
                 class="pt-1 pb-1"
               />
-            </p>
-            <p class="mb-1 ml-1">
-              <span class="mr-3">イ</span>
-              <span v-if="question.option2 != 'イ'">{{ question.option2 }}</span>
+            </div>
+            <div class="row ml-0 mr-0 mb-1">
+              <div class="col-auto pl-0 pr-0 mr-2"><span class="p-1">イ</span></div>
+              <div v-if="question.option2 != 'イ'" class="col pl-0 pr-0">{{ question.option2 }}</div>
               <img
                 v-if="question.answerImageUrl2 != null"
                 :src="question.answerImageUrl2"
                 alt="回答用イメージその2"
                 class="pt-1 pb-1"
               />
-            </p>
-            <p class="mb-1 ml-1">
-              <span class="mr-3">ウ</span>
-              <span v-if="question.option3 != 'ウ'">{{ question.option3 }}</span>
+            </div>
+            <div class="row ml-0 mr-0 mb-1">
+              <div class="col-auto pl-0 pr-0 mr-2"><span class="p-1">ウ</span></div>
+              <div v-if="question.option3 != 'ウ'" class="col pl-0 pr-0">{{ question.option3 }}</div>
               <img
                 v-if="question.answerImageUrl3 != null"
                 :src="question.answerImageUrl3"
                 alt="回答用イメージその3"
                 class="pt-1 pb-1"
               />
-            </p>
-            <p class="mb-1 ml-1">
-              <span class="mr-3">エ</span>
-              <span v-if="question.option4 != 'エ'">{{ question.option4 }}</span>
+            </div>
+            <div class="row ml-0 mr-0">
+              <div class="col-auto pl-0 pr-0 mr-2"><span class="p-1">エ</span></div>
+              <div v-if="question.option4 != 'エ'" class="col pl-0 pr-0">{{ question.option4 }}</div>
               <img
                 v-if="question.answerImageUrl4 != null"
                 :src="question.answerImageUrl4"
                 alt="回答用イメージその4"
                 class="pt-1 pb-1"
               />
-            </p>
+            </div>
           </div>
-          <p class="mb-1"><span class="ans pr-1 pl-1 mr-2">答</span>{{ option[question.correctAns - 1] }}</p>
+          <p class="mb-1"><span class="ans p-1 mr-2">答</span>{{ option[question.correctAns - 1] }}</p>
           <p class="mb-1">
             <span class="myAns pr-1 pl-1 mr-2">あなたの回答</span>
             <span v-if="myAns[index] != null">{{ option[myAns[index] - 1] }}</span>

@@ -1,9 +1,9 @@
 <template>
   <div>
     <progressbar></progressbar>
-    <div class="questionArea">
+    <div class="questionArea pt-3 pb-3 pl-1 pr-1 p-sm-3">
       <!-- 問題本文 -->
-      <div class="questionBody">
+      <div class="questionBody pb-2 mb-2">
         <transition name="fade">
           <div v-if="isShowQuestion">
             {{ question.body }}
@@ -11,14 +11,11 @@
               v-if="question.questionImageUrl != null"
               class="text-center pt-2 pb-2"
             >
-              <img :src="question.questionImageUrl" alt="問題イメージ" />
+              <img :src="question.questionImageUrl" alt="問題イメージ" style="max-width: 100%;"/>
             </div>
           </div>
         </transition>
       </div>
-
-      <hr />
-
       <transition name="fade">
         <div v-if="isShowQuestion" class="mb-4">
           <div v-if="question.answerAllImageUrl != null">
@@ -31,7 +28,7 @@
           <div class="option pb-1">
             <button
               @click="selected($event, 1)"
-              class="btn btn-outline-dark btn-option"
+              class="btn btn-outline-dark btn-option mr-1"
               :disabled="myData.status != 'selecting'"
             >
               ア
@@ -47,7 +44,7 @@
           <div class="option pb-1">
             <button
               @click="selected($event, 2)"
-              class="btn btn-outline-dark btn-option"
+              class="btn btn-outline-dark btn-option mr-1"
               :disabled="myData.status != 'selecting'"
             >
               イ
@@ -63,7 +60,7 @@
           <div class="option pb-1">
             <button
               @click="selected($event, 3)"
-              class="btn btn-outline-dark btn-option"
+              class="btn btn-outline-dark btn-option mr-1"
               :disabled="myData.status != 'selecting'"
             >
               ウ
@@ -76,10 +73,10 @@
               class="pt-1 pb-1"
             />
           </div>
-          <div class="option">
+          <div class="option pb-1">
             <button
               @click="selected($event, 4)"
-              class="btn btn-outline-dark btn-option"
+              class="btn btn-outline-dark btn-option mr-1"
               :disabled="myData.status != 'selecting'"
             >
               エ
@@ -150,7 +147,7 @@
 
 <script>
 import ProgressBar from "./ProgressBar";
-// import $ from 'jquery';
+import $ from "jquery";
 export default {
   components: {
     progressbar: ProgressBar,
@@ -187,9 +184,30 @@ export default {
   methods: {
     selected(event, ans) {
       // console.log("--- Question - Methods: selected ---");
+      var waves, d, x, y;
 
       // ボタンの色を変更する処理
-      console.log(event);
+      if ($(event.target).find(".waves").length === 0) {
+        // $(event.target).prepend('<span class="waves"></span>'); // 前
+        $(event.target).append('<span class="waves"></span>'); // 後
+      }
+
+      waves = $(event.target).find(".waves");
+      waves.removeClass("ripple");
+
+      if (!waves.height() && !waves.width()) {
+        d = Math.max(
+          $(event.target).outerWidth(),
+          $(event.target).outerHeight()
+        );
+        waves.css({ height: d, width: d });
+      }
+
+      x = event.pageX - $(event.target).offset().left - waves.width() / 2;
+      y = event.pageY - $(event.target).offset().top - waves.height() / 2;
+
+      $(event.target).css({color: "white"});
+      waves.css({top: y+'px', left: x+'px'}).addClass('ripple');
 
       this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
     },
@@ -200,7 +218,7 @@ export default {
 <style lang="scss">
 .questionArea {
   min-height: 30rem;
-  padding: 1rem;
+  // padding: 1rem;
   margin-bottom: 2rem;
   background: white;
   border-right: solid 0.5rem #5f5f91; /* 線 */
@@ -210,6 +228,7 @@ export default {
 }
 .questionBody {
   min-height: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 .result {
   border-top: solid 1rem #e6b9f8;
@@ -246,24 +265,26 @@ export default {
 }
 
 /* ******************************
-RIPPLES EFFECT
+RIPPLES EFFECT https://codepen.io/bootpen/pen/WrWZRd
 ****************************** */
 .ripples {
   overflow: hidden;
   position: relative;
 }
 .waves {
+  z-index: -1;
   position: absolute;
   display: block;
   border-radius: 100%;
-  background-color: rgba(255, 255, 255, 0.3);
+  // background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgb(0, 148, 196);
   transform: scale(0);
 }
 .ripple {
-  animation: ripple 30s linear;
+  animation: ripple 0.65s linear forwards;
   @keyframes ripple {
     100% {
-      opacity: 0;
+      // opacity: 0;
       transform: scale(2.5);
     }
   }
@@ -347,7 +368,8 @@ BUTTONS
 fieldset[disabled] .btn {
   // cursor: not-allowed;
   pointer-events: none;
-  opacity: 0.5;
-  filter: alpha(opacity=50);
+  // opacity: 0.5;
+  // opacity: 1;
+  // filter: alpha(opacity=50);
 }
 </style>

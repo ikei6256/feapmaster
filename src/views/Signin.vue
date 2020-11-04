@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import firebase from 'firebase/app';
+import firebase from '../firebase';
 import firebaseui from 'firebaseui';
 require('@/firebase-config');
 var app = null;

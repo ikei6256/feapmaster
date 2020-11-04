@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid container-sm">
+  <div class="container-fluid container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
     <transition name="fade">
       <confetti :isShowConfetti="isShowConfetti"></confetti>
     </transition>
@@ -81,7 +81,7 @@
     <transition name="fade">
       <div v-show="isShowRestart">
         <div class="text-center mb-3">
-          <button @click="restart" class="btn btn-primary">もう一度</button>
+          <button @click="restart" class="btn btn-primary mr-1">もう一度</button>
           <router-link :to="{ name: 'Home' }">
             <button class="btn btn-secondary">ホームへ戻る</button>
           </router-link>
