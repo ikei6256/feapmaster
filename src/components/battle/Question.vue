@@ -7,11 +7,8 @@
         <transition name="fade">
           <div v-if="isShowQuestion">
             {{ question.body }}
-            <div
-              v-if="question.questionImageUrl != null"
-              class="text-center pt-2 pb-2"
-            >
-              <img :src="question.questionImageUrl" alt="問題イメージ" style="max-width: 100%;"/>
+            <div v-if="question.questionImageUrl != null" class="text-center pt-2 pb-2">
+              <img :src="question.questionImageUrl" alt="問題イメージ" style="max-width: 100%" />
             </div>
           </div>
         </transition>
@@ -19,75 +16,43 @@
       <transition name="fade">
         <div v-if="isShowQuestion" class="mb-4">
           <div v-if="question.answerAllImageUrl != null">
-            <img
-              :src="question.answerAllImageUrl"
-              alt="回答用イメージ"
-              class="pb-2"
-            />
+            <img :src="question.answerAllImageUrl" alt="回答用イメージ" class="pb-2" />
           </div>
           <div class="option pb-1">
-            <button
-              @click="selected($event, 1)"
-              class="btn btn-outline-dark btn-option mr-1"
-              :disabled="myData.status != 'selecting'"
-            >
-              ア
-            </button>
-            <span v-if="question.option1 != 'ア'">{{ question.option1 }}</span>
-            <img
-              v-if="question.answerImageUrl1 != null"
-              :src="question.answerImageUrl1"
-              alt="回答用イメージその1"
-              class="pt-1 pb-1"
-            />
+            <div class="d-table-cell">
+              <button @click="selected($event, 1)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">ア</button>
+            </div>
+            <div class="d-table-cell">
+              <span v-if="question.option1 != 'ア'">{{ question.option1 }}</span>
+              <img v-if="question.answerImageUrl1 != null" :src="question.answerImageUrl1" alt="回答用イメージその1" class="pt-1 pb-1" />
+            </div>
           </div>
           <div class="option pb-1">
-            <button
-              @click="selected($event, 2)"
-              class="btn btn-outline-dark btn-option mr-1"
-              :disabled="myData.status != 'selecting'"
-            >
-              イ
-            </button>
-            <span v-if="question.option2 != 'イ'">{{ question.option2 }}</span>
-            <img
-              v-if="question.answerImageUrl2 != null"
-              :src="question.answerImageUrl2"
-              alt="回答用イメージその2"
-              class="pt-1 pb-1"
-            />
+            <div class="d-table-cell">
+              <button @click="selected($event, 2)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">イ</button>
+            </div>
+            <div class="d-table-cell">
+              <span v-if="question.option2 != 'イ'">{{ question.option2 }}</span>
+              <img v-if="question.answerImageUrl2 != null" :src="question.answerImageUrl2" alt="回答用イメージその2" class="pt-1 pb-1" />
+            </div>
           </div>
           <div class="option pb-1">
-            <button
-              @click="selected($event, 3)"
-              class="btn btn-outline-dark btn-option mr-1"
-              :disabled="myData.status != 'selecting'"
-            >
-              ウ
-            </button>
-            <span v-if="question.option3 != 'ウ'">{{ question.option3 }}</span>
-            <img
-              v-if="question.answerImageUrl3 != null"
-              :src="question.answerImageUrl3"
-              alt="回答用イメージその3"
-              class="pt-1 pb-1"
-            />
+            <div class="d-table-cell">
+              <button @click="selected($event, 3)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">ウ</button>
+            </div>
+            <div class="d-table-cell">
+              <span v-if="question.option3 != 'ウ'">{{ question.option3 }}</span>
+              <img v-if="question.answerImageUrl3 != null" :src="question.answerImageUrl3" alt="回答用イメージその3" class="pt-1 pb-1" />
+            </div>
           </div>
           <div class="option pb-1">
-            <button
-              @click="selected($event, 4)"
-              class="btn btn-outline-dark btn-option mr-1"
-              :disabled="myData.status != 'selecting'"
-            >
-              エ
-            </button>
-            <span v-if="question.option4 != 'エ'">{{ question.option4 }}</span>
-            <img
-              v-if="question.answerImageUrl4 != null"
-              :src="question.answerImageUrl4"
-              alt="回答用イメージその4"
-              class="pt-1 pb-1"
-            />
+            <div class="d-table-cell">
+              <button @click="selected($event, 4)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">エ</button>
+            </div>
+            <div class="d-table-cell">
+              <span v-if="question.option4 != 'エ'">{{ question.option4 }}</span>
+              <img v-if="question.answerImageUrl4 != null" :src="question.answerImageUrl4" alt="回答用イメージその4" class="pt-1 pb-1" />
+            </div>
           </div>
         </div>
       </transition>
@@ -97,34 +62,18 @@
         <div v-if="isShowJudge" class="result">
           <p class="correctAns">
             正答
-            <span class="correctAns-option">{{
-              option[question.correctAns - 1]
-            }}</span>
+            <span class="correctAns-option">{{ option[question.correctAns - 1] }}</span>
             <!-- 勝敗結果 -->
             <transition name="fade">
-              <span v-if="winner == 1" class="ml-2 text-danger judge" key="win"
-                >WIN</span
-              >
-              <span
-                v-else-if="winner == 2"
-                class="ml-2 text-secondary judge"
-                key="lose"
-                >LOSE</span
-              >
-              <span
-                v-else-if="winner == 0"
-                class="ml-2 text-success judge"
-                key="draw"
-                >DRAW</span
-              >
+              <span v-if="winner == 1" class="ml-2 text-danger judge" key="win">WIN</span>
+              <span v-else-if="winner == 2" class="ml-2 text-secondary judge" key="lose">LOSE</span>
+              <span v-else-if="winner == 0" class="ml-2 text-success judge" key="draw">DRAW</span>
             </transition>
           </p>
           <p class="myResult">
             {{ myData.name }}
             <span v-if="myData.select != null">
-              <span class="myResult-select">{{
-                option[myData.select - 1]
-              }}</span>
+              <span class="myResult-select">{{ option[myData.select - 1] }}</span>
               [タイム: {{ myData.time | to_ms }}]
             </span>
             <span v-else class="text-danger">時間切れ</span>
@@ -132,9 +81,7 @@
           <p class="oppAns">
             {{ oppData.name }}
             <span v-if="oppData.select != null">
-              <span class="oppResult-select">{{
-                option[oppData.select - 1]
-              }}</span>
+              <span class="oppResult-select">{{ option[oppData.select - 1] }}</span>
               [タイム: {{ oppData.time | to_ms }}]
             </span>
             <span v-else class="text-danger">時間切れ</span>
@@ -196,18 +143,15 @@ export default {
       waves.removeClass("ripple");
 
       if (!waves.height() && !waves.width()) {
-        d = Math.max(
-          $(event.target).outerWidth(),
-          $(event.target).outerHeight()
-        );
+        d = Math.max($(event.target).outerWidth(), $(event.target).outerHeight());
         waves.css({ height: d, width: d });
       }
 
       x = event.pageX - $(event.target).offset().left - waves.width() / 2;
       y = event.pageY - $(event.target).offset().top - waves.height() / 2;
 
-      $(event.target).css({color: "white"});
-      waves.css({top: y+'px', left: x+'px'}).addClass('ripple');
+      $(event.target).css({ color: "white" });
+      waves.css({ top: y + "px", left: x + "px" }).addClass("ripple");
 
       this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
     },
@@ -245,13 +189,7 @@ export default {
     bottom: 0;
     width: 100%;
     height: 0.5rem;
-    background: repeating-linear-gradient(
-      -45deg,
-      #e6b9f8,
-      #e6b9f8 2px,
-      white 2px,
-      white 4px
-    );
+    background: repeating-linear-gradient(-45deg, #e6b9f8, #e6b9f8 2px, white 2px, white 4px);
   }
 }
 .correctAns-option,
