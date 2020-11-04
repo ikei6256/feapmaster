@@ -32,7 +32,6 @@ export default {
     isShowPlayerStatus: Boolean, // プレイヤーの状態を表示するタイミングを制御する
   },
   mounted() {
-    // console.log("--- Player: mounted ---");
     this.$emit("blink"); // 「選択中」の点滅を発生させる
   },
 };

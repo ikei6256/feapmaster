@@ -20,13 +20,10 @@ export default {
       };
     },
   },
-  mounted() {
-    // console.log("--- ProgressBar: mounted ---");
-  },
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .bg-bar {
   background-color: steelblue;
 }

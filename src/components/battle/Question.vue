@@ -125,18 +125,13 @@ export default {
       return "" + minute + ":" + second;
     },
   },
-  mounted() {
-    // console.log("--- Question: mounted ---");
-  },
   methods: {
     selected(event, ans) {
-      // console.log("--- Question - Methods: selected ---");
       var waves, d, x, y;
 
-      // ボタンの色を変更する処理
+      /*** ボタンに色をつける ***/
       if ($(event.target).find(".waves").length === 0) {
-        // $(event.target).prepend('<span class="waves"></span>'); // 前
-        $(event.target).append('<span class="waves"></span>'); // 後
+        $(event.target).prepend('<span class="waves"></span>');
       }
 
       waves = $(event.target).find(".waves");
@@ -152,6 +147,7 @@ export default {
 
       $(event.target).css({ color: "white" });
       waves.css({ top: y + "px", left: x + "px" }).addClass("ripple");
+      /**********/
 
       this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
     },
@@ -162,7 +158,6 @@ export default {
 <style lang="scss">
 .questionArea {
   min-height: 30rem;
-  // padding: 1rem;
   margin-bottom: 2rem;
   background: white;
   border-right: solid 0.5rem #5f5f91; /* 線 */
@@ -214,7 +209,6 @@ RIPPLES EFFECT https://codepen.io/bootpen/pen/WrWZRd
   position: absolute;
   display: block;
   border-radius: 100%;
-  // background-color: rgba(255, 255, 255, 0.3);
   background-color: rgb(0, 148, 196);
   transform: scale(0);
 }
@@ -222,7 +216,6 @@ RIPPLES EFFECT https://codepen.io/bootpen/pen/WrWZRd
   animation: ripple 0.65s linear forwards;
   @keyframes ripple {
     100% {
-      // opacity: 0;
       transform: scale(2.5);
     }
   }
@@ -233,48 +226,13 @@ BUTTONS
 ****************************** */
 .btn {
   overflow: hidden;
-  // cursor: pointer;
   position: relative;
   z-index: 10;
-  // display: inline-block;
-  // height: 36px;
-  // line-height: 36px;
-  // vertical-align: middle;
-  // border: none;
-  // padding: 0 16px;
   white-space: nowrap;
-  // letter-spacing: 1px;
   text-transform: uppercase;
   text-decoration: none;
-  // text-align: center;
-  // font-weight: 400;
-  // font-size: 14px;
-  // color: #212121;
-  // background-image: none;
-  // background-color: #E0E0E0;
-
-  // -webkit-border-radius: 2px;
-  // -moz-border-radius: 2px;
-  // border-radius: 2px;
-
-  // -webkit-box-shadow: none;
-  // -moz-box-shadow: none;
-  // box-shadow: none;
-
-  // -webkit-transition: all 0.2s ease;
-  // -moz-transition: all 0.2s ease;
-  // -o-transition: all 0.2s ease;
   transition: all 0.2s ease;
-
-  // -ms-touch-action: manipulation;
   touch-action: manipulation;
-
-  // -webkit-user-select: none;
-  // -moz-user-select: none;
-  // -ms-user-select: none;
-  // user-select: none;
-
-  // -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
@@ -291,7 +249,7 @@ BUTTONS
 .btn:hover,
 .btn:focus,
 .btn.focus {
-  // color: #212121;
+  background-color: #0094c4;
   text-decoration: none;
 }
 
@@ -304,10 +262,6 @@ BUTTONS
 .btn.disabled,
 .btn[disabled],
 fieldset[disabled] .btn {
-  // cursor: not-allowed;
   pointer-events: none;
-  // opacity: 0.5;
-  // opacity: 1;
-  // filter: alpha(opacity=50);
 }
 </style>

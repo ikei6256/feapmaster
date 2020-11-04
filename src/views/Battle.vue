@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
     <transition name="fade">
-      <confetti :isShowConfetti="isShowConfetti"></confetti>
+      <confetti v-if="isShowConfetti"></confetti>
     </transition>
 
     <!-- Start: メッセージ -->
@@ -14,28 +14,17 @@
     <div class="row mb-3">
       <div class="col pl-1 pr-1 overflow-hidden player1">
         <div class="float-left text-center w-100">
-          <player
-            :playerData="myData"
-            :isShowPlayerStatus="isShowPlayerStatus"
-          ></player>
+          <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
         </div>
         <div id="player1-flush" class="flush-area"></div>
         <!-- 得点時フラッシュ -->
       </div>
-      <div
-        id="player1-score"
-        class="col-1 p-0 text-center d-flex align-items-center"
-      >
+      <div id="player1-score" class="col-1 p-0 text-center d-flex align-items-center">
         <span class="score">{{ myData.score }}</span>
         <!-- 自分の得点 -->
       </div>
-      <div class="col-auto p-0 d-flex align-items-center font-weight-bold">
-        :
-      </div>
-      <div
-        id="player2-score"
-        class="col-1 p-0 text-center d-flex align-items-center"
-      >
+      <div class="col-auto p-0 d-flex align-items-center font-weight-bold">:</div>
+      <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
         <span class="score">{{ oppData.score }}</span>
         <!-- 相手の得点 -->
       </div>
@@ -46,12 +35,7 @@
               <div class="spinner-grow text-info" role="status"></div>
               <span class="text-info">相手を探しています...</span>
             </div>
-            <player
-              v-else
-              :playerData="oppData"
-              :isShowPlayerStatus="isShowPlayerStatus"
-              @blink="blink"
-            ></player>
+            <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
           </transition>
         </div>
         <div id="player2-flush" class="flush-area"></div>
@@ -96,37 +80,18 @@
     <!-- End: 対戦終了後の表示エリア -->
 
     <!-- Modal -->
-    <div
-      class="modal fade"
-      id="exampleModal"
-      tabindex="-1"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">注意!</h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">
-            対戦中です！<br />対戦画面から離れてもよろしいですか？
-          </div>
+          <div class="modal-body">対戦中です！<br />対戦画面から離れてもよろしいですか？</div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              キャンセル
-            </button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
             <button type="button" class="btn btn-primary" id="next">OK</button>
           </div>
         </div>
@@ -138,13 +103,13 @@
 <script>
 import Player from "@/components/battle/Player.vue";
 import { mapState } from "vuex";
-import $ from 'jquery';
+import $ from "jquery";
 export default {
   components: {
     player: Player,
-    question: () => import(/* webpackChunkName: "question" */ '../components/battle/Question.vue'),
-    confetti: () => import(/* webpackChunkName: "confetti" */ '../components/battle/Confetti.vue'),
-    review: () => import(/* webpackChunkName: "review" */ '../components/battle/Review.vue'),
+    question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
+    confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
+    review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
   },
   data() {
     return {
@@ -233,8 +198,6 @@ export default {
     },
   },
   beforeMount() {
-    // console.log("--- BattleComponent: beforeMount ---");
-
     // サインインユーザであるか確認してname、photoUrlをセットする
     if (this.auth.currentUser == null) {
       this.myData.name = "げすとさん";
@@ -245,12 +208,9 @@ export default {
     }
   },
   mounted() {
-    // console.log("--- Battle: mounted ---");
     this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
-    // console.log("--- BattleComponent: beforeRouteLeave ---");
-
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
     if (this.isPlaying) {
       $("#exampleModal").modal("show"); // モーダルを表示する
@@ -261,12 +221,10 @@ export default {
   },
   beforeDestroy() {
     // 自分がホストかつ部屋が存在する場合部屋を削除
-
   },
   methods: {
     /*** 対戦相手を検索する ***/
     search() {
-      // console.log("Methods: search");
       this.message_num = 0; // 「待機中...」
       this.question_now = 0;
       this.isSearching = true;
@@ -294,12 +252,10 @@ export default {
         .then((querySnapshot) => {
           if (querySnapshot.empty) {
             // 空き部屋が無い場合の処理
-            // console.log("空室無し");
             this.isHost = true; // ホストで参加
             this.createRoom(); // 部屋を作成する
           } else {
             // 空き部屋がある場合の処理
-            // console.log("空室有り");
             this.isHost = false; // ゲストで参加
             this.room = querySnapshot.docs[0].ref;
             this.room.update({
@@ -327,9 +283,6 @@ export default {
       this.db
         .collection("rooms")
         .add({
-          // status: false, // 対戦中かどうか
-          // host_uid: null, // サインインユーザでない場合はnull
-          // guest_uid: null,
           host_name: this.myData.name, // ホスト名
           guest_name: null, // ゲスト名
           host_photoUrl: null, // サインインユーザでない場合はnull
@@ -338,11 +291,6 @@ export default {
           guest_time: null, // ゲスト回答タイム
           host_ans: null, // ホスト回答
           guest_ans: null, // ゲスト回答
-          // host_score: 0, // ホスト得点
-          // guest_score: 0, // ゲスト得点
-          // host_prepare: false, // ホスト準備完了
-          // guest_prepare: false, // ゲスト準備完了
-          // 問題 2020年秋の問題1～5を仮に置いておく
           questions: this.questionRefs, // ランダムな問題の参照リスト
         })
         .then((documentReference) => {
@@ -359,14 +307,15 @@ export default {
         // const season = Math.floor(Math.random() * 2) == 0 ? "spring" : "autumn";
         // const season = "autumn";
         const season = "spring";
-        let no = Math.floor(Math.random() * 80) + 1;
+        let no = Math.floor(Math.random() * 80) + 1; // 問題番号 1~80
         if (no < 10) {
           no = "0" + no; // 0パディング
         }
-        if(!this.questionRefs.some(q => q.path === `questions/${year}/${season}/${no}`)){
+        // 問題被りチェック
+        if (!this.questionRefs.some((q) => q.path === `questions/${year}/${season}/${no}`)) {
           this.questionRefs.push(this.db.doc(`questions/${year}/${season}/${no}`)); // 問題追加
         } else {
-          continue;
+          continue; // 同じ問題がある場合はもう一度
         }
         i++;
       } while (i < this.NUM_QUESTION);
@@ -374,30 +323,22 @@ export default {
 
     /*** 部屋ドキュメントのリアルタイムリスナーを作成する ***/
     createObserver(room) {
-      // console.log("Methods: createObserver");
       this.unsubscribe = room.onSnapshot((snapshot) => {
         const data = snapshot.data();
 
         // 自身がホストの場合、相手の名前を更新する
         if (this.isSearching && this.isHost && data.guest_name != null) {
-          // console.log("対戦相手が入室しました");
           this.oppData.name = data.guest_name;
           this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "/img/Squirrel.png";
           this.isSearching = false;
-          // 少し待ってから実行
+          // 少し待つ
           setTimeout(() => {
             this.searched();
           }, 1000);
         }
 
         // 相手の回答をローカルに反映する
-        if (
-          this.isHost
-            ? data.guest_ans
-            : data.host_ans != null && this.isHost
-            ? data.guest_ans
-            : data.host_ans != this.oppData.select
-        ) {
+        if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData.select) {
           this.oppData.select = this.isHost ? data.guest_ans : data.host_ans;
           this.oppData.time = this.isHost ? data.guest_time : data.host_time;
         } else if (this.isHost ? data.guest_time : data.host_time == "timeup") {
@@ -405,13 +346,7 @@ export default {
           this.oppData.status = "timeup";
         }
         // 自分の回答をローカルに反映する
-        if (
-          this.isHost
-            ? data.host_ans
-            : data.guest_ans != null && this.isHost
-            ? data.host_ans
-            : data.guest_ans != this.myData.select
-        ) {
+        if (this.isHost ? data.host_ans : data.guest_ans != null && this.isHost ? data.host_ans : data.guest_ans != this.myData.select) {
           this.myData.select = this.isHost ? data.host_ans : data.guest_ans;
           this.myData.time = this.isHost ? data.host_time : data.guest_time;
         }
@@ -420,13 +355,12 @@ export default {
 
     /*** 対戦相手が見つかった(部屋入室後)後の処理 ***/
     searched() {
-      // console.log("Methods: searched");
       this.isPlaying = true; // ステータス:対戦中
       this.isSearching = false; // 検索を終えて対戦相手の画像を出現させる
 
       // 問題の参照をを用いて問題データを取得する
       for (const questionRef of this.questionRefs) {
-        // question は DocumentReference
+        // question は DocumentReference型
         questionRef.get().then((querySnapshot) => {
           const data = querySnapshot.data();
 
@@ -464,7 +398,6 @@ export default {
 
     /*** 対戦を開始する ***/
     startBattle() {
-      // console.log("Methods: startBattle");
       const message = $("#message span");
       this.message_num++; // 「対戦を開始します」
 
@@ -506,8 +439,6 @@ export default {
 
     /*** 次の問題へ進む ***/
     nextQuestion() {
-      // console.log("Methods: nextQuestion");
-
       if (this.question_now < this.NUM_QUESTION) {
         this.question_now++; // 次の問題へ
       } else {
@@ -581,8 +512,6 @@ export default {
 
     /*** 回答タイマー開始 ***/
     startTimer() {
-      // console.log("Methods: startTimer");
-
       this.timerId = setInterval(() => {
         this.$store.commit("timer_countdown"); // カウントダウン
         // 制限時間を超えた場合の処理
@@ -610,8 +539,6 @@ export default {
 
     /*** 勝敗判定: 時間制限を過ぎた | 両者の回答が揃った ***/
     judge() {
-      // console.log("Methods: judge");
-
       // フラッシュを取り除く
       document.getElementById("player1-flush").classList.remove("flush");
       document.getElementById("player2-flush").classList.remove("flush");
@@ -653,17 +580,11 @@ export default {
       const myTime = this.myData.time; // 自分の回答タイム
       const oppTime = this.oppData.time; // 相手の回答タイム
       const correctAns = this.questions[this.question_now - 1].correctAns; // 正答
-      if (
-        (mySelect == correctAns && oppSelect != correctAns) ||
-        (mySelect == correctAns && oppSelect == correctAns && myTime < oppTime)
-      ) {
+      if ((mySelect == correctAns && oppSelect != correctAns) || (mySelect == correctAns && oppSelect == correctAns && myTime < oppTime)) {
         document.getElementById("player1-flush").classList.add("flush");
         this.winner = 1; // 自分の勝ち
         this.myData.score++;
-      } else if (
-        (oppSelect == correctAns && mySelect != correctAns) ||
-        (oppSelect == correctAns && mySelect == correctAns && oppTime < myTime)
-      ) {
+      } else if ((oppSelect == correctAns && mySelect != correctAns) || (oppSelect == correctAns && mySelect == correctAns && oppTime < myTime)) {
         document.getElementById("player2-flush").classList.add("flush");
         this.winner = 2; // 相手の勝ち
         this.oppData.score++;
@@ -674,7 +595,6 @@ export default {
 
     /*** 全問題が終了後 ***/
     endBattle() {
-      // console.log("Methods: endBattle");
       const message = $("#message span");
       this.isPlaying = false; // ステータス: 対戦終了
       clearInterval(this.blinkIntervalId);
@@ -719,7 +639,6 @@ export default {
 
     /*** もう一度対戦を行う ***/
     restart() {
-      // console.log("Methods: restart");
       this.isShowConfetti = false; // 花吹雪を消す
       this.isShowRestart = false; // もう一度/振り返り のエリアを消す
       // スコアをフェードアウトする
@@ -742,7 +661,6 @@ export default {
 
     /*** モーダルの実行処理 ***/
     execModal(next) {
-      // console.log("Methods: execModal");
       document.getElementById("next").onclick = () => {
         $("body").removeClass("modal-open");
         $(".modal-backdrop").remove();
@@ -776,8 +694,6 @@ export default {
 
     /*** QuestionComponent - 回答時の処理 ***/
     selected(ans) {
-      // console.log("Methods: selected");
-
       // 自分の回答をFirebaseに反映する
       if (this.isHost) {
         this.room.update({
@@ -796,7 +712,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import url('https://fonts.googleapis.com/css2?family=Itim&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
 .messageArea {
   padding: 0.3em 1em;
   margin-bottom: 1em;
@@ -817,7 +733,7 @@ export default {
   color: midnightblue;
   font-size: 2.5rem;
   line-height: 1;
-  font-family: 'Itim', cursive;
+  font-family: "Itim", cursive;
 }
 .loading {
   top: 50%;
@@ -833,12 +749,7 @@ export default {
   width: 20%;
 }
 .flush {
-  background-image: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 25%,
-    #ffd1f9 50%,
-    rgba(255, 255, 255, 0) 75%
-  );
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 25%, #ffd1f9 50%, rgba(255, 255, 255, 0) 75%);
   animation: slide_line 1.5s ease-in-out forwards;
   @keyframes slide_line {
     from {

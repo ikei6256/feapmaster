@@ -21,10 +21,9 @@ export default {
 
 <style lang="scss">
 #app {
-  font-family: Avenir, Helvetica, Arial, 'Meiryo', 'メイリオ',sans-serif;
+  font-family: Avenir, Helvetica, Arial, 'Meiryo', 'メイリオ', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  // text-align: center;
   color: #2c3e50;
 }
 

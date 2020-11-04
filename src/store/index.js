@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import firebase from 'firebase';
+import firebase from '../firebase';
 
 Vue.use(Vuex)
 
@@ -25,10 +25,10 @@ export default new Vuex.Store({
       state.db = payload.db;
     }
   },
-  actions: {
-  },
-  modules: {
-  },
+  // actions: {
+  // },
+  // modules: {
+  // },
   getters: {
     getTimerPercentage(state) {
       return state.timer_valuenow / state.TIMER_DEFAULT * 100;

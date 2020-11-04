@@ -14,9 +14,5 @@
 </template>
 
 <script>
-export default {
-  mounted() {
-    // console.log("--- Header: mounted ---");
-  }
-}
+export default {};
 </script>

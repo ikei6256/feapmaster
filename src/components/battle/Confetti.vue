@@ -1,19 +1,13 @@
 <template>
-  <canvas v-show="isShowConfetti"></canvas>
+  <canvas></canvas>
 </template>
 
 <script>
 export default {
-  props: {
-    isShowConfetti: Boolean,
-  },
   mounted() {
-    // console.log("--- Confetti: mounted ---");
-
     // 紙吹雪 https://codepen.io/ma_suwa/pen/oNXxQxZ
     (function () {
-      window.requestAnimationFrame =
-        window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
+      window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame;
 
       var canvas = document.querySelector("canvas");
       canvas.width = window.innerWidth;
@@ -110,7 +104,6 @@ export default {
 
 <style lang="scss" scoped>
 canvas {
-  // background: #000;
   z-index: -1;
   height: 100%;
   width: 100%;
