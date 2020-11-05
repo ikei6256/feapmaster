@@ -1,24 +1,5 @@
-# feapmaster
+# FEAPMaster
 
-## Project setup
-```
-npm install
-```
+基本情報技術者試験(FE)・応用情報技術者試験(AP)の問題を対戦形式で学べるサイト
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+https://feapmaster-5b5ad.firebaseapp.com/

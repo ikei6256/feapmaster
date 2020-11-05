@@ -18,6 +18,7 @@
             <span v-if="playerData.status === 'win'" class="text-danger" key="win">WIN</span>
             <span v-if="playerData.status === 'lose'" class="text-secondary" key="lose">LOSE</span>
             <span v-if="playerData.status === 'draw'" class="text-success" key="draw">DRAW</span>
+            <span v-if="playerData.status === 'error'" class="text-danger" key="error">接続エラー</span>
           </transition>
         </div>
       </transition>

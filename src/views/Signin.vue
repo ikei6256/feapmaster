@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-md">
     <h1>ログイン</h1>
     <div id="signin" style="display: none">
       <p>ステータス：ログインしていません。</p>

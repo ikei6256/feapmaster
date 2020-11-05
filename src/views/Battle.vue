@@ -1,32 +1,29 @@
 <template>
-  <div class="container-fluid container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
+  <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
     <transition name="fade">
       <confetti v-if="isShowConfetti"></confetti>
     </transition>
 
-    <!-- Start: メッセージ -->
+    <!-- ここから: メッセージ -->
     <div id="message" class="messageArea">
       <span>{{ message }}</span>
     </div>
-    <!-- End: メッセージ -->
+    <!-- ここまで: メッセージ -->
 
-    <!-- Start: プレイヤー表示エリア -->
+    <!-- ここから: プレイヤー表示エリア -->
     <div class="row mb-3">
       <div class="col pl-1 pr-1 overflow-hidden player1">
         <div class="float-left text-center w-100">
           <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
         </div>
         <div id="player1-flush" class="flush-area"></div>
-        <!-- 得点時フラッシュ -->
       </div>
       <div id="player1-score" class="col-1 p-0 text-center d-flex align-items-center">
         <span class="score">{{ myData.score }}</span>
-        <!-- 自分の得点 -->
       </div>
       <div class="col-auto p-0 d-flex align-items-center font-weight-bold">:</div>
       <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
         <span class="score">{{ oppData.score }}</span>
-        <!-- 相手の得点 -->
       </div>
       <div class="col pl-1 pr-1 position-relative overflow-hidden player2">
         <div class="float-left text-center w-100">
@@ -39,12 +36,11 @@
           </transition>
         </div>
         <div id="player2-flush" class="flush-area"></div>
-        <!-- 得点時フラッシュ -->
       </div>
     </div>
-    <!-- End: プレイヤー画像表示エリア -->
+    <!-- ここまで: プレイヤー表示エリア -->
 
-    <!-- Start:問題表示 -->
+    <!-- ここから: 問題表示エリア -->
     <transition name="fade-slow">
       <question
         @selected="selected"
@@ -59,9 +55,9 @@
         :winner="winner"
       ></question>
     </transition>
-    <!-- End:問題表示 -->
+    <!-- ここまで: 問題表示 -->
 
-    <!-- Start: 対戦終了後の表示エリア  -->
+    <!-- ここから: 対戦終了後の表示エリア  -->
     <transition name="fade">
       <div v-show="isShowRestart">
         <div class="text-center mb-3">
@@ -70,16 +66,19 @@
             <button class="btn btn-secondary">ホームへ戻る</button>
           </router-link>
         </div>
-
+      </div>
+    </transition>
+    <transition name="fade">
+      <div v-if="isShowReview">
         <div>
           <p class="mb-1 ml-1 review">▼振り返り</p>
           <review :questions="questions" :myAns="myAns"></review>
         </div>
       </div>
     </transition>
-    <!-- End: 対戦終了後の表示エリア -->
+    <!-- ここから: 対戦終了後の表示エリア -->
 
-    <!-- Modal -->
+    <!-- ここから: Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -97,6 +96,7 @@
         </div>
       </div>
     </div>
+    <!-- ここまで: Modal-->
   </div>
 </template>
 
@@ -121,7 +121,7 @@ export default {
       myData: {
         name: null,
         photoUrl: null,
-        status: null, // selecting | waiting | timeup | win | lose | draw
+        status: null, // selecting | waiting | timeup | win | lose | draw | error
         score: 0, // 得点
         select: null, // 回答番号
         time: null, // 回答タイム(秒)
@@ -134,8 +134,10 @@ export default {
         select: null,
         time: null,
       },
+      images: ["Bear", "Squirrel", "Executive"], // ランダムな画像名
       time_limit: null, // 時間制限の最大値を保存
       timerId: null, // カウントダウンタイマーのIDを保存する
+      timeoutId: null,
       blinkIntervalId: null, // 「選択中」を点滅させるためのInterval ID
 
       isHost: null, // 部屋のホストかゲストか
@@ -147,6 +149,7 @@ export default {
       isShowJudge: false, // 結果を表示するタイミングを制御する
       isShowConfetti: false, // 紙吹雪を表示するタイミングを制御する
       isShowRestart: false, // 「もう一度」ボタンを表示するタイミングを制御する
+      isShowReview: false, // 振り返りえを表示するタイミングを制御する
 
       question_now: 0, // 現在の問題数
       questionRefs: [], // 問題の参照
@@ -154,17 +157,17 @@ export default {
       myAns: [], // 自分が回答したデータを保存する
       winner: null, // 勝敗 --- 0 引き分け | 1 自分 | 2 相手
       message_num: 0,
-      messages: ["待機中...", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!"],
+      messages: ["待機中...", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
     };
   },
   computed: {
     message() {
       return this.messages[this.message_num];
     },
-    ...mapState(["auth", "db"]),
+    ...mapState(["auth", "db"]), // Vuexから割り当て
   },
   watch: {
-    /*** 回答が選択されたときの処理 ***/
+    /*** ここから: 回答が選択されたときの処理 ***/
     "myData.select": function (val) {
       if (val != null) {
         this.myAns.push(val);
@@ -185,7 +188,9 @@ export default {
         this.judge();
       }
     },
-    /* 時間切れの場合 */
+    /*** ここまで: 回答が選択されたときの処理 ***/
+
+    /*** ここから: 時間切れの場合の処理 ***/
     "myData.status": function (val) {
       if (val == "timeup" && (this.oppData.select != null || this.oppData.status == "timeup")) {
         this.judge(); // 相手が回答済みか時間切れの場合判定処理へ
@@ -196,6 +201,7 @@ export default {
         this.judge(); // 自分が回答済みか時間切れの場合判定処理へ
       }
     },
+    /*** ここまで: 時間切れの場合の処理 ***/
   },
   beforeMount() {
     // サインインユーザであるか確認してname、photoUrlをセットする
@@ -208,6 +214,12 @@ export default {
     }
   },
   mounted() {
+    window.addEventListener("beforeunload", () => {
+      if (this.room != null) {
+        this.room.delete();
+      }
+    })
+
     this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
@@ -220,7 +232,13 @@ export default {
     }
   },
   beforeDestroy() {
-    // 自分がホストかつ部屋が存在する場合部屋を削除
+    if (this.room != null) {
+      this.room.delete(); // 部屋を削除
+    }
+
+    if (this.unsubscribe != null) {
+      this.unsubscribe(); // リアルタイムリスナーを破棄する
+    }
   },
   methods: {
     /*** 対戦相手を検索する ***/
@@ -257,20 +275,22 @@ export default {
           } else {
             // 空き部屋がある場合の処理
             this.isHost = false; // ゲストで参加
-            this.room = querySnapshot.docs[0].ref;
-            this.room.update({
+            const room = querySnapshot.docs[0].ref;
+            this.room = room;
+            room.update({
               guest_name: this.myData.name,
               // guest_photoUrl: this.myData.photoUrl,
               guest_photoUrl: null,
             });
-            this.createObserver(this.room); // リアルタイムリスナー作成
+            this.createObserver(room); // リアルタイムリスナー作成
             this.oppData.name = querySnapshot.docs[0].get("host_name");
             this.oppData.photoUrl = querySnapshot.docs[0].get("host_photoUrl");
             if (this.oppData.photoUrl == null) this.oppData.photoUrl = "/img/Squirrel.png";
             this.questionRefs = querySnapshot.docs[0].get("questions"); // 問題の参照を保存
 
             // 少し待ってから実行
-            setTimeout(() => {
+            this.timeoutId =  setTimeout(() => {
+              this.timeoutId = null;
               this.searched();
             }, 1000);
           }
@@ -296,7 +316,7 @@ export default {
         .then((documentReference) => {
           this.room = documentReference;
           this.createObserver(this.room); // リアルタイムリスナー作成 ゲストが入室まで待機
-        });
+        })
     },
 
     /*** 問題(Reference)をランダムに設定する ***/
@@ -323,34 +343,57 @@ export default {
 
     /*** 部屋ドキュメントのリアルタイムリスナーを作成する ***/
     createObserver(room) {
-      this.unsubscribe = room.onSnapshot((snapshot) => {
-        const data = snapshot.data();
+      this.unsubscribe = room.onSnapshot(
+        (snapshot) => {
+          // 接続エラーの処理
+          if (!snapshot.exists) {
+            clearTimeout(this.timeoutId); // 処理をストップ
+            clearInterval(this.timerId); // タイマーストップ
+            this.unsubscribe(); // リアルタイムリスナーを破棄する
+            this.isShowQuestionArea = false;
+            this.oppData.status = "error";
+            this.myData.status = "error";
+            this.message_num = this.messages.length - 1; // 接続エラーが発生しました。
+            $("#message span").css({ opacity: 1 });
+            this.isPlaying = false;
+            this.timeoutId = setTimeout(() => {
+              this.timeoutId = null;
+              this.isShowRestart = true;
+            }, 1000)
+            return;
+          }
 
-        // 自身がホストの場合、相手の名前を更新する
-        if (this.isSearching && this.isHost && data.guest_name != null) {
-          this.oppData.name = data.guest_name;
-          this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "/img/Squirrel.png";
-          this.isSearching = false;
-          // 少し待つ
-          setTimeout(() => {
-            this.searched();
-          }, 1000);
-        }
+          const data = snapshot.data();
 
-        // 相手の回答をローカルに反映する
-        if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData.select) {
-          this.oppData.select = this.isHost ? data.guest_ans : data.host_ans;
-          this.oppData.time = this.isHost ? data.guest_time : data.host_time;
-        } else if (this.isHost ? data.guest_time : data.host_time == "timeup") {
-          // 相手が時間切れの場合
-          this.oppData.status = "timeup";
+          // 自身がホストの場合、相手の名前を更新する
+          if (this.isSearching && this.isHost && data.guest_name != null) {
+            this.oppData.name = data.guest_name;
+            this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "/img/Squirrel.png";
+            this.isSearching = false;
+            // 少し待つ
+            this.timeoutId = setTimeout(() => {
+              this.timeoutId = null;
+              this.searched();
+            }, 3000);
+          }
+
+          // 相手の回答をローカルに反映する
+          if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData.select) {
+            this.oppData.select = this.isHost ? data.guest_ans : data.host_ans;
+            this.oppData.time = this.isHost ? data.guest_time : data.host_time;
+          } else if (this.isHost ? data.guest_time : data.host_time == "timeup") {
+            // 相手が時間切れの場合
+            this.oppData.status = "timeup";
+          }
+          // 自分の回答をローカルに反映する
+          if (this.isHost ? data.host_ans : data.guest_ans != null && this.isHost ? data.host_ans : data.guest_ans != this.myData.select) {
+            this.myData.select = this.isHost ? data.host_ans : data.guest_ans;
+            this.myData.time = this.isHost ? data.host_time : data.guest_time;
+          }
+        }, (error) => {
+          console.log(error);
         }
-        // 自分の回答をローカルに反映する
-        if (this.isHost ? data.host_ans : data.guest_ans != null && this.isHost ? data.host_ans : data.guest_ans != this.myData.select) {
-          this.myData.select = this.isHost ? data.host_ans : data.guest_ans;
-          this.myData.time = this.isHost ? data.host_time : data.guest_time;
-        }
-      });
+      );
     },
 
     /*** 対戦相手が見つかった(部屋入室後)後の処理 ***/
@@ -402,7 +445,8 @@ export default {
       this.message_num++; // 「対戦を開始します」
 
       // 少し待ってから実行
-      setTimeout(() => {
+      this.timeoutId = setTimeout(() => {
+        this.timeoutId = null;
         this.isShowQuestionArea = true; // 問題エリアを表示する
         $(".score").each((index, element) => {
           $(element).animate(
@@ -414,7 +458,8 @@ export default {
               // eachブロックの中で1度だけ実行したいため、index:0を判定する
               if (index == 0) {
                 // 少し待ってから実行
-                setTimeout(() => {
+                this.timeoutId = setTimeout(() => {
+                  this.timeoutId = null;
                   // メッセージ「対戦を開始します」をフェードイン
                   message.animate(
                     {
@@ -423,7 +468,8 @@ export default {
                     this.SPEED_FADE,
                     () => {
                       // 少し待ってから実行
-                      setTimeout(() => {
+                      this.timeoutId = setTimeout(() => {
+                        this.timeoutId = null;
                         this.resetPlayerStatus(); // プレイヤーの状態をリセットする
                         this.nextQuestion(); // 出題開始
                       }, 2000);
@@ -463,7 +509,8 @@ export default {
           // フェードアウトしたあとにメッセージを切り替えておく
           this.message_num++; // 「第〇問」
           // 少し待ってから処理
-          setTimeout(() => {
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
             message.animate(
               {
                 opacity: 1,
@@ -472,7 +519,8 @@ export default {
               () => {
                 // 「第〇問」をフェードインした後の処理
                 // 少し待ってから次の問題へ進む
-                setTimeout(() => {
+                this.timeoutId =  setTimeout(() => {
+                  this.timeoutId = null;
                   this.setTimer(); // 回答タイマーをセットする
                   this.resetPlayerStatus(); // プレイヤーの状態をリセットする
                   this.isShowPlayerStatus = true; // プレイヤーステータスを表示する
@@ -544,14 +592,17 @@ export default {
       document.getElementById("player2-flush").classList.remove("flush");
 
       // 少し待ってから処理を行う
-      setTimeout(() => {
+      this.timeoutId = setTimeout(() => {
+        this.timeoutId = null;
         this.isShowJudge = true; // 回答結果を表示する
         // 少し待ってから処理を行う
-        setTimeout(() => {
+        this.timeoutId = setTimeout(() => {
+          this.timeoutId = null;
           this.showJudgeDetail(); // 1問の勝敗結果を表示して得点を反映する
 
           // 少し待ってから次の問題へ
-          setTimeout(() => {
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
             this.winner = null;
             this.nextQuestion();
           }, 4000);
@@ -606,7 +657,8 @@ export default {
         message.fadeIn(this.SPEED_FADE, () => {
           // 「終了！」フェードイン後の処理
           // 少し待ってから実行する
-          setTimeout(() => {
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
             this.isShowQuestionArea = false; // 問題非表示
             if (this.isHost) this.room.delete(); // 部屋削除
 
@@ -624,13 +676,16 @@ export default {
 
             // 少しの間紙吹雪を出現させる
             this.isShowConfetti = true;
-            setTimeout(() => {
+            this.timeoutId = setTimeout(() => {
+              this.timeoutId = null;
               this.isShowConfetti = false; // 紙吹雪非表示
             }, 10000);
 
             // 少し待ってから再戦ボタンを出現させる
-            setTimeout(() => {
+            this.timeoutId = setTimeout(() => {
+              this.timeoutId = null;
               this.isShowRestart = true;
+              this.isShowReview = true;
             }, 3000);
           }, 2000);
         });
@@ -640,7 +695,8 @@ export default {
     /*** もう一度対戦を行う ***/
     restart() {
       this.isShowConfetti = false; // 花吹雪を消す
-      this.isShowRestart = false; // もう一度/振り返り のエリアを消す
+      this.isShowReview = false; // 「振り返り」のエリアを消す
+      this.isShowRestart = false; // 「もう一度」のエリアを消す
       // スコアをフェードアウトする
       $(".score").each((index, element) => {
         $(element).animate(
@@ -678,6 +734,9 @@ export default {
       this.$store.commit("setTimer", { time: null });
       if (this.unsubscribe != null) {
         this.unsubscribe(); // リアルタイムリスナーを破棄する
+      }
+      if (this.room != null) {
+        this.room.delete();
       }
       next();
     },

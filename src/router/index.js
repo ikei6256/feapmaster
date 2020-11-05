@@ -22,6 +22,8 @@ const routes = [
   // { path: '/signin', name: 'Signin', component: Signin }, // サインイン画面
   { path: '/battle', name: 'Battle',
     component: () => import(/* webpackChunkName: "battle" */ '../views/Battle.vue') }, // 対戦画面
+  // { path: '/test', name: 'Test',
+  //   component: () => import(/* webpackChunkName: "test" */ '../views/Test.vue') },
 ]
 
 const router = new VueRouter({

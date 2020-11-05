@@ -155,7 +155,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .questionArea {
   min-height: 30rem;
   margin-bottom: 2rem;
@@ -195,30 +195,6 @@ export default {
 }
 .myResult {
   font-weight: bold;
-}
-
-/* ******************************
-RIPPLES EFFECT https://codepen.io/bootpen/pen/WrWZRd
-****************************** */
-.ripples {
-  overflow: hidden;
-  position: relative;
-}
-.waves {
-  z-index: -1;
-  position: absolute;
-  display: block;
-  border-radius: 100%;
-  background-color: rgb(0, 148, 196);
-  transform: scale(0);
-}
-.ripple {
-  animation: ripple 0.65s linear forwards;
-  @keyframes ripple {
-    100% {
-      transform: scale(2.5);
-    }
-  }
 }
 
 /* ******************************
@@ -263,5 +239,31 @@ BUTTONS
 .btn[disabled],
 fieldset[disabled] .btn {
   pointer-events: none;
+}
+</style>
+
+<style lang="scss">
+/* ******************************
+RIPPLES EFFECT https://codepen.io/bootpen/pen/WrWZRd
+****************************** */
+.ripples {
+  overflow: hidden;
+  position: relative;
+}
+.waves {
+  z-index: -1;
+  position: absolute;
+  display: block;
+  border-radius: 100%;
+  background-color: rgb(0, 148, 196);
+  transform: scale(0);
+}
+.ripple {
+  animation: ripple 0.65s linear forwards;
+  @keyframes ripple {
+    100% {
+      transform: scale(2.5);
+    }
+  }
 }
 </style>

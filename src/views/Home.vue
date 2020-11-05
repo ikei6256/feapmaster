@@ -1,19 +1,13 @@
 <template>
-  <div class="container">
+  <div class="container-md">
     <h1>ホーム</h1>
     <router-link :to="{ name: 'Battle' }">
-      <button class="btn btn-primary">バトル!</button>
+      <button class="btn btn-primary pt-1 pb-1 pr-5 pl-5">対戦する</button>
     </router-link>
     <!-- <router-link :to="{ name: 'Test' }">
       <button class="btn btn-outline-success">テスト</button>
-    </router-link>
-    <router-link :to="{ name: 'Test2' }">
-      <button class="btn btn-outline-success">テスト2</button>
-    </router-link>
-    <router-link :to="{ name: 'Test3' }">
-      <button class="btn btn-outline-success">テスト3</button>
-    </router-link>
-    <button id="addRoom" type="button" class="btn btn-outline-warning">テスト部屋追加</button> -->
+    </router-link> -->
+    <!-- <button id="addRoom" type="button" class="btn btn-outline-warning">テスト部屋追加</button> -->
   </div>
 </template>
 
