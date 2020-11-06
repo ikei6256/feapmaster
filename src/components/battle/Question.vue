@@ -114,8 +114,23 @@ export default {
       option: ["ア", "イ", "ウ", "エ"],
     };
   },
+  watch: {
+    // 正誤判定が表示されるタイミングで正答の背景色を変える
+    isShowJudge: function (val) {
+      if (val) {
+        // 色をつける
+        // $(".option")[this.question.correctAns - 1].css({
+        //   "background-color": "red",
+        // });
+        // const option = $(".option")[this.question.correctAns - 1];
+        // option.css("background-color", "red")
+      } else {
+        // 色を戻す
+      }
+    },
+  },
   filters: {
-    // 秒数を受け取って0:00の形式に直す
+    // 秒数を受け取って 0:00 の形式に直す
     to_ms(val) {
       var minute = Math.floor(val / 60);
       var second = Math.floor(val % 60);

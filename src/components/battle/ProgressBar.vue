@@ -4,7 +4,7 @@
       class="progress-bar bg-bar"
       role="progressbar"
       :style="styles"
-      :aria-valuenow="$store.getters.getTimerPercentage"
+      :aria-valuenow="getTimerPercentage"
       aria-valuemin="0"
       aria-valuemax="100"
     ></div>
@@ -12,11 +12,13 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 export default {
   computed: {
+    ...mapGetters(["getTimerPercentage"]),
     styles() {
       return {
-        width: this.$store.getters.getTimerPercentage + "%",
+        width: this.getTimerPercentage + "%",
       };
     },
   },

@@ -15,7 +15,7 @@ export default new Vuex.Store({
     timer_countdown(state) {
       state.timer_valuenow--;
     },
-    setTimer(state, payload) {
+    setTimer(state, payload = { time: state.TIMER_DEFAULT }) {
       state.timer_valuenow = payload.time;
     },
     setAuth(state, payload) {

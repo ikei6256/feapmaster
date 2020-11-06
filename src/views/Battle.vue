@@ -102,7 +102,7 @@
 
 <script>
 import Player from "@/components/battle/Player.vue";
-import { mapState } from "vuex";
+import { mapMutations, mapState } from "vuex";
 import $ from "jquery";
 export default {
   components: {
@@ -149,7 +149,7 @@ export default {
       isShowJudge: false, // 結果を表示するタイミングを制御する
       isShowConfetti: false, // 紙吹雪を表示するタイミングを制御する
       isShowRestart: false, // 「もう一度」ボタンを表示するタイミングを制御する
-      isShowReview: false, // 振り返りえを表示するタイミングを制御する
+      isShowReview: false, // 振り返りを表示するタイミングを制御する
 
       question_now: 0, // 現在の問題数
       questionRefs: [], // 問題の参照
@@ -161,10 +161,10 @@ export default {
     };
   },
   computed: {
+    ...mapState(["TIMER_DEFAULT", "timer_valuenow", "auth", "db"]),
     message() {
       return this.messages[this.message_num];
     },
-    ...mapState(["auth", "db"]), // Vuexから割り当て
   },
   watch: {
     /*** ここから: 回答が選択されたときの処理 ***/
@@ -172,26 +172,27 @@ export default {
       if (val != null) {
         this.myAns.push(val);
         this.myData.status = "waiting";
-      }
-      // 両者が回答していればタイマーを止めて勝敗判定を行う
-      if (val != null && this.oppData.select != null) {
-        clearInterval(this.timerId); // タイマーを止める
-        this.judge();
+        // 両者が回答していればタイマーを止めて勝敗判定を行う
+        if (this.oppData.select != null) {
+          clearInterval(this.timerId);
+          this.judge();
+        }
       }
     },
     "oppData.select": function (val) {
       if (val != null) {
         this.oppData.status = "waiting";
-      }
-      if (val != null && this.myData.select != null) {
-        clearInterval(this.timerId);
-        this.judge();
+        if (this.myData.select != null) {
+          clearInterval(this.timerId);
+          this.judge();
+        }
       }
     },
     /*** ここまで: 回答が選択されたときの処理 ***/
 
-    /*** ここから: 時間切れの場合の処理 ***/
+    /*** ここから: ステータス変更時の処理 ***/
     "myData.status": function (val) {
+      // 時間切れの場合の処理
       if (val == "timeup" && (this.oppData.select != null || this.oppData.status == "timeup")) {
         this.judge(); // 相手が回答済みか時間切れの場合判定処理へ
       }
@@ -218,7 +219,7 @@ export default {
       if (this.room != null) {
         this.room.delete();
       }
-    })
+    });
 
     this.search(); // 対戦相手を検索する
   },
@@ -232,15 +233,16 @@ export default {
     }
   },
   beforeDestroy() {
-    if (this.room != null) {
-      this.room.delete(); // 部屋を削除
-    }
-
     if (this.unsubscribe != null) {
       this.unsubscribe(); // リアルタイムリスナーを破棄する
     }
+
+    if (this.room != null) {
+      this.room.delete(); // 部屋を削除
+    }
   },
   methods: {
+    ...mapMutations(["timer_countdown", "setTimer"]),
     /*** 対戦相手を検索する ***/
     search() {
       this.message_num = 0; // 「待機中...」
@@ -269,30 +271,18 @@ export default {
         .get()
         .then((querySnapshot) => {
           if (querySnapshot.empty) {
-            // 空き部屋が無い場合の処理
+            // 空き部屋が無い場合
             this.isHost = true; // ホストで参加
             this.createRoom(); // 部屋を作成する
           } else {
-            // 空き部屋がある場合の処理
+            // 空き部屋がある場合
             this.isHost = false; // ゲストで参加
-            const room = querySnapshot.docs[0].ref;
-            this.room = room;
-            room.update({
-              guest_name: this.myData.name,
-              // guest_photoUrl: this.myData.photoUrl,
-              guest_photoUrl: null,
-            });
-            this.createObserver(room); // リアルタイムリスナー作成
+            this.room = querySnapshot.docs[0].ref;
             this.oppData.name = querySnapshot.docs[0].get("host_name");
             this.oppData.photoUrl = querySnapshot.docs[0].get("host_photoUrl");
             if (this.oppData.photoUrl == null) this.oppData.photoUrl = "/img/Squirrel.png";
-            this.questionRefs = querySnapshot.docs[0].get("questions"); // 問題の参照を保存
-
-            // 少し待ってから実行
-            this.timeoutId =  setTimeout(() => {
-              this.timeoutId = null;
-              this.searched();
-            }, 1000);
+            this.questionRefs = querySnapshot.docs[0].get("questions");
+            this.createObserver(this.room); // リアルタイムリスナー作成
           }
         });
     },
@@ -316,7 +306,7 @@ export default {
         .then((documentReference) => {
           this.room = documentReference;
           this.createObserver(this.room); // リアルタイムリスナー作成 ゲストが入室まで待機
-        })
+        });
     },
 
     /*** 問題(Reference)をランダムに設定する ***/
@@ -343,57 +333,67 @@ export default {
 
     /*** 部屋ドキュメントのリアルタイムリスナーを作成する ***/
     createObserver(room) {
-      this.unsubscribe = room.onSnapshot(
-        (snapshot) => {
-          // 接続エラーの処理
-          if (!snapshot.exists) {
-            clearTimeout(this.timeoutId); // 処理をストップ
-            clearInterval(this.timerId); // タイマーストップ
-            this.unsubscribe(); // リアルタイムリスナーを破棄する
-            this.isShowQuestionArea = false;
-            this.oppData.status = "error";
-            this.myData.status = "error";
-            this.message_num = this.messages.length - 1; // 接続エラーが発生しました。
-            $("#message span").css({ opacity: 1 });
-            this.isPlaying = false;
-            this.timeoutId = setTimeout(() => {
-              this.timeoutId = null;
-              this.isShowRestart = true;
-            }, 1000)
-            return;
-          }
+      this.unsubscribe = room.onSnapshot((snapshot) => {
+        // 接続エラーの処理
+        if (!snapshot.exists) {
+          clearTimeout(this.timeoutId); // 処理をストップ
+          clearInterval(this.timerId); // タイマーストップ
+          this.unsubscribe(); // リアルタイムリスナーを破棄する
+          this.isPlaying = false;
+          this.isShowQuestionArea = false; // 問題エリアを非表示
+          this.oppData.status = "error";
+          this.myData.status = "error";
+          this.message_num = this.messages.length - 1; // 「接続エラーが発生しました。」
+          $("#message span").css({ opacity: 1 });
+          // 少し待つ
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
+            this.isShowRestart = true; // 再戦ボタンを表示
+          }, 3000);
+          return;
+        }
 
-          const data = snapshot.data();
+        const data = snapshot.data();
 
-          // 自身がホストの場合、相手の名前を更新する
-          if (this.isSearching && this.isHost && data.guest_name != null) {
+        /*** ここから: 検索中 ***/
+        if (this.isSearching) {
+          // 自身がホストの場合、相手の名前をローカルに保存する
+          if (this.isHost && data.guest_name != null) {
             this.oppData.name = data.guest_name;
             this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "/img/Squirrel.png";
+          }
+          // 自身がゲストの場合、自身の名前と画像をドキュメントに反映する
+          if (!this.isHost && data.guest_name == null) {
+            room.update({
+              guest_name: this.myData.name,
+              // guest_photoUrl: this.myData.photoUrl,
+              guest_photoUrl: null,
+            });
+            return;
+          }
+          // 両者が揃ったときに検索終了
+          if (data.host_name != null && data.guest_name != null) {
             this.isSearching = false;
-            // 少し待つ
-            this.timeoutId = setTimeout(() => {
-              this.timeoutId = null;
-              this.searched();
-            }, 3000);
+            this.searched();
+            return;
           }
-
-          // 相手の回答をローカルに反映する
-          if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData.select) {
-            this.oppData.select = this.isHost ? data.guest_ans : data.host_ans;
-            this.oppData.time = this.isHost ? data.guest_time : data.host_time;
-          } else if (this.isHost ? data.guest_time : data.host_time == "timeup") {
-            // 相手が時間切れの場合
-            this.oppData.status = "timeup";
-          }
-          // 自分の回答をローカルに反映する
-          if (this.isHost ? data.host_ans : data.guest_ans != null && this.isHost ? data.host_ans : data.guest_ans != this.myData.select) {
-            this.myData.select = this.isHost ? data.host_ans : data.guest_ans;
-            this.myData.time = this.isHost ? data.host_time : data.guest_time;
-          }
-        }, (error) => {
-          console.log(error);
         }
-      );
+        /*** ここまで: 検索中 ***/
+
+        // 相手の回答をローカルに反映する
+        if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData.select) {
+          this.oppData.select = this.isHost ? data.guest_ans : data.host_ans;
+          this.oppData.time = this.isHost ? data.guest_time : data.host_time;
+        } else if (this.isHost ? data.guest_time : data.host_time == "timeup") {
+          // 相手が時間切れの場合
+          this.oppData.status = "timeup";
+        }
+        // 自分の回答をローカルに反映する
+        if (this.isHost ? data.host_ans : data.guest_ans != null && this.isHost ? data.host_ans : data.guest_ans != this.myData.select) {
+          this.myData.select = this.isHost ? data.host_ans : data.guest_ans;
+          this.myData.time = this.isHost ? data.host_time : data.guest_time;
+        }
+      });
     },
 
     /*** 対戦相手が見つかった(部屋入室後)後の処理 ***/
@@ -401,7 +401,7 @@ export default {
       this.isPlaying = true; // ステータス:対戦中
       this.isSearching = false; // 検索を終えて対戦相手の画像を出現させる
 
-      // 問題の参照をを用いて問題データを取得する
+      // 問題の参照を用いて問題データを取得する
       for (const questionRef of this.questionRefs) {
         // question は DocumentReference型
         questionRef.get().then((querySnapshot) => {
@@ -519,9 +519,10 @@ export default {
               () => {
                 // 「第〇問」をフェードインした後の処理
                 // 少し待ってから次の問題へ進む
-                this.timeoutId =  setTimeout(() => {
+                this.timeoutId = setTimeout(() => {
                   this.timeoutId = null;
-                  this.setTimer(); // 回答タイマーをセットする
+                  this.time_limit = this.TIMER_DEFAULT; // ひとまず制限時間にデフォルトタイムをセット
+                  this.setTimer({ time: this.time_limit }); // 回答タイマーをセットする
                   this.resetPlayerStatus(); // プレイヤーの状態をリセットする
                   this.isShowPlayerStatus = true; // プレイヤーステータスを表示する
                   this.isShowQuestion = true; // 問題を表示する
@@ -552,18 +553,12 @@ export default {
       }
     },
 
-    /*** 回答タイマーをセットする ***/
-    setTimer(time = this.$store.state.TIMER_DEFAULT) {
-      this.time_limit = time; // 時間制限の初期値
-      this.$store.commit("setTimer", { time: time });
-    },
-
     /*** 回答タイマー開始 ***/
     startTimer() {
       this.timerId = setInterval(() => {
-        this.$store.commit("timer_countdown"); // カウントダウン
+        this.timer_countdown(); // カウントダウン
         // 制限時間を超えた場合の処理
-        if (this.$store.state.timer_valuenow < 0) {
+        if (this.timer_valuenow < 0) {
           clearInterval(this.timerId);
           this.timerId = null;
           // 状態:timeup にするかを判定する
@@ -731,7 +726,7 @@ export default {
     routeLeave(next) {
       clearInterval(this.timerId); // タイマーを停止する
       clearInterval(this.blinkIntervalId);
-      this.$store.commit("setTimer", { time: null });
+      this.setTimer({ time: null });
       if (this.unsubscribe != null) {
         this.unsubscribe(); // リアルタイムリスナーを破棄する
       }
@@ -757,12 +752,12 @@ export default {
       if (this.isHost) {
         this.room.update({
           host_ans: ans,
-          host_time: this.time_limit - this.$store.state.timer_valuenow,
+          host_time: this.time_limit - this.timer_valuenow,
         });
       } else {
         this.room.update({
           guest_ans: ans,
-          guest_time: this.time_limit - this.$store.state.timer_valuenow,
+          guest_time: this.time_limit - this.timer_valuenow,
         });
       }
     },
