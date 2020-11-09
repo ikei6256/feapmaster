@@ -5,9 +5,10 @@ module.exports = {
       title: 'FEAPMaster',
     }
   },
-  // configureWebpack: {
-  //   performance: {
-  //     hints: false,
-  //   }
-  // }
+  pwa: {
+    iconPaths: {
+      favicon32: 'img/icon_orange.png',
+      favicon16: 'img/icon_orange.png',
+    }
+  }
 }
