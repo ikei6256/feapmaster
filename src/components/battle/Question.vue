@@ -119,7 +119,7 @@ export default {
     isShowJudge: function(val) {
       if (val) {
         // 色をつける
-        $(`.option:eq(${this.question.correctAns-1})`).css("background-color", "#f2ddbf")
+        $(`.option:eq(${this.question.correctAns-1})`).css("background-color", "rgba(249, 182, 15, 0.2)")
       }
     },
   },
@@ -167,7 +167,6 @@ export default {
 <style lang="scss" scoped>
 .questionArea {
   min-height: 30rem;
-  margin-bottom: 2rem;
   background: white;
   border-right: solid 0.5rem #5f5f91; /* 線 */
   border-left: solid 0.5rem #5f5f91; /* 線 */

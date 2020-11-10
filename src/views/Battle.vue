@@ -1,7 +1,6 @@
 <template>
-  <div>
+  <div class="bg">
     <header-component></header-component>
-    <div class="bg"></div>
     <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
       <transition name="fade">
         <confetti v-if="isShowConfetti"></confetti>
@@ -15,7 +14,7 @@
 
       <!-- ここから: プレイヤー表示エリア -->
       <div class="row mb-3">
-        <div class="col bg-white pl-1 pr-1 overflow-hidden player1">
+        <div class="col bg-white p-0 overflow-hidden player1">
           <div class="float-left text-center w-100">
             <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
           </div>
@@ -28,7 +27,7 @@
         <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
           <span class="score">{{ oppData.score }}</span>
         </div>
-        <div class="col bg-white pl-1 pr-1 position-relative overflow-hidden player2">
+        <div class="col bg-white p-0 position-relative overflow-hidden player2">
           <div class="float-left text-center w-100">
             <transition name="fade-slow" mode="out-in">
               <div v-if="isSearching" class="loading position-absolute">
@@ -772,13 +771,10 @@ export default {
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
 .bg {
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  background-color:  rgba(249, 182, 15, 0.2);
+  background-color:  rgba(249, 182, 15, 0.1);
+  padding-bottom: 2rem;
 }
 .messageArea {
   padding: 0.3em 1em;
