@@ -18,7 +18,7 @@
           <div v-if="question.answerAllImageUrl != null">
             <img :src="question.answerAllImageUrl" alt="回答用イメージ" class="pb-2" />
           </div>
-          <div class="option pb-1">
+          <div class="option mb-1">
             <div class="d-table-cell">
               <button @click="selected($event, 1)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">ア</button>
             </div>
@@ -27,7 +27,7 @@
               <img v-if="question.answerImageUrl1 != null" :src="question.answerImageUrl1" alt="回答用イメージその1" class="pt-1 pb-1" />
             </div>
           </div>
-          <div class="option pb-1">
+          <div class="option mb-1">
             <div class="d-table-cell">
               <button @click="selected($event, 2)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">イ</button>
             </div>
@@ -36,7 +36,7 @@
               <img v-if="question.answerImageUrl2 != null" :src="question.answerImageUrl2" alt="回答用イメージその2" class="pt-1 pb-1" />
             </div>
           </div>
-          <div class="option pb-1">
+          <div class="option mb-1">
             <div class="d-table-cell">
               <button @click="selected($event, 3)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">ウ</button>
             </div>
@@ -45,7 +45,7 @@
               <img v-if="question.answerImageUrl3 != null" :src="question.answerImageUrl3" alt="回答用イメージその3" class="pt-1 pb-1" />
             </div>
           </div>
-          <div class="option pb-1">
+          <div class="option mb-1">
             <div class="d-table-cell">
               <button @click="selected($event, 4)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">エ</button>
             </div>
@@ -119,9 +119,7 @@ export default {
     isShowJudge: function(val) {
       if (val) {
         // 色をつける
-        $(`.option:eq(${this.question.correctAns-1})`).css("background-color", "red")
-      } else {
-        // 色を戻す
+        $(`.option:eq(${this.question.correctAns-1})`).css("background-color", "#f2ddbf")
       }
     },
   },
@@ -179,6 +177,9 @@ export default {
 .questionBody {
   min-height: 1.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.option {
+  border-radius: 5px;
 }
 .result {
   border-top: solid 1rem #e6b9f8;

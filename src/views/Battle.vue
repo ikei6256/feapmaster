@@ -1,112 +1,118 @@
 <template>
-  <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
-    <transition name="fade">
-      <confetti v-if="isShowConfetti"></confetti>
-    </transition>
+  <div>
+    <header-component></header-component>
+    <div class="bg"></div>
+    <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
+      <transition name="fade">
+        <confetti v-if="isShowConfetti"></confetti>
+      </transition>
 
-    <!-- ここから: メッセージ -->
-    <div id="message" class="messageArea">
-      <span>{{ message }}</span>
-    </div>
-    <!-- ここまで: メッセージ -->
+      <!-- ここから: メッセージ -->
+      <div id="message" class="messageArea">
+        <span>{{ message }}</span>
+      </div>
+      <!-- ここまで: メッセージ -->
 
-    <!-- ここから: プレイヤー表示エリア -->
-    <div class="row mb-3">
-      <div class="col pl-1 pr-1 overflow-hidden player1">
-        <div class="float-left text-center w-100">
-          <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+      <!-- ここから: プレイヤー表示エリア -->
+      <div class="row mb-3">
+        <div class="col bg-white pl-1 pr-1 overflow-hidden player1">
+          <div class="float-left text-center w-100">
+            <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+          </div>
+          <div id="player1-flush" class="flush-area"></div>
         </div>
-        <div id="player1-flush" class="flush-area"></div>
+        <div id="player1-score" class="col-1 p-0 text-center d-flex align-items-center">
+          <span class="score">{{ myData.score }}</span>
+        </div>
+        <div class="col-auto p-0 d-flex align-items-center font-weight-bold">:</div>
+        <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
+          <span class="score">{{ oppData.score }}</span>
+        </div>
+        <div class="col bg-white pl-1 pr-1 position-relative overflow-hidden player2">
+          <div class="float-left text-center w-100">
+            <transition name="fade-slow" mode="out-in">
+              <div v-if="isSearching" class="loading position-absolute">
+                <div class="spinner-grow text-info" role="status"></div>
+                <span class="text-info">相手を探しています...</span>
+              </div>
+              <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
+            </transition>
+          </div>
+          <div id="player2-flush" class="flush-area"></div>
+        </div>
       </div>
-      <div id="player1-score" class="col-1 p-0 text-center d-flex align-items-center">
-        <span class="score">{{ myData.score }}</span>
-      </div>
-      <div class="col-auto p-0 d-flex align-items-center font-weight-bold">:</div>
-      <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
-        <span class="score">{{ oppData.score }}</span>
-      </div>
-      <div class="col pl-1 pr-1 position-relative overflow-hidden player2">
-        <div class="float-left text-center w-100">
-          <transition name="fade-slow" mode="out-in">
-            <div v-if="isSearching" class="loading position-absolute">
-              <div class="spinner-grow text-info" role="status"></div>
-              <span class="text-info">相手を探しています...</span>
+      <!-- ここまで: プレイヤー表示エリア -->
+
+      <!-- ここから: 問題表示エリア -->
+      <transition name="fade-slow">
+        <question
+          @selected="selected"
+          v-if="isShowQuestionArea"
+          :myData="myData"
+          :oppData="oppData"
+          :question_now="question_now"
+          :question="questions[question_now - 1]"
+          :isShowQuestion="isShowQuestion"
+          :isShowJudge="isShowJudge"
+          :time_limit="time_limit"
+          :winner="winner"
+        ></question>
+      </transition>
+      <!-- ここまで: 問題表示 -->
+
+      <!-- ここから: 対戦終了後の表示エリア  -->
+      <transition name="fade">
+        <div v-show="isShowRestart">
+          <div class="text-center mb-3">
+            <button @click="restart" class="btn btn-primary mr-1">もう一度</button>
+            <router-link :to="{ name: 'Home' }">
+              <button class="btn btn-secondary">ホームへ戻る</button>
+            </router-link>
+          </div>
+        </div>
+      </transition>
+      <transition name="fade">
+        <div v-if="isShowReview">
+          <div>
+            <p class="mb-1 ml-1 review">▼振り返り</p>
+            <review :questions="questions" :myAns="myAns"></review>
+          </div>
+        </div>
+      </transition>
+      <!-- ここから: 対戦終了後の表示エリア -->
+
+      <!-- ここから: Modal -->
+      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">注意!</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-            <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
-          </transition>
-        </div>
-        <div id="player2-flush" class="flush-area"></div>
-      </div>
-    </div>
-    <!-- ここまで: プレイヤー表示エリア -->
-
-    <!-- ここから: 問題表示エリア -->
-    <transition name="fade-slow">
-      <question
-        @selected="selected"
-        v-if="isShowQuestionArea"
-        :myData="myData"
-        :oppData="oppData"
-        :question_now="question_now"
-        :question="questions[question_now - 1]"
-        :isShowQuestion="isShowQuestion"
-        :isShowJudge="isShowJudge"
-        :time_limit="time_limit"
-        :winner="winner"
-      ></question>
-    </transition>
-    <!-- ここまで: 問題表示 -->
-
-    <!-- ここから: 対戦終了後の表示エリア  -->
-    <transition name="fade">
-      <div v-show="isShowRestart">
-        <div class="text-center mb-3">
-          <button @click="restart" class="btn btn-primary mr-1">もう一度</button>
-          <router-link :to="{ name: 'Home' }">
-            <button class="btn btn-secondary">ホームへ戻る</button>
-          </router-link>
-        </div>
-      </div>
-    </transition>
-    <transition name="fade">
-      <div v-if="isShowReview">
-        <div>
-          <p class="mb-1 ml-1 review">▼振り返り</p>
-          <review :questions="questions" :myAns="myAns"></review>
-        </div>
-      </div>
-    </transition>
-    <!-- ここから: 対戦終了後の表示エリア -->
-
-    <!-- ここから: Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">注意!</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">対戦中です！<br />対戦画面から離れてもよろしいですか？</div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
-            <button type="button" class="btn btn-primary" id="next">OK</button>
+            <div class="modal-body">対戦中です！<br />対戦画面から離れてもよろしいですか？</div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+              <button type="button" class="btn btn-primary" id="next">OK</button>
+            </div>
           </div>
         </div>
       </div>
+      <!-- ここまで: Modal-->
     </div>
-    <!-- ここまで: Modal-->
   </div>
 </template>
 
 <script>
+import Header from "@/components/Header.vue";
 import Player from "@/components/battle/Player.vue";
 import { mapMutations, mapState } from "vuex";
 import $ from "jquery";
 export default {
   components: {
     player: Player,
+    "header-component": Header,
     question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
     confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
     review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
@@ -313,10 +319,8 @@ export default {
     setQuestionRefs() {
       let i = 0;
       do {
-        const year = 2020;
-        // const season = Math.floor(Math.random() * 2) == 0 ? "spring" : "autumn";
-        // const season = "autumn";
-        const season = "spring";
+        const year = 2019;
+        const season = Math.floor(Math.random() * 2) == 0 ? "spring" : "autumn";
         let no = Math.floor(Math.random() * 80) + 1; // 問題番号 1~80
         if (no < 10) {
           no = "0" + no; // 0パディング
@@ -767,6 +771,15 @@ export default {
 
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
+.bg {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background-color:  rgba(249, 182, 15, 0.2);
+}
 .messageArea {
   padding: 0.3em 1em;
   margin-bottom: 1em;
@@ -796,7 +809,7 @@ export default {
 }
 .player1,
 .player2 {
-  border-radius: 5%;
+  border-radius: 15px;
 }
 .flush-area {
   height: 100%;

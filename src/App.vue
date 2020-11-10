@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <header-component></header-component>
     <transition name="fade" mode="out-in">
       <router-view />
     </transition>
@@ -8,18 +7,14 @@
 </template>
 
 <script>
-import Header from "@/components/Header.vue";
-export default {
-  components: {
-    "header-component": Header,
-  },
-  mounted() {
-    // console.log("--- App: mounted ---");
-  }
-};
+export default {};
 </script>
 
 <style lang="scss">
+* {
+  margin: 0;
+  padding: 0;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Hiragino Kaku Gothic ProN',
     'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', 'Droid Sans',sans-serif;
@@ -27,18 +22,11 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
 }
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+li {
+  list-style-type: none;
+}
+:focus {
+  outline: none;
 }
 
 /*
@@ -67,12 +55,5 @@ export default {
   &-leave-to {
     opacity: 0;
   }
-}
-
-/*
- * opacity
- */
-.opacity-0 {
-  opacity: 0;
 }
 </style>

@@ -1,8 +1,9 @@
 <template>
-  <nav class="navbar navbar-dark bg-dark mb-3">
+  <nav class="navbar mb-3">
     <div class="container-sm pl-0 pr-0 pl-sm-2 pr-sm-2">
       <router-link :to="{ name: 'Home' }">
-        <span class="navbar-brand mb-0 h1">FEAPMaster</span>
+        <!-- <span class="navbar-brand mb-0 h1">FEAPMaster</span> -->
+        <img src="/img/logo.png" alt="FE AP Master" />
       </router-link>
       <!-- <div>
         <router-link :to="{ name: 'Signin' }">
@@ -16,3 +17,12 @@
 <script>
 export default {};
 </script>
+
+<style lang="scss" scoped>
+// nav {
+//    background-color: rgb(249, 182, 15);
+// }
+img {
+  height: 4.2vh;
+}
+</style>
