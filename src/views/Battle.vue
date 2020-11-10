@@ -1,5 +1,5 @@
 <template>
-  <div class="bg">
+  <div>
     <header-component></header-component>
     <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
       <transition name="fade">
@@ -14,7 +14,7 @@
 
       <!-- ここから: プレイヤー表示エリア -->
       <div class="row mb-3">
-        <div class="col bg-white p-0 overflow-hidden player1">
+        <div class="col p-0 overflow-hidden player1">
           <div class="float-left text-center w-100">
             <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
           </div>
@@ -27,7 +27,7 @@
         <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
           <span class="score">{{ oppData.score }}</span>
         </div>
-        <div class="col bg-white p-0 position-relative overflow-hidden player2">
+        <div class="col p-0 position-relative overflow-hidden player2">
           <div class="float-left text-center w-100">
             <transition name="fade-slow" mode="out-in">
               <div v-if="isSearching" class="loading position-absolute">
@@ -139,7 +139,22 @@ export default {
         select: null,
         time: null,
       },
-      images: ["Bear", "Squirrel", "Executive"], // ランダムな画像名
+      image_random: [
+        "Bear", "Bee", "Bird", "Butterfly", "Chameleon", "Cocker-spaniel", "Cow", "Dolphin", "Dove",
+        "Executive", "Flamingo", "Giraffe", "Gorilla", "Kangaroo", "Koala", "Paw", "Rabbit",
+        "Sheep", "Shrimp", "Sloth", "Snail", "Squirrel", "Turtle",
+      ], // ランダムな画像を使用する
+      name_random:
+        [
+          "ラパン", "チオビタ", "ごぱん", "ポリデント", "半沢", "まちゅぴちゅ", "スーパームーン", "サンズ", "たぬきち",
+          "らーめん", "IKEA", "くま", "げすとさん", "忍者", "凄腕ハッカー", "りす", "かもめ", "のりせんべい", "七味",
+          "もぐら", "神", "プードル", "ピーマン", "きれいなジャイアン", "シンデレラ", "クロックス", "だし巻きたまご",
+          "ネプチューン", "しらす", "迷宮入り", "真実はいつも一つ", "タピオカ", "ミタゾノ", "キューピー",
+          "みかん", "ダヴィンチ", "ムツゴロウ", "あめんぼ", "ユンケル", "あまびえ", "チキンラーメン", "ダイヤモンド",
+          "ベルベットハンマー矢沢", "チェインレクイエム斎藤", "ふくろう", "マシュマロ", "焼きおにぎり", "焼肉定食",
+          "ピグレット", "フェアレディ", "JAXA", "メロン", "生クリーム", "亀仙人", "テトリス", "ダークホース",
+          "野菜生活", "パピコ", "チョコチップクッキー"
+        ],
       time_limit: null, // 時間制限の最大値を保存
       timerId: null, // カウントダウンタイマーのIDを保存する
       timeoutId: null,
@@ -212,8 +227,10 @@ export default {
   beforeMount() {
     // サインインユーザであるか確認してname、photoUrlをセットする
     if (this.auth.currentUser == null) {
-      this.myData.name = "げすとさん";
-      this.myData.photoUrl = "/img/Bear.png";
+      // this.myData.name = "げすとさん";
+      this.myData.name = this.name_random[Math.floor(Math.random()*this.name_random.length)];
+      // this.myData.photoUrl = "/img/Bear.png";
+      this.myData.photoUrl = `/img/${this.image_random[Math.floor(Math.random()*this.image_random.length)]}.png`;
     } else {
       this.myData.name = this.auth.currentUser.displayName;
       this.myData.photoUrl = this.auth.currentUser.photoUrl;
@@ -300,7 +317,7 @@ export default {
         .add({
           host_name: this.myData.name, // ホスト名
           guest_name: null, // ゲスト名
-          host_photoUrl: null, // サインインユーザでない場合はnull
+          host_photoUrl: this.myData.photoUrl, // サインインユーザでない場合はnull
           guest_photoUrl: null,
           host_time: null, // ホスト回答タイム
           guest_time: null, // ゲスト回答タイム
@@ -369,8 +386,8 @@ export default {
           if (!this.isHost && data.guest_name == null) {
             room.update({
               guest_name: this.myData.name,
-              // guest_photoUrl: this.myData.photoUrl,
-              guest_photoUrl: null,
+              guest_photoUrl: this.myData.photoUrl,
+              // guest_photoUrl: null,
             });
             return;
           }
@@ -770,12 +787,6 @@ export default {
 
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
-.bg {
-  min-height: 100vh;
-  width: 100vw;
-  background-color:  rgba(249, 182, 15, 0.1);
-  padding-bottom: 2rem;
-}
 .messageArea {
   padding: 0.3em 1em;
   margin-bottom: 1em;

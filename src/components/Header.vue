@@ -19,10 +19,7 @@ export default {};
 </script>
 
 <style lang="scss" scoped>
-// nav {
-//    background-color: rgb(249, 182, 15);
-// }
 img {
-  height: 4.2vh;
+  height: 2rem;
 }
 </style>
