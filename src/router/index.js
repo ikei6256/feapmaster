@@ -19,7 +19,8 @@ const routes = [
   //   // which is lazy-loaded when the route is visited.
   //   component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   // },
-  // { path: '/signin', name: 'Signin', component: Signin }, // サインイン画面
+  { path: '/login', name: 'Login',
+    component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue') }, // ログイン画面
   { path: '/battle', name: 'Battle',
     component: () => import(/* webpackChunkName: "battle" */ '../views/Battle.vue') }, // 対戦画面
   // { path: '/test', name: 'Test',

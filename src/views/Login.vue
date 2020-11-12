@@ -17,7 +17,7 @@
 
 <script>
 import firebase from "../firebase";
-import firebaseui from "firebaseui";
+import * as firebaseui from "firebaseui";
 var app = null;
 export default {
   data() {
@@ -53,9 +53,6 @@ export default {
           document.getElementById("signin").style.display = "block"; // サインイン出現
           app.loadFirebaseUi();
         })
-        .catch(function (error) {
-          // An error happened.
-        });
     };
   }, // mounted
   // Start: beforeRouteLeave
@@ -100,7 +97,8 @@ export default {
                 document.getElementById("loader").style.display = "none";
               },
               // signInSuccessWithAuthResultがtrueを返す時signInSuccessUrlがRequiredになる
-              signInSuccessWithAuthResult: function (authResult, redirectUrl) {
+              // signInSuccessWithAuthResult: function (authResult, redirectUrl) {
+              signInSuccessWithAuthResult: function () {
                 // User successfully signed in.
                 // Return type determines whether we continue the redirect automatically
                 // or whether we leave that to developer to handle.
@@ -121,7 +119,7 @@ export default {
                     // failed to unload script(Firebase UI)
                   });
 
-                // return true;
+                // return true; // signInSuccessWithAuthResultがtrueを返す時redirectUrlが
               },
             },
           });

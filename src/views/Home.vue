@@ -1,7 +1,9 @@
 <template>
   <div class="home">
     <header>
-
+      <router-link :to="{ name: 'Login' }">
+        Login
+      </router-link>
     </header>
     <div class="logo">
       <img src="/img/logo.png" alt="FE AP Master" />
@@ -49,7 +51,7 @@ div.home {
   background-color: rgba(249, 182, 15, 0.75);
   display: grid;
   grid-template:
-    "header header header" 5%
+    "... header ..." 5%
     "... ... ..." 5%
     "... logo ..." minmax(auto, 10rem)
     "... ... ..." 0.2fr
