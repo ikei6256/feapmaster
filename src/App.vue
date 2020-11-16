@@ -16,8 +16,8 @@ export default {};
   padding: 0;
 }
 #app {
-  font-family: Avenir, Helvetica, Arial, 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Hiragino Kaku Gothic ProN',
-    'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', 'Droid Sans',sans-serif;
+  font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Hiragino Kaku Gothic ProN',
+    'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', 'Droid Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;

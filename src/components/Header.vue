@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar mb-3">
+  <nav class="navbar">
     <div class="container-sm pl-0 pr-0 pl-sm-2 pr-sm-2">
       <router-link :to="{ name: 'Home' }">
         <!-- <span class="navbar-brand mb-0 h1">FEAPMaster</span> -->

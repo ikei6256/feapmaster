@@ -1,40 +1,47 @@
 <template>
   <div class="home">
-    <header>
-      <router-link :to="{ name: 'Login' }">
-        Login
-      </router-link>
+    <header class="berlin-sans">
+      <router-link class="login" :to="{ name: 'Login' }">Login</router-link>
     </header>
     <div class="logo">
       <img src="/img/logo.png" alt="FE AP Master" />
     </div>
-    <div class="select">
-      <router-link :to="{ name: 'Battle' }">
-        <span>Battle <span class="arrow">></span></span><br>
-      </router-link>
-      <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">
-        <span class="small">ご意見・ご要望</span>
-      </a>
-    </div>
+    <nav class="select berlin-sans">
+      <ul>
+        <li>
+          <router-link :to="{ name: 'Battle' }"> Battle <span class="arrow">></span></router-link>
+        </li>
+        <li class="feedback">
+          <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <open-in-new-icon class="icon-external" /></a>
+        </li>
+      </ul>
+    </nav>
+
     <footer>
-      <span class="copyright">&copy; FEAPMaster 開発チーム</span>
-      <div class="logo-firebase">
-        <a href="https://firebase.google.com" target="_blank">
-          <img src="/img/Built_with_Firebase_Logo_Light.png" alt="Firebase" />
-        </a>
-      </div>
+      <span class="copyright">&copy; <span class="berlin-sans">FEAPMaster</span> 開発チーム</span>
+      <a class="logo-firebase" href="https://firebase.google.com" target="_blank">
+        <img src="/img/Built_with_Firebase_Logo_Light.png" alt="Firebase" />
+      </a>
     </footer>
   </div>
 </template>
 
 <script>
-export default {};
+import OpenInNewIcon from "vue-material-design-icons/OpenInNew.vue";
+export default {
+  components: {
+    OpenInNewIcon,
+  },
+};
 </script>
 
-<style>
+<style lang="scss">
 @font-face {
   font-family: "Berlin Sans FB Demi";
   src: url("/font/BRLNSDB.ttf");
+}
+.berlin-sans {
+  font-family: "Berlin Sans FB Demi", sans-serif;
 }
 </style>
 
@@ -42,28 +49,43 @@ export default {};
 * {
   line-height: 1;
 }
+ul {
+  margin: 0;
+}
 a:hover {
   text-decoration: none;
 }
-div.home {
-  height: 100vh;
-  width: 100vw;
+
+.home {
+  min-height: 100vh;
+  min-width: 100vw;
   background-color: rgba(249, 182, 15, 0.75);
   display: grid;
   grid-template:
-    "... header ..." 5%
-    "... ... ..." 5%
+    "... ... ..." 1.5rem
+    "... header ..."
+    "... ... ..." 2.5rem
     "... logo ..." minmax(auto, 10rem)
     "... ... ..." 0.2fr
-    "... nav ..."
+    "... main-nav ..."
     "... ... ..." 1fr
     "... footer ..."
     "... ... ..." 1rem
-    / 10% auto 10%;
+    / minmax(4%, auto) minmax(auto, 1024px) minmax(4%, auto);
 }
+
+/***********
+ * Header
+ ***********/
 header {
   grid-area: header;
+  align-self: center;
+  justify-self: right;
 }
+.login {
+  color: #113BAD;
+}
+
 .logo {
   grid-area: logo;
   text-align: center;
@@ -73,40 +95,49 @@ header {
   max-width: 100%;
 }
 .select {
-  grid-area: nav;
+  grid-area: main-nav;
   text-align: center;
-  font-size: 3rem;
-  font-family: "Berlin Sans FB Demi", sans-serif;
-  overflow: hidden;
 }
-.select a {
-  font-size: 0;
+.select ul li {
+  & a {
+    font-size: 3rem;
+    color: #4B79FA;
+  }
+  &.feedback {
+    margin-top: 1rem;
+    & a {
+      font-size: 0.9rem;
+    }
+  }
 }
-.select span {
-  font-size: 3rem;
+.material-design-icon.icon-external {
+  height: 0.9rem;
+  width: 0.9rem;
 }
-.select .arrow {
-  font-size: 2rem;
+.material-design-icon.icon-external > .material-design-icon__svg {
+  height: 0.9rem;
+  width: 0.9rem;
 }
-.select .small {
-  font-size: 1rem;
-}
+
+/***********
+ * Footer
+ ***********/
 footer {
   grid-area: footer;
-  position: relative;
+  display: grid;
+  grid-template: "copy f-bland";
 }
 .copyright {
-  position: absolute;
-  top: calc(50% - 0.9rem / 2);
-  left: 0;
-  font-size: 0.9rem;
-  color: rgba(48, 48, 48, 0.9);
+  grid-area: copy;
+  align-self: center;
+  font-size: 0.8rem;
+  color: rgb(90, 90, 90);
 }
-.logo-firebase a {
-  font-size: 0;
+.logo-firebase {
+  grid-area: f-bland;
+  justify-self: right;
 }
 .logo-firebase img {
-  float: right;
-  height: 3.2rem;
+  height: 3rem;
 }
 </style>
