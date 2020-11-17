@@ -15,7 +15,8 @@
           <router-link :to="{ name: 'Battle' }"> Battle <span class="arrow">></span></router-link>
         </li>
         <li class="feedback">
-          <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <open-in-new-icon class="icon-external" /></a>
+          <!-- <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <open-in-new-icon class="icon-external" /></a> -->
+          <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <v-icon>mdi-open-in-new</v-icon></a>
         </li>
       </ul>
     </nav>
@@ -30,11 +31,11 @@
 </template>
 
 <script>
-import OpenInNewIcon from "vue-material-design-icons/OpenInNew.vue";
+// import OpenInNewIcon from "vue-material-design-icons/OpenInNew.vue";
 import { mapState } from "vuex";
 export default {
   components: {
-    OpenInNewIcon,
+    // OpenInNewIcon,
   },
   data() {
     return {

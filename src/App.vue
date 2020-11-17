@@ -1,9 +1,9 @@
 <template>
-  <div id="app">
+  <v-app>
     <transition name="fade" mode="out-in">
       <router-view />
     </transition>
-  </div>
+  </v-app>
 </template>
 
 <script>
@@ -16,8 +16,8 @@ body {
   padding: 0;
 }
 #app {
-  font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Hiragino Kaku Gothic ProN',
-    'ヒラギノ角ゴ ProN W3', 'Meiryo', 'メイリオ', 'Droid Sans', sans-serif;
+  font-family: "Hiragino Sans", "ヒラギノ角ゴシック", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Meiryo", "メイリオ", "Droid Sans",
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
