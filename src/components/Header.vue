@@ -8,8 +8,8 @@
         </router-link>
       </div>
       <div class="menu berlin-sans">
-        <router-link v-if="auth.currentUser == null" class="login" :to="{ name: 'Login' }">Login</router-link>
-        <span v-else>Logout</span>
+        <router-link v-if="auth.currentUser == null" class="login" :to="{ name: 'Login' }"><button class="btn-capsule">Login</button></router-link>
+        <span v-else><button class="btn-capsule">Logout</button></span>
       </div>
     </div>
   </header>
@@ -46,6 +46,7 @@ header {
   }
 }
 .menu {
+  line-height: 1;
   grid-area: menu;
   justify-self: right;
   a {

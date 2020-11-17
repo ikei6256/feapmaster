@@ -7,34 +7,47 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
-    name: 'Home',
+    path: "/",
+    name: "Home",
     component: Home
   },
   // {
-  //   path: '/about', name: 'About',
+  //   path: "/about", name: "About",
   //   // route level code-splitting
   //   // this generates a separate chunk (about.[hash].js) for this route
   //   // which is lazy-loaded when the route is visited.
-  //   component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+  //   component: () => import(/* webpackChunkName: "about" */ "../views/About.vue")
   // },
-  { path: '/login', name: 'Login',
-    component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue') }, // ログイン画面
-  { path: '/battle', name: 'Battle',
-    component: () => import(/* webpackChunkName: "battle" */ '../views/Battle.vue') }, // 対戦画面
+  {
+    path: "/login", // ログイン画面
+    name: "Login",
+    component: () => import(/* webpackChunkName: "login" */ "../views/Login.vue")
+  },
+  {
+    path: "/battle",
+    name: "Battle",
+    component: () => import(/* webpackChunkName: "battle" */ "../views/Battle.vue") }, // 対戦画面
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
   routes
 })
 
+// 遷移前に実行
 router.beforeEach((to, from, next) => {
-  console.log(store.state.auth);
-  console.log(to);
-  console.log(from);
-  next();
+  store.state.auth.onAuthStateChanged((user) => {
+    if(user) {
+      // signed in
+      // ログインしている状態でログインページへ行こうとした場合はホームへ移動
+      if(to.name == "Login") next({ name: "Home" });
+      else next();
+    } else {
+      // signed out
+      next();
+    }
+  })
 })
 
 export default router

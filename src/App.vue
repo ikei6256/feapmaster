@@ -11,7 +11,7 @@ export default {};
 </script>
 
 <style lang="scss">
-* {
+body {
   margin: 0;
   padding: 0;
 }
@@ -21,7 +21,7 @@ export default {};
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
-  background-color: rgba(249, 182, 15, 0.7);
+  background-color: rgba(249, 182, 15, 0.75);
 }
 li {
   list-style-type: none;
@@ -38,9 +38,7 @@ li {
   font-family: "Berlin Sans FB Demi", sans-serif;
 }
 
-/*
- * 画面遷移のアニメーション
- */
+// 画面遷移のアニメーション
 .fade {
   &-enter-active,
   &-leave-active {
@@ -52,9 +50,7 @@ li {
   }
 }
 
-/*
- * 少し遅くしたフェードアウト/フェードイン
- */
+// 少し遅くしたフェードアウト/フェードイン
 .fade-slow {
   &-enter-active,
   &-leave-active {
@@ -63,6 +59,27 @@ li {
   &-enter,
   &-leave-to {
     opacity: 0;
+  }
+}
+
+// カプセル状のボタン
+.btn-capsule {
+  display: inline-block;
+  width: 5rem;
+  height: 1.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: #113bad;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 20%/50%;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+  &:focus {
+    outline: none;
   }
 }
 </style>

@@ -29,7 +29,7 @@ export default {
     // FirebaseUI config.
     const uiConfig = {
       // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
-      // signInFlow: "popup",
+      signInFlow: "redirect",
       signInSuccessUrl: "/",
       signInOptions: [
         // Leave the lines as is for the providers you want to offer your users.
@@ -43,9 +43,6 @@ export default {
     const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
     // The start method will wait until the DOM is loaded.
     ui.start("#firebaseui-auth-container", uiConfig);
-    // if (ui.isPendingRedirect()) {
-    //   ui.start("#firebaseui-auth-container", uiConfig);
-    // }
   },
 };
 </script>

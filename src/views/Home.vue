@@ -1,8 +1,10 @@
 <template>
   <div class="root">
     <header class="berlin-sans">
-      <router-link v-if="auth.currentUser === null" class="login" :to="{ name: 'Login' }">Login</router-link>
-      <span v-else>Logout</span>
+      <transition v-if="isAuth != null" name="fade" mode="out-in">
+        <router-link v-if="!isAuth" class="login" :to="{ name: 'Login' }"><button class="btn-capsule">Login</button></router-link>
+        <span v-else><button class="btn-capsule" @click="logout">Logout</button></span>
+      </transition>
     </header>
     <div class="logo">
       <img src="/img/logo.png" alt="FE AP Master" />
@@ -34,12 +36,32 @@ export default {
   components: {
     OpenInNewIcon,
   },
+  data() {
+    return {
+      isAuth: null,
+    };
+  },
   computed: {
     ...mapState(["auth"]),
   },
-  mounted() {
-    console.log(this.auth.currentUser === null);
-  }
+  beforeMount() {
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        // signed in
+        this.isAuth = true;
+        console.log("ログイン中です");
+      } else {
+        // signed out
+        this.isAuth = false;
+        console.log("ログアウト中です");
+      }
+    });
+  },
+  methods: {
+    logout() {
+      this.auth.signOut();
+    },
+  },
 };
 </script>
 
@@ -51,12 +73,11 @@ export default {
 .root {
   min-height: 100vh;
   min-width: 100vw;
-  // background-color: rgba(249, 182, 15, 0.5);
   display: grid;
   grid-template:
     "... ... ..." 1.5rem
     "... header ..."
-    "... ... ..." 2.5rem
+    "... ... ..." 2.2rem
     "... logo ..." minmax(auto, 10rem)
     "... ... ..." 0.2fr
     "... main-nav ..."
@@ -120,7 +141,7 @@ footer {
   grid-area: copy;
   align-self: center;
   justify-self: right;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: rgb(90, 90, 90);
 }
 .logo-firebase {
