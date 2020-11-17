@@ -1,7 +1,8 @@
 <template>
-  <div class="home">
+  <div class="root">
     <header class="berlin-sans">
-      <router-link class="login" :to="{ name: 'Login' }">Login</router-link>
+      <router-link v-if="auth.currentUser === null" class="login" :to="{ name: 'Login' }">Login</router-link>
+      <span v-else>Logout</span>
     </header>
     <div class="logo">
       <img src="/img/logo.png" alt="FE AP Master" />
@@ -28,38 +29,29 @@
 
 <script>
 import OpenInNewIcon from "vue-material-design-icons/OpenInNew.vue";
+import { mapState } from "vuex";
 export default {
   components: {
     OpenInNewIcon,
   },
+  computed: {
+    ...mapState(["auth"]),
+  },
+  mounted() {
+    console.log(this.auth.currentUser === null);
+  }
 };
 </script>
-
-<style lang="scss">
-@font-face {
-  font-family: "Berlin Sans FB Demi";
-  src: url("/font/BRLNSDB.ttf");
-}
-.berlin-sans {
-  font-family: "Berlin Sans FB Demi", sans-serif;
-}
-</style>
 
 <style lang="scss" scoped>
 * {
   line-height: 1;
 }
-ul {
-  margin: 0;
-}
-a:hover {
-  text-decoration: none;
-}
 
-.home {
+.root {
   min-height: 100vh;
   min-width: 100vw;
-  background-color: rgba(249, 182, 15, 0.75);
+  // background-color: rgba(249, 182, 15, 0.5);
   display: grid;
   grid-template:
     "... ... ..." 1.5rem
@@ -83,7 +75,7 @@ header {
   justify-self: right;
 }
 .login {
-  color: #113BAD;
+  color: #113bad;
 }
 
 .logo {
@@ -101,7 +93,7 @@ header {
 .select ul li {
   & a {
     font-size: 3rem;
-    color: #4B79FA;
+    color: #4b79fa;
   }
   &.feedback {
     margin-top: 1rem;
@@ -110,10 +102,7 @@ header {
     }
   }
 }
-.material-design-icon.icon-external {
-  height: 0.9rem;
-  width: 0.9rem;
-}
+.material-design-icon.icon-external,
 .material-design-icon.icon-external > .material-design-icon__svg {
   height: 0.9rem;
   width: 0.9rem;
@@ -125,17 +114,17 @@ header {
 footer {
   grid-area: footer;
   display: grid;
-  grid-template: "copy f-bland";
+  grid-template: "firebase-bland copy";
 }
 .copyright {
   grid-area: copy;
   align-self: center;
+  justify-self: right;
   font-size: 0.8rem;
   color: rgb(90, 90, 90);
 }
 .logo-firebase {
-  grid-area: f-bland;
-  justify-self: right;
+  grid-area: firebase-bland;
 }
 .logo-firebase img {
   height: 3rem;

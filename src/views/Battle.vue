@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="root">
     <header-component></header-component>
     <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
       <transition name="fade">
@@ -227,9 +227,7 @@ export default {
   beforeMount() {
     // サインインユーザであるか確認してname、photoUrlをセットする
     if (this.auth.currentUser == null) {
-      // this.myData.name = "げすとさん";
       this.myData.name = this.name_random[Math.floor(Math.random()*this.name_random.length)];
-      // this.myData.photoUrl = "/img/Bear.png";
       this.myData.photoUrl = `/img/${this.image_random[Math.floor(Math.random()*this.image_random.length)]}.png`;
     } else {
       this.myData.name = this.auth.currentUser.displayName;
@@ -787,6 +785,11 @@ export default {
 
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
+.root {
+  min-height: 100vh;
+  min-width: 100vw;
+  background-color: #fff;
+}
 .messageArea {
   padding: 0.3em 1em;
   margin-bottom: 1em;

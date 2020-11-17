@@ -21,12 +21,21 @@ export default {};
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+  background-color: rgba(249, 182, 15, 0.7);
 }
 li {
   list-style-type: none;
 }
 :focus {
   outline: none;
+}
+
+@font-face {
+  font-family: "Berlin Sans FB Demi";
+  src: url("/font/BRLNSDB.ttf");
+}
+.berlin-sans {
+  font-family: "Berlin Sans FB Demi", sans-serif;
 }
 
 /*

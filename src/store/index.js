@@ -10,7 +10,6 @@ export default new Vuex.Store({
     timer_valuenow: null,
     auth: firebase.auth(), // 認証情報
     db: firebase.firestore(), // Firestoreへの参照
-    user: null, // ユーザ情報
   },
   mutations: {
     timer_countdown(state) {
@@ -25,7 +24,6 @@ export default new Vuex.Store({
     setDb(state, payload) {
       state.db = payload.db;
     },
-
   },
   // actions: {
   // },
