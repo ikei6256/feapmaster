@@ -15,7 +15,6 @@
           <router-link :to="{ name: 'Battle' }"> Battle <span class="arrow">></span></router-link>
         </li>
         <li class="feedback">
-          <!-- <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <open-in-new-icon class="icon-external" /></a> -->
           <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <v-icon>mdi-open-in-new</v-icon></a>
         </li>
       </ul>
@@ -31,12 +30,8 @@
 </template>
 
 <script>
-// import OpenInNewIcon from "vue-material-design-icons/OpenInNew.vue";
 import { mapState } from "vuex";
 export default {
-  components: {
-    // OpenInNewIcon,
-  },
   data() {
     return {
       isAuth: null,
@@ -99,7 +94,6 @@ header {
 .login {
   color: #113bad;
 }
-
 .logo {
   grid-area: logo;
   text-align: center;
@@ -124,10 +118,10 @@ header {
     }
   }
 }
-.material-design-icon.icon-external,
-.material-design-icon.icon-external > .material-design-icon__svg {
-  height: 0.9rem;
-  width: 0.9rem;
+i.v-icon.v-icon {
+  display: inline-block;
+  color: inherit;
+  font-size: 0.9rem;
 }
 
 /***********

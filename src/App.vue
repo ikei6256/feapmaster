@@ -30,12 +30,14 @@ li {
   outline: none;
 }
 
-@font-face {
-  font-family: "Berlin Sans FB Demi";
-  src: url("/font/BRLNSDB.ttf");
-}
 .berlin-sans {
   font-family: "Berlin Sans FB Demi", sans-serif;
+  @at-root {
+    @font-face {
+      font-family: "Berlin Sans FB Demi";
+      src: url("/font/BRLNSDB.ttf");
+    }
+  }
 }
 
 // 画面遷移のアニメーション
