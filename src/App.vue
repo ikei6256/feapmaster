@@ -11,13 +11,20 @@ export default {};
 </script>
 
 <style lang="scss">
+* {
+  line-height: 1;
+  text-decoration: none;
+}
+img {
+  vertical-align: middle;
+}
 body {
   margin: 0;
   padding: 0;
 }
 #app {
-  font-family: "Hiragino Sans", "ヒラギノ角ゴシック", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Meiryo", "メイリオ", "Droid Sans",
-    sans-serif;
+  font-family: Helvetica, "Hiragino Sans", "ヒラギノ角ゴシック", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Meiryo", "メイリオ",
+    "Droid Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
@@ -67,7 +74,7 @@ li {
 // カプセル状のボタン
 .btn-capsule {
   display: inline-block;
-  width: 5rem;
+  min-width: 5rem;
   height: 1.5rem;
   padding: 0.25rem 0.75rem;
   background-color: rgba(255, 255, 255, 0.3);
@@ -76,12 +83,35 @@ li {
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  border-radius: 20%/50%;
+  border-radius: 15%/50%;
   &:hover {
     background-color: rgba(255, 255, 255, 0.8);
   }
   &:focus {
     outline: none;
   }
+}
+
+// ログアウト通知
+.notify-logout {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 0;
+  box-sizing: border-box;
+  color: white;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: height 0.2s;
+}
+.notify-logout-active {
+  height: 3rem;
+}
+.notify-logout-text {
+  display: inline-block;
+  margin-top: 1rem;
 }
 </style>

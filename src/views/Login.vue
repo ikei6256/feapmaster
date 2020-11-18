@@ -4,7 +4,7 @@
     <div class="area-login">
       <div class="login-box">
         <div class="login">
-          <h1 class="title berlin-sans">Login</h1>
+          <h1 class="login-title berlin-sans">Login</h1>
           <div id="firebaseui-auth-container"></div>
         </div>
       </div>
@@ -35,7 +35,7 @@ export default {
         // Leave the lines as is for the providers you want to offer your users.
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-        firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID,
+        // firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID,
       ],
     };
 
@@ -46,6 +46,12 @@ export default {
   },
 };
 </script>
+
+<style>
+ul.firebaseui-idp-list {
+  padding-left: 0;
+}
+</style>
 
 <style lang="scss" scoped>
 .root {
@@ -84,8 +90,9 @@ export default {
 .login {
   grid-area: login;
 }
-.title {
+.login-title {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  font-size: 3rem;
 }
 </style>

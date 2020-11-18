@@ -26,6 +26,7 @@
         <img src="/img/Built_with_Firebase_Logo_Light.png" alt="Firebase" />
       </a>
     </footer>
+    <div class="notify-logout"><span class="notify-logout-text">ログアウトしました。</span></div>
   </div>
 </template>
 
@@ -45,27 +46,26 @@ export default {
       if (user) {
         // signed in
         this.isAuth = true;
-        console.log("ログイン中です");
       } else {
         // signed out
         this.isAuth = false;
-        console.log("ログアウト中です");
       }
     });
   },
   methods: {
     logout() {
+      const notify = document.getElementsByClassName("notify-logout")[0];
       this.auth.signOut();
+      notify.classList.toggle("notify-logout-active");
+      setTimeout(function () {
+        notify.classList.remove("notify-logout-active");
+      }, 2000);
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-* {
-  line-height: 1;
-}
-
 .root {
   min-height: 100vh;
   min-width: 100vw;
@@ -105,6 +105,9 @@ header {
 .select {
   grid-area: main-nav;
   text-align: center;
+  ul {
+    padding-left: 0;
+  }
 }
 .select ul li {
   & a {
@@ -119,9 +122,9 @@ header {
   }
 }
 i.v-icon.v-icon {
-  display: inline-block;
   color: inherit;
   font-size: 0.9rem;
+  vertical-align: baseline;
 }
 
 /***********

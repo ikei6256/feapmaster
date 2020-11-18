@@ -3,15 +3,15 @@
     <div class="contents">
       <div class="logo">
         <router-link :to="{ name: 'Home' }">
-          <!-- <span class="navbar-brand mb-0 h1">FEAPMaster</span> -->
           <img src="/img/logo.png" alt="FE AP Master" />
         </router-link>
       </div>
       <div class="menu berlin-sans">
         <router-link v-if="auth.currentUser == null" class="login" :to="{ name: 'Login' }"><button class="btn-capsule">Login</button></router-link>
-        <span v-else><button class="btn-capsule">Logout</button></span>
+        <span v-else><button class="btn-capsule" @click="logout">Logout</button></span>
       </div>
     </div>
+    <div class="notify-logout"><span class="notify-logout-text">ログアウトしました。</span></div>
   </header>
 </template>
 
@@ -20,6 +20,16 @@ import { mapState } from "vuex";
 export default {
   computed: {
     ...mapState(["auth"]),
+  },
+  methods: {
+    logout() {
+      const notify = document.getElementsByClassName("notify-logout")[0];
+      notify.classList.toggle("notify-logout-active");
+
+      setTimeout(function () {
+        notify.classList.remove("notify-logout-active");
+      }, 2000);
+    },
   },
 };
 </script>
@@ -42,7 +52,7 @@ header {
 .logo {
   grid-area: logo;
   img {
-    height: 2rem;
+    height: 2.5rem;
   }
 }
 .menu {
