@@ -19,6 +19,7 @@ import "firebaseui-ja/dist/firebaseui.css";
 import { mapState } from "vuex";
 export default {
   components: {
+    //
     "header-component": Header,
   },
   computed: {
