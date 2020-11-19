@@ -68,7 +68,7 @@ export default {
 <style lang="scss" scoped>
 .root {
   min-height: 100vh;
-  min-width: 100vw;
+  max-width: 100%;
   display: grid;
   grid-template:
     "... ... ..." 1.5rem

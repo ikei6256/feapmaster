@@ -40,6 +40,7 @@ router.beforeEach((to, from, next) => {
   store.state.auth.onAuthStateChanged((user) => {
     if(user) {
       // signed in
+      console.log(user);
       // ログインしている状態でログインページへ行こうとした場合はホームへ移動
       if(to.name == "Login") next({ name: "Home" });
       else next();

@@ -23,7 +23,7 @@ body {
   padding: 0;
 }
 #app {
-  font-family: Helvetica, "Hiragino Sans", "ヒラギノ角ゴシック", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Meiryo", "メイリオ",
+  font-family: Roboto, Helvetica, "Hiragino Sans", "ヒラギノ角ゴシック", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Meiryo", "メイリオ",
     "Droid Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

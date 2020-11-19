@@ -786,8 +786,8 @@ export default {
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
 .root {
-  min-height: 100vh;
-  min-width: 100vw;
+  // min-height: 100vh;
+  // max-width: 100%;
   background-color: #fff;
 }
 .messageArea {

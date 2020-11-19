@@ -3,10 +3,9 @@
     <header-component class="header"></header-component>
     <div class="area-login">
       <div class="login-box">
-        <div class="login">
-          <h1 class="login-title berlin-sans">Login</h1>
-          <div id="firebaseui-auth-container"></div>
-        </div>
+        <!-- <h1 class="login-title berlin-sans">ログイン / 新規登録</h1> -->
+        <h1 class="login-title">ログイン / 新規登録</h1>
+        <div id="firebaseui-auth-container"></div>
       </div>
     </div>
   </div>
@@ -28,14 +27,13 @@ export default {
   mounted() {
     // FirebaseUI config.
     const uiConfig = {
-      // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
-      signInFlow: "redirect",
       signInSuccessUrl: "/",
+      credentialHelper: firebaseui.auth.CredentialHelper.NONE,
       signInOptions: [
         // Leave the lines as is for the providers you want to offer your users.
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-        // firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID,
+        firebase.auth.EmailAuthProvider.PROVIDER_ID,
       ],
     };
 
@@ -56,9 +54,8 @@ ul.firebaseui-idp-list {
 <style lang="scss" scoped>
 .root {
   min-height: 100vh;
-  min-width: 100vw;
+  max-width: 100%;
   display: grid;
-  // background-color: rgba(249, 182, 15, 0.5);
   grid-template:
     "header header header"
     "... ... ..." 0.4fr
@@ -80,19 +77,21 @@ ul.firebaseui-idp-list {
   grid-area: login-box;
   display: grid;
   grid-template:
-    "..." 0.5fr
-    "login"
+    "..." 18%
+    "login-title"
+    "..." 3rem
+    "firebaseui-auth"
     "..." 1fr;
   border-radius: 2px;
   background-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0px 8px 16px -2px rgba(10, 10, 10, 0.1), 0px 0px 0px 1px rgba(10, 10, 10, 0.02);
 }
-.login {
-  grid-area: login;
-}
 .login-title {
+  grid-area: login-title;
   text-align: center;
-  margin-bottom: 2.5rem;
   font-size: 3rem;
+}
+#firebaseui-auth-container {
+  grid-area: firebaseui-auth;
 }
 </style>

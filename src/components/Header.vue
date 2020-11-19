@@ -28,7 +28,8 @@ export default {
 
       setTimeout(function () {
         notify.classList.remove("notify-logout-active");
-      }, 2000);
+        console.log();
+      }, 2200);
     },
   },
 };
