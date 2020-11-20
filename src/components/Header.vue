@@ -1,7 +1,7 @@
 <template>
   <header>
-    <div class="contents">
-      <div class="logo">
+    <div class="header">
+      <div class="logo"> <!-- v-show="$route.name != 'Home'" -->
         <router-link :to="{ name: 'Home' }">
           <img src="/img/logo.png" alt="FE AP Master" />
         </router-link>
@@ -53,7 +53,8 @@ header {
 .logo {
   grid-area: logo;
   img {
-    height: 2.5rem;
+    display: inline-block;
+    // height: 2.5rem;
   }
 }
 .menu {

@@ -1,11 +1,12 @@
 <template>
   <div class="root">
-    <header class="berlin-sans">
+    <!-- <header class="berlin-sans">
       <transition v-if="isAuth != null" name="fade" mode="out-in">
         <router-link v-if="!isAuth" class="login" :to="{ name: 'Login' }"><button class="btn-capsule">Login</button></router-link>
         <span v-else><button class="btn-capsule" @click="logout">Logout</button></span>
       </transition>
-    </header>
+    </header> -->
+    <header-component class="header"></header-component>
     <div class="logo">
       <img src="/img/logo.png" alt="FE AP Master" />
     </div>
@@ -31,8 +32,12 @@
 </template>
 
 <script>
+import Header from "@/components/Header.vue";
 import { mapState } from "vuex";
 export default {
+  components: {
+    "header-component": Header,
+  },
   data() {
     return {
       isAuth: null,
@@ -71,8 +76,7 @@ export default {
   max-width: 100%;
   display: grid;
   grid-template:
-    "... ... ..." 1.5rem
-    "... header ..."
+    "header header header"
     "... ... ..." 2.2rem
     "... logo ..." minmax(auto, 10rem)
     "... ... ..." 0.2fr
@@ -86,10 +90,9 @@ export default {
 /***********
  * Header
  ***********/
-header {
+.header {
   grid-area: header;
-  align-self: center;
-  justify-self: right;
+  // align-self: center;
 }
 .login {
   color: #113bad;
