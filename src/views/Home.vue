@@ -1,12 +1,6 @@
 <template>
   <div class="root">
-    <!-- <header class="berlin-sans">
-      <transition v-if="isAuth != null" name="fade" mode="out-in">
-        <router-link v-if="!isAuth" class="login" :to="{ name: 'Login' }"><button class="btn-capsule">Login</button></router-link>
-        <span v-else><button class="btn-capsule" @click="logout">Logout</button></span>
-      </transition>
-    </header> -->
-    <header-component class="header"></header-component>
+    <header-component class="header" :isAuth="isAuth"></header-component>
     <div class="logo">
       <img src="/img/logo.png" alt="FE AP Master" />
     </div>
@@ -57,16 +51,6 @@ export default {
       }
     });
   },
-  methods: {
-    logout() {
-      const notify = document.getElementsByClassName("notify-logout")[0];
-      this.auth.signOut();
-      notify.classList.toggle("notify-logout-active");
-      setTimeout(function () {
-        notify.classList.remove("notify-logout-active");
-      }, 2000);
-    },
-  },
 };
 </script>
 
@@ -87,12 +71,10 @@ export default {
     / minmax(4%, auto) minmax(auto, 1024px) minmax(4%, auto);
 }
 
-/***********
- * Header
- ***********/
+// Header
 .header {
   grid-area: header;
-  // align-self: center;
+  align-self: center;
 }
 .login {
   color: #113bad;
@@ -130,9 +112,7 @@ i.v-icon.v-icon {
   vertical-align: baseline;
 }
 
-/***********
- * Footer
- ***********/
+// Footer
 footer {
   grid-area: footer;
   display: grid;

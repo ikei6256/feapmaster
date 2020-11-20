@@ -89,7 +89,7 @@ ul.firebaseui-idp-list {
 .login-title {
   grid-area: login-title;
   text-align: center;
-  font-size: 3rem;
+  font-size: 2.2rem
 }
 #firebaseui-auth-container {
   grid-area: firebaseui-auth;
