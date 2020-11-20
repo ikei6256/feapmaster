@@ -22,7 +22,6 @@ var app = null;
 export default {
   data() {
     return {
-      //
       auth: null, // 認証情報
       firebaseUi: null,
     };
