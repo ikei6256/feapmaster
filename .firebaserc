@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "feapmaster-5b5ad"
+  },
+  "targets": {
+    "feapmaster-5b5ad": {
+      "hosting": {
+        "feapmaster": [
+          "feapmaster"
+        ]
+      }
+    }
   }
 }
