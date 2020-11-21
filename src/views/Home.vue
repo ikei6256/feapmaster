@@ -2,12 +2,12 @@
   <div class="root">
     <header-component class="header" :isAuth="isAuth"></header-component>
     <div class="logo">
-      <img src="/img/logo.png" alt="FE AP Master" />
+      <img src="/img/logo/logo.png" alt="FE AP Master" />
     </div>
-    <nav class="select berlin-sans">
+    <nav class="select">
       <ul>
-        <li>
-          <router-link :to="{ name: 'Battle' }"> Battle <span class="arrow">></span></router-link>
+        <li class="berlin-sans">
+          <router-link :to="{ name: 'Battle' }">Battle ></router-link>
         </li>
         <li class="feedback">
           <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <v-icon>mdi-open-in-new</v-icon></a>
@@ -16,12 +16,16 @@
     </nav>
 
     <footer>
+      <div class="left">
+        <a class="logo-firebase" href="https://firebase.google.com" target="_blank">
+          <img src="/img/logo/Built_with_Firebase_Logo_Light.png" alt="Firebase" />
+        </a>
+        <a class="logo-github" href="https://github.com/ikei6256/feapmaster" target="_blank">
+          <img src="/img/logo/GitHub-Mark-64px.png" alt="GitHub" />
+        </a>
+      </div>
       <span class="copyright">&copy; <span class="berlin-sans">FEAPMaster</span> 開発チーム</span>
-      <a class="logo-firebase" href="https://firebase.google.com" target="_blank">
-        <img src="/img/Built_with_Firebase_Logo_Light.png" alt="Firebase" />
-      </a>
     </footer>
-    <div class="notify-logout"><span class="notify-logout-text">ログアウトしました。</span></div>
   </div>
 </template>
 
@@ -60,15 +64,14 @@ export default {
   max-width: 100%;
   display: grid;
   grid-template:
-    "header header header"
+    "... header ..."
     "... ... ..." 2.2rem
     "... logo ..." minmax(auto, 10rem)
     "... ... ..." 0.2fr
-    "... main-nav ..."
-    "... ... ..." 1fr
-    "... footer ..."
+    "... nav ..." 1fr
+    "... footer ..." 3rem
     "... ... ..." 1rem
-    / minmax(4%, auto) minmax(auto, 1024px) minmax(4%, auto);
+    / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
 }
 
 // Header
@@ -88,7 +91,7 @@ export default {
   max-width: 100%;
 }
 .select {
-  grid-area: main-nav;
+  grid-area: nav;
   text-align: center;
   ul {
     padding-left: 0;
@@ -113,22 +116,46 @@ i.v-icon.v-icon {
 }
 
 // Footer
+$footer-height: 3rem;
 footer {
   grid-area: footer;
   display: grid;
-  grid-template: "firebase-bland copy";
+  align-items: center;
+  grid-template: "left copy" $footer-height;
+}
+.left {
+  grid-area: left;
+  display: grid;
+  grid-template:
+    "firebase ... github ..."
+    / auto 0.5rem auto 1fr;
+
+  .logo-firebase {
+    grid-area: firebase;
+    img {
+      max-height: $footer-height;
+    }
+  }
+
+  .logo-github {
+    grid-area: github;
+    display: table-cell;
+    height: $footer-height;
+    line-height: $footer-height;
+    width: $footer-height;
+    text-align: center;
+    border-radius: 2px;
+    img {
+      max-height: $footer-height - 0.3rem;
+      max-width: $footer-height - 0.3rem;
+      vertical-align: middle;
+    }
+  }
 }
 .copyright {
   grid-area: copy;
-  align-self: center;
   justify-self: right;
   font-size: 0.9rem;
   color: rgb(90, 90, 90);
-}
-.logo-firebase {
-  grid-area: firebase-bland;
-}
-.logo-firebase img {
-  height: 3rem;
 }
 </style>

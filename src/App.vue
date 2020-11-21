@@ -23,8 +23,7 @@ body {
   padding: 0;
 }
 #app {
-  font-family: Roboto, Helvetica, "Hiragino Sans", "ヒラギノ角ゴシック", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "Meiryo", "メイリオ",
-    "Droid Sans", sans-serif;
+  font-family: Roboto, "verdana", "Helvetica Neue", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
@@ -47,7 +46,7 @@ li {
   }
 }
 
-// 画面遷移のアニメーション
+// 画面遷移のアニメーション (フェードイン/フェードアウト)
 .fade {
   &-enter-active,
   &-leave-active {
@@ -64,6 +63,18 @@ li {
   &-enter-active,
   &-leave-active {
     transition: opacity 0.75s ease-in-out;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+
+// フェードイン/フェードアウト 200ms
+.fade-200 {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.1s ease-in-out;
   }
   &-enter,
   &-leave-to {

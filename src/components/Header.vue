@@ -1,18 +1,18 @@
 <template>
   <header>
-    <header>
+    <div class="header-contents">
       <div v-if="$route.name != 'Home'" class="logo">
         <router-link :to="{ name: 'Home' }">
           <img src="/img/logo.png" alt="FE AP Master" />
         </router-link>
       </div>
-      <div class="menu berlin-sans">
-        <transition name="fade">
-          <router-link v-if="!isAuth" class="login" :to="{ name: 'Login' }"><button class="btn-capsule">Login</button></router-link>
-          <span v-else><button class="btn-capsule" @click="logout">Logout</button></span>
+      <div class="menu">
+        <transition name="fade-200" mode="out-in">
+          <router-link v-if="!isAuth" class="login" :to="{ name: 'Login' }"><button class="btn-capsule">ログイン</button></router-link>
+          <span v-else><button class="btn-capsule" @click="logout">ログアウト</button></span>
         </transition>
       </div>
-    </header>
+    </div>
     <div class="notify-logout"><span class="notify-logout-text">ログアウトしました。</span></div>
   </header>
 </template>
@@ -43,18 +43,13 @@ export default {
 
 <style lang="scss" scoped>
 $header-height: 2.5rem;
-.header {
-  display: grid;
-  grid-template:
-    "... ... ..." 0.3rem
-    "... contents ..." $header-height
-    / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
-}
 header {
-  grid-area: contents;
+  margin-top: 0.3rem;
+}
+.header-contents {
   display: grid;
   grid-template:
-    "logo ... menu"
+    "logo ... menu" $header-height
     /auto 1fr auto;
   align-items: center;
 }
@@ -65,9 +60,9 @@ header {
   }
 }
 .menu {
-  line-height: 1;
   grid-area: menu;
   justify-self: right;
+  font-size: 14px;
   a {
     color: #113bad;
   }

@@ -57,7 +57,7 @@ ul.firebaseui-idp-list {
   max-width: 100%;
   display: grid;
   grid-template:
-    "header header header"
+    "... header ..."
     "... ... ..." 0.4fr
     "... area-login ..." 65%
     "... ... ..." 1fr
