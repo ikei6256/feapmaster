@@ -19,7 +19,7 @@ export default {
   mounted() {
     // FirebaseUI config.
     const uiConfig = {
-      signInFlow: "popup",
+      // signInFlow: "popup",
       signInSuccessUrl: "/",
       credentialHelper: firebaseui.auth.CredentialHelper.NONE,
       signInOptions: [

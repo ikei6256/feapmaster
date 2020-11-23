@@ -9,9 +9,11 @@
     </transition>
     <div class="menu">
       <transition name="fade-200" mode="out-in">
-        <router-link v-if="currentUser === null" class="login" :to="{ name: 'Login' }">
+        <!-- <router-link v-if="currentUser === null" :to="{ name: 'Login' }">
           <v-btn color="blue darken-4" text rounded>ログイン</v-btn>
-        </router-link>
+        </router-link> -->
+
+        <v-btn v-if="currentUser === null" :to="{ name: 'Login' }" text retain-focus-on-click>ログイン</v-btn>
 
         <v-menu v-else open-on-hover bottom offset-y rounded>
           <template v-slot:activator="{ on }">
@@ -22,8 +24,8 @@
           </template>
 
           <!-- ホバー時出現 -->
-          <v-card min-width="200px" color="grey lighten-5">
-            <v-list>
+          <v-card min-width="200px">
+            <v-list dense color="grey lighten-5">
               <v-list-item>
                 <v-list-item-avatar>
                   <v-img :src="currentUser.photoURL"></v-img>
@@ -36,18 +38,16 @@
                   <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
-            </v-list>
-            <v-divider></v-divider>
+              <v-divider></v-divider>
 
-            <v-list dense>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn :to="{ name:'Mypage' }" text>マイページ</v-btn>
+                  <v-btn :to="{ name: 'Mypage' }" text>マイページ</v-btn>
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn color="pink" text @click="logout">ログアウト</v-btn>
+                  <v-btn color="red darken-2" text @click="logout">ログアウト</v-btn>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -103,23 +103,11 @@ header {
   a {
     color: #113bad;
   }
-  // ボタンの余白を消す
-  .avater.v-btn.v-btn--flat,
-  .v-btn__content {
-    padding: 0;
-    min-width: 0;
-  }
 }
 .avater {
   img {
     border-radius: 50%;
     max-height: $header-height - 0.3rem;
-  }
-}
-.myInfo {
-  img {
-    border-radius: 50%;
-    max-height: $header-height;
   }
 }
 </style>

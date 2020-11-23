@@ -68,9 +68,10 @@ li {
 }
 
 // Vuetify
-// ボタンの装飾
-.v-btn__content {
-  text-decoration: none;
+// ボタンのフォーカス時の透明度をリセット
+.v-btn:focus:before,
+.v-btn--active:before {
+  opacity: 0 !important;
 }
 
 // 画面遷移のアニメーション (フェードイン/フェードアウト)
