@@ -24,9 +24,20 @@ const routes = [
     component: () => import(/* webpackChunkName: "login" */ "../views/Login.vue")
   },
   {
-    path: "/battle",
+    path: "/mypage", // マイページ
+    name: "Mypage",
+    component: () => import(/* webpackChunkName: "mypage" */ "../views/Mypage.vue")
+  },
+  {
+    path: "/battle", // 対戦画面
     name: "Battle",
-    component: () => import(/* webpackChunkName: "battle" */ "../views/Battle.vue") }, // 対戦画面
+    component: () => import(/* webpackChunkName: "battle" */ "../views/Battle.vue")
+  },
+  {
+    path: "/test", // テスト用
+    name: "Test",
+    component: () => import(/* webpackChunkName: "test" */ "../views/Test.vue")
+  }
 ]
 
 const router = new VueRouter({
@@ -37,18 +48,25 @@ const router = new VueRouter({
 
 // 遷移前に実行
 router.beforeEach((to, from, next) => {
-  store.state.auth.onAuthStateChanged((user) => {
-    if(user) {
-      // signed in
-      console.log(user);
-      // ログインしている状態でログインページへ行こうとした場合はホームへ移動
-      if(to.name == "Login") next({ name: "Home" });
-      else next();
-    } else {
-      // signed out
-      next();
-    }
-  })
+  // ログインページかマイページの時にログインチェック
+  if (to.name === "Login" || to.name === "Mypage") {
+    const unsubscribe = store.state.auth.onAuthStateChanged((user) => {
+      unsubscribe();
+      if (user) {
+        // logged in
+        // ログインしている状態でログインページへアクセスした場合はホームへ移動
+        if (to.name === "Login") next({ name: "Home" });
+        else next();
+      } else {
+        // logged out
+        // ログインしていない状態でマイページへアクセスした場合はログインへ移動
+        if (to.name === "Mypage") next({ name: "Home" });
+        else next();
+      }
+    })
+  } else {
+    next()
+  }
 })
 
 export default router

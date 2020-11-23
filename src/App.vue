@@ -1,13 +1,45 @@
 <template>
   <v-app>
-    <transition name="fade" mode="out-in">
-      <router-view />
-    </transition>
+    <div class="root">
+      <header-component class="header-component"></header-component>
+      <transition name="fade" mode="out-in">
+        <router-view class="contents" />
+      </transition>
+      <div class="notify-logout"><span class="notify-logout-text">ログアウトしました。</span></div>
+    </div>
   </v-app>
 </template>
 
 <script>
-export default {};
+import Header from "@/components/Header.vue";
+import { mapState, mapMutations } from "vuex";
+export default {
+  components: {
+    "header-component": Header,
+  },
+  computed: {
+    ...mapState(["auth", "currentUser"]),
+  },
+  methods: {
+    ...mapMutations(["setUser", "unsetUser"]),
+  },
+  mounted() {
+    this.auth.onAuthStateChanged((user) => {
+      if (user) {
+        // signed in
+        // ユーザ情報が未設定の場合に設定する
+        if (this.currentUser === null) {
+          this.setUser({
+            name: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            uid: user.uid,
+          });
+        }
+      }
+    });
+  },
+};
 </script>
 
 <style lang="scss">
@@ -17,17 +49,6 @@ export default {};
 }
 img {
   vertical-align: middle;
-}
-body {
-  margin: 0;
-  padding: 0;
-}
-#app {
-  font-family: Roboto, "verdana", "Helvetica Neue", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  background-color: rgba(249, 182, 15, 0.75);
 }
 li {
   list-style-type: none;
@@ -46,6 +67,12 @@ li {
   }
 }
 
+// Vuetify
+// ボタンの装飾
+.v-btn__content {
+  text-decoration: none;
+}
+
 // 画面遷移のアニメーション (フェードイン/フェードアウト)
 .fade {
   &-enter-active,
@@ -57,7 +84,6 @@ li {
     opacity: 0;
   }
 }
-
 // 少し遅くしたフェードアウト/フェードイン
 .fade-slow {
   &-enter-active,
@@ -69,7 +95,6 @@ li {
     opacity: 0;
   }
 }
-
 // フェードイン/フェードアウト 200ms
 .fade-200 {
   &-enter-active,
@@ -79,27 +104,6 @@ li {
   &-enter,
   &-leave-to {
     opacity: 0;
-  }
-}
-
-// カプセル状のボタン
-.btn-capsule {
-  display: inline-block;
-  min-width: 5rem;
-  height: 1.5rem;
-  padding: 0.25rem 0.75rem;
-  background-color: rgba(255, 255, 255, 0.3);
-  border: none;
-  color: #113bad;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-  border-radius: 15%/50%;
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-  }
-  &:focus {
-    outline: none;
   }
 }
 
@@ -124,5 +128,33 @@ li {
 .notify-logout-text {
   display: inline-block;
   margin-top: 1rem;
+}
+</style>
+
+<style lang="scss" scoped>
+#app {
+  font-family: Roboto, "verdana", "Helvetica Neue", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #2c3e50;
+  background-color: rgba(249, 182, 15, 0.75);
+}
+.root {
+  min-height: 100vh;
+  max-width: 100%;
+  display: grid;
+  grid-template:
+    "... header ..."
+    "... contents ..." 1fr
+    / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
+}
+
+.header-component {
+  grid-area: header;
+}
+
+.contents {
+  grid-area: contents;
 }
 </style>

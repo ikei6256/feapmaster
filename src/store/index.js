@@ -9,20 +9,32 @@ export default new Vuex.Store({
     TIMER_DEFAULT: 150, // 基本タイム 150
     timer_valuenow: null,
     auth: firebase.auth(), // 認証情報
+    currentUser: null, // ユーザの情報
     db: firebase.firestore(), // Firestoreへの参照
   },
   mutations: {
-    timer_countdown(state) {
+    timer_countdown (state) {
       state.timer_valuenow--;
     },
-    setTimer(state, payload = { time: state.TIMER_DEFAULT }) {
+    setTimer (state, payload = { time: state.TIMER_DEFAULT }) {
       state.timer_valuenow = payload.time;
     },
-    setAuth(state, payload) {
+    setAuth (state, payload) {
       state.auth = payload.auth;
     },
-    setDb(state, payload) {
+    setDb (state, payload) {
       state.db = payload.db;
+    },
+    setUser (state, payload) {
+      state.currentUser = {
+        name: payload.name,
+        email: payload.email,
+        photoURL: payload.photoURL,
+        uid: payload.uid
+      }
+    },
+    unsetUser (state) {
+      state.currentUser = null;
     },
   },
   // actions: {

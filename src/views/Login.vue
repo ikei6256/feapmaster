@@ -1,32 +1,25 @@
 <template>
-  <div class="root">
-    <header-component class="header"></header-component>
+  <div class="login">
     <div class="area-login">
-      <div class="login-box">
-        <!-- <h1 class="login-title berlin-sans">ログイン / 新規登録</h1> -->
-        <h1 class="login-title">ログイン / 新規登録</h1>
-        <div id="firebaseui-auth-container"></div>
-      </div>
+      <h1 class="login-title">ログイン / 新規登録</h1>
+      <div id="firebaseui-auth-container"></div>
     </div>
   </div>
 </template>
 
 <script>
-import Header from "@/components/Header.vue";
 import firebase from "../firebase";
 import * as firebaseui from "firebaseui-ja";
 import "firebaseui-ja/dist/firebaseui.css";
 import { mapState } from "vuex";
 export default {
-  components: {
-    "header-component": Header,
-  },
   computed: {
     ...mapState(["auth"]),
   },
   mounted() {
     // FirebaseUI config.
     const uiConfig = {
+      signInFlow: "popup",
       signInSuccessUrl: "/",
       credentialHelper: firebaseui.auth.CredentialHelper.NONE,
       signInOptions: [
@@ -52,46 +45,23 @@ ul.firebaseui-idp-list {
 </style>
 
 <style lang="scss" scoped>
-.root {
-  min-height: 100vh;
-  max-width: 100%;
+.login {
   display: grid;
   grid-template:
-    "... header ..."
-    "... ... ..." 0.4fr
-    "... area-login ..." 65%
-    "... ... ..." 1fr
-    / minmax(4%, auto) minmax(auto, 1024px) minmax(4%, auto);
-}
-.header {
-  grid-area: header;
+    "... ... ..." 3rem
+    "... area-login ..." 500px
+    "... ... ..." minmax(2rem, 1fr)
+    / auto minmax(auto ,580px) auto;
 }
 .area-login {
   grid-area: area-login;
-  display: grid;
-  grid-template:
-    "... login-box ..."
-    / auto minmax(auto, 580px) auto;
-}
-.login-box {
-  grid-area: login-box;
-  display: grid;
-  grid-template:
-    "..." 18%
-    "login-title"
-    "..." 3rem
-    "firebaseui-auth"
-    "..." 1fr;
-  border-radius: 2px;
   background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
   box-shadow: 0px 8px 16px -2px rgba(10, 10, 10, 0.1), 0px 0px 0px 1px rgba(10, 10, 10, 0.02);
 }
 .login-title {
-  grid-area: login-title;
+  margin-top: 5rem;
+  margin-bottom: 3rem;
   text-align: center;
-  font-size: 2.2rem
-}
-#firebaseui-auth-container {
-  grid-area: firebaseui-auth;
 }
 </style>

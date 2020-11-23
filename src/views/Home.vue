@@ -1,6 +1,5 @@
 <template>
-  <div class="root">
-    <header-component class="header" :isAuth="isAuth"></header-component>
+  <div class="home">
     <div class="logo">
       <img src="/img/logo/logo.png" alt="FE AP Master" />
     </div>
@@ -30,58 +29,22 @@
 </template>
 
 <script>
-import Header from "@/components/Header.vue";
-import { mapState } from "vuex";
-export default {
-  components: {
-    "header-component": Header,
-  },
-  data() {
-    return {
-      isAuth: null,
-    };
-  },
-  computed: {
-    ...mapState(["auth"]),
-  },
-  beforeMount() {
-    this.auth.onAuthStateChanged((user) => {
-      if (user) {
-        // signed in
-        this.isAuth = true;
-      } else {
-        // signed out
-        this.isAuth = false;
-      }
-    });
-  },
-};
+export default {};
 </script>
 
 <style lang="scss" scoped>
-.root {
-  min-height: 100vh;
-  max-width: 100%;
+.home {
   display: grid;
   grid-template:
-    "... header ..."
-    "... ... ..." 2.2rem
-    "... logo ..." minmax(auto, 10rem)
-    "... ... ..." 0.2fr
-    "... nav ..." 1fr
-    "... footer ..." 3rem
-    "... ... ..." 1rem
-    / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
+    "..." 2.2rem
+    "logo" minmax(auto, 10rem)
+    "..." 0.2fr
+    "nav" 1fr
+    "footer" 3rem
+    "..." 1rem;
+    // / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
 }
 
-// Header
-.header {
-  grid-area: header;
-  align-self: center;
-}
-.login {
-  color: #113bad;
-}
 .logo {
   grid-area: logo;
   text-align: center;
