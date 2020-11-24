@@ -29,11 +29,7 @@
 </template>
 
 <script>
-export default {
-  mounted() {
-    console.log(this.$router.currentRoute.name);
-  }
-};
+export default {};
 </script>
 
 <style lang="scss" scoped>
@@ -47,7 +43,6 @@ export default {
     "..." 0.15fr
     "footer"
     "..." 1rem;
-    // / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
 }
 
 .logo {

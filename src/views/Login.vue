@@ -20,7 +20,7 @@ export default {
     // FirebaseUI config.
     const uiConfig = {
       // signInFlow: "popup",
-      signInSuccessUrl: "/",
+      // signInSuccessUrl: "/",
       credentialHelper: firebaseui.auth.CredentialHelper.NONE,
       signInOptions: [
         // Leave the lines as is for the providers you want to offer your users.
@@ -28,10 +28,16 @@ export default {
         firebase.auth.TwitterAuthProvider.PROVIDER_ID,
         firebase.auth.EmailAuthProvider.PROVIDER_ID,
       ],
+      callbacks: {
+        signInSuccessWithAuthResult: () => {
+          // console.log(authResult.user);
+          return false; // ここでは遷移しない
+        }
+      }
     };
 
     // Initialize the FirebaseUI Widget using Firebase.
-    const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
+    const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(this.auth);
     // The start method will wait until the DOM is loaded.
     ui.start("#firebaseui-auth-container", uiConfig);
   },
@@ -51,7 +57,7 @@ ul.firebaseui-idp-list {
     "... ... ..." 0.35fr
     "... area-login ..." 500px
     "... ... ..." minmax(2rem, 1fr)
-    / auto minmax(auto ,580px) auto;
+    / minmax(0, 1fr) minmax(auto, 580px) minmax(0, 1fr);
 }
 .area-login {
   grid-area: area-login;

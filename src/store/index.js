@@ -30,7 +30,8 @@ export default new Vuex.Store({
         name: payload.name,
         email: payload.email,
         photoURL: payload.photoURL,
-        uid: payload.uid
+        uid: payload.uid,
+        level: payload.level
       }
     },
     unsetUser (state) {

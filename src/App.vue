@@ -18,7 +18,7 @@ export default {
     "header-component": Header,
   },
   computed: {
-    ...mapState(["auth"]),
+    ...mapState(["auth", "db"]),
   },
   methods: {
     ...mapMutations(["setUser", "unsetUser"]),
@@ -27,24 +27,36 @@ export default {
     this.auth.onAuthStateChanged((user) => {
       if (user) {
         // signed in
-        // ユーザ情報を設定する
-        this.setUser({
+        const userObj = {
           name: user.displayName,
           email: user.email,
-          photoURL: user.photoURL,
-          uid: user.uid,
-        });
-
-        // 現在の画面がログインページならマイページへ遷移する
-        if (this.$router.currentRoute.name === "Login") {
-          this.$router.push({ name: "Mypage" });
+          photoURL: user.photoURL
         }
+        const docRef = this.db.collection("users").doc(user.uid);
+
+        docRef.get().then( (snapshot) => {
+          // ユーザ情報がデータベースに存在するかチェックしてレベルを取得する。無ければデータベースに新しく登録する。
+          if (!snapshot.exists) {
+            userObj.level = 1;
+            docRef.set(userObj);
+          } else {
+            userObj.level = snapshot.data().level;
+          }
+
+          // ローカルに保存する
+          userObj.uid = user.uid;
+          this.setUser(userObj);
+        })
+
+        // 現在の画面がログインページならホームへ遷移する
+        if (this.$router.currentRoute.name === "Login") this.$router.push({ name: "Home" });
+
       } else {
         // signed out
+
         // 現在のページがマイページならホームへ遷移する
-        if (this.$router.currentRoute.name === "Mypage") {
-          this.$router.push({ name: "Home" });
-        }
+        if (this.$router.currentRoute.name === "Mypage") this.$router.push({ name: "Home" });
+
         // ユーザ情報をリセットする
         this.unsetUser();
       }

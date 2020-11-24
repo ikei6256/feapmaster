@@ -98,6 +98,9 @@ header {
   font-size: 14px;
 }
 .avater {
+  &.v-btn.v-btn {
+    padding: 0;
+  }
   img {
     border-radius: 50%;
     max-height: $header-height - 0.3rem;
