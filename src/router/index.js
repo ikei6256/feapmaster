@@ -48,25 +48,13 @@ const router = new VueRouter({
 
 // 遷移前に実行
 router.beforeEach((to, from, next) => {
-  // ログインページかマイページの時にログインチェック
-  if (to.name === "Login" || to.name === "Mypage") {
-    const unsubscribe = store.state.auth.onAuthStateChanged((user) => {
-      unsubscribe();
-      if (user) {
-        // logged in
-        // ログインしている状態でログインページへアクセスした場合はホームへ移動
-        if (to.name === "Login") next({ name: "Home" });
-        else next();
-      } else {
-        // logged out
-        // ログインしていない状態でマイページへアクセスした場合はログインへ移動
-        if (to.name === "Mypage") next({ name: "Home" });
-        else next();
-      }
-    })
-  } else {
-    next()
-  }
+  // ログインしている状態でログインページへアクセスした場合はホームへ移動
+  if (to.name === "Login" && store.state.currentUser !== null) next({ name: "Home" });
+
+  // ログインしていない状態でマイページへアクセスした場合はログインへ移動
+  if (to.name === "Mypage" && store.state.currentUser === null) next({ name: "Login" });
+
+  next();
 })
 
 export default router

@@ -29,18 +29,23 @@
 </template>
 
 <script>
-export default {};
+export default {
+  mounted() {
+    console.log(this.$router.currentRoute.name);
+  }
+};
 </script>
 
 <style lang="scss" scoped>
 .home {
   display: grid;
   grid-template:
-    "..." 2.2rem
-    "logo" minmax(auto, 10rem)
-    "..." 0.2fr
+    "..." 0.15fr
+    "logo"
+    "..." 0.15fr
     "nav" 1fr
-    "footer" 3rem
+    "..." 0.15fr
+    "footer"
     "..." 1rem;
     // / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
 }

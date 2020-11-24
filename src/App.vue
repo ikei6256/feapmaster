@@ -18,7 +18,7 @@ export default {
     "header-component": Header,
   },
   computed: {
-    ...mapState(["auth", "currentUser"]),
+    ...mapState(["auth"]),
   },
   methods: {
     ...mapMutations(["setUser", "unsetUser"]),
@@ -27,15 +27,26 @@ export default {
     this.auth.onAuthStateChanged((user) => {
       if (user) {
         // signed in
-        // ユーザ情報が未設定の場合に設定する
-        if (this.currentUser === null) {
-          this.setUser({
-            name: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL,
-            uid: user.uid,
-          });
+        // ユーザ情報を設定する
+        this.setUser({
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          uid: user.uid,
+        });
+
+        // 現在の画面がログインページならマイページへ遷移する
+        if (this.$router.currentRoute.name === "Login") {
+          this.$router.push({ name: "Mypage" });
         }
+      } else {
+        // signed out
+        // 現在のページがマイページならホームへ遷移する
+        if (this.$router.currentRoute.name === "Mypage") {
+          this.$router.push({ name: "Home" });
+        }
+        // ユーザ情報をリセットする
+        this.unsetUser();
       }
     });
   },
@@ -65,13 +76,6 @@ li {
       src: url("/font/BRLNSDB.ttf");
     }
   }
-}
-
-// Vuetify
-// ボタンのフォーカス時の透明度をリセット
-.v-btn:focus:before,
-.v-btn--active:before {
-  opacity: 0 !important;
 }
 
 // 画面遷移のアニメーション (フェードイン/フェードアウト)
@@ -116,7 +120,7 @@ li {
   width: 100vw;
   height: 0;
   box-sizing: border-box;
-  color: white;
+  color: #f5f5f5; // 「ログアウトしました」の文字色
   text-align: center;
   background: rgba(0, 0, 0, 0.6);
   overflow: hidden;

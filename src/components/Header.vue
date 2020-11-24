@@ -3,17 +3,13 @@
     <transition name="fade">
       <div v-if="$route.name != 'Home'" class="logo">
         <router-link :to="{ name: 'Home' }">
-          <img src="/img/logo.png" alt="FE AP Master" />
+          <img src="/img/logo/logo.png" alt="FE AP Master" />
         </router-link>
       </div>
     </transition>
     <div class="menu">
       <transition name="fade-200" mode="out-in">
-        <!-- <router-link v-if="currentUser === null" :to="{ name: 'Login' }">
-          <v-btn color="blue darken-4" text rounded>ログイン</v-btn>
-        </router-link> -->
-
-        <v-btn v-if="currentUser === null" :to="{ name: 'Login' }" text retain-focus-on-click>ログイン</v-btn>
+        <v-btn v-if="currentUser === null" :to="{ name: 'Login' }" color="indigo" text class="font-weight-bold">ログイン</v-btn>
 
         <v-menu v-else open-on-hover bottom offset-y rounded>
           <template v-slot:activator="{ on }">
@@ -27,15 +23,17 @@
           <v-card min-width="200px">
             <v-list dense color="grey lighten-5">
               <v-list-item>
-                <v-list-item-avatar>
-                  <v-img :src="currentUser.photoURL"></v-img>
-                </v-list-item-avatar>
+                <v-layout justify-center>
+                  <v-list-item-avatar class="mr-0 mb-0">
+                    <v-img :src="currentUser.photoURL"></v-img>
+                  </v-list-item-avatar>
+                </v-layout>
               </v-list-item>
 
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title class="title">{{ currentUser.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
+                  <v-list-item-title class="title text-center">{{ currentUser.name }}</v-list-item-title>
+                  <v-list-item-subtitle class="text-center">{{ currentUser.email }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
               <v-divider></v-divider>
@@ -59,15 +57,13 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapState } from "vuex";
 export default {
   computed: {
     ...mapState(["auth", "currentUser"]),
   },
   methods: {
-    ...mapMutations(["unsetUser"]),
     logout() {
-      this.unsetUser();
       const notify = document.getElementsByClassName("notify-logout")[0];
       this.auth.signOut().then(() => {
         notify.classList.toggle("notify-logout-active");
@@ -100,9 +96,6 @@ header {
   grid-area: menu;
   justify-self: right;
   font-size: 14px;
-  a {
-    color: #113bad;
-  }
 }
 .avater {
   img {

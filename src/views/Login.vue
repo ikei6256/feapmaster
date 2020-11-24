@@ -48,7 +48,7 @@ ul.firebaseui-idp-list {
 .login {
   display: grid;
   grid-template:
-    "... ... ..." 3rem
+    "... ... ..." 0.35fr
     "... area-login ..." 500px
     "... ... ..." minmax(2rem, 1fr)
     / auto minmax(auto ,580px) auto;
