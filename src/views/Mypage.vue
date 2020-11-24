@@ -1,28 +1,25 @@
 <template>
   <div class="mypage">
+    <!-- userInfoここから -->
     <div class="userInfo">
       <v-card>
-        <v-list>
+        <v-list color="grey lighten-2">
           <v-list-item>
             <v-list-item-avatar>
               <v-img :src="currentUser.photoURL"></v-img>
             </v-list-item-avatar>
           </v-list-item>
 
-          <v-list-item link>
+          <v-list-item>
             <v-list-item-content>
               <v-list-item-title class="title">{{ currentUser.name }}</v-list-item-title>
               <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
             </v-list-item-content>
-
-            <v-list-item-action>
-              <v-icon>mdi-menu-down</v-icon>
-            </v-list-item-action>
           </v-list-item>
         </v-list>
         <v-divider></v-divider>
         <v-list nav dense>
-          <v-list-item-group v-model="selectedItem" color="primary" mandatory>
+          <v-list-item-group v-model="selectedItem" color="orange darken-4" mandatory>
             <v-list-item v-for="(item, i) in items" :key="i">
               <v-list-item-icon>
                 <v-icon v-text="item.icon"></v-icon>
@@ -35,7 +32,8 @@
           </v-list-item-group>
         </v-list>
       </v-card>
-    </div> <!-- userInfoここまで -->
+    </div>
+    <!-- userInfoここまで -->
 
     <div class="userDetails">
       <transition name="fade" mode="out-in">
@@ -59,9 +57,9 @@ export default {
     ],
   }),
   watch: {
-    "selectedItem": function (val) {
+    selectedItem: function (val) {
       console.log(val);
-    }
+    },
   },
   computed: {
     ...mapState(["currentUser"]),
@@ -75,7 +73,7 @@ export default {
   grid-template:
     "... ... ..." 1rem
     "userInfo ... detail" 1fr
-    / 300px 1rem 1fr;
+    / 250px 1rem 1fr;
 }
 .userInfo {
   grid-area: userInfo;
