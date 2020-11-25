@@ -56,11 +56,6 @@ export default {
       { text: "過去10戦の成績", icon: "mdi-sword-cross" },
     ],
   }),
-  watch: {
-    selectedItem: function (val) {
-      console.log(val);
-    },
-  },
   computed: {
     ...mapState(["currentUser"]),
   },

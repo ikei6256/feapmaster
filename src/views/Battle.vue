@@ -1,6 +1,5 @@
 <template>
-  <div class="root">
-    <header-component></header-component>
+  <v-container fluid class="battle rounded-lg pa-0">
     <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
       <transition name="fade">
         <confetti v-if="isShowConfetti"></confetti>
@@ -100,18 +99,16 @@
       </div>
       <!-- ここまで: Modal-->
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script>
-import Header from "@/components/Header.vue";
 import Player from "@/components/battle/Player.vue";
 import { mapMutations, mapState } from "vuex";
 import $ from "jquery";
 export default {
   components: {
     player: Player,
-    "header-component": Header,
     question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
     confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
     review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
@@ -139,11 +136,12 @@ export default {
         select: null,
         time: null,
       },
+      // 匿名用のランダムな画像と名前
       image_random: [
         "Bear", "Bee", "Bird", "Butterfly", "Chameleon", "Cocker-spaniel", "Cow", "Dolphin", "Dove",
         "Executive", "Flamingo", "Giraffe", "Gorilla", "Kangaroo", "Koala", "Paw", "Rabbit",
         "Sheep", "Shrimp", "Sloth", "Snail", "Squirrel", "Turtle",
-      ], // ランダムな画像を使用する
+      ],
       name_random:
         [
           "ラパン", "チオビタ", "ごぱん", "ポリデント", "半沢", "まちゅぴちゅ", "スーパームーン", "サンズ", "たぬきち",
@@ -226,13 +224,13 @@ export default {
   },
   beforeMount() {
     // サインインユーザであるか確認してname、photoUrlをセットする
-    if (this.auth.currentUser == null) {
+    // if (this.auth.currentUser == null) {
       this.myData.name = this.name_random[Math.floor(Math.random()*this.name_random.length)];
       this.myData.photoUrl = `/img/${this.image_random[Math.floor(Math.random()*this.image_random.length)]}.png`;
-    } else {
-      this.myData.name = this.auth.currentUser.displayName;
-      this.myData.photoUrl = this.auth.currentUser.photoUrl;
-    }
+    // } else {
+    //   this.myData.name = this.auth.currentUser.displayName;
+    //   this.myData.photoUrl = this.auth.currentUser.photoUrl;
+    // }
   },
   mounted() {
     window.addEventListener("beforeunload", () => {
@@ -785,10 +783,9 @@ export default {
 
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
-.root {
-  // min-height: 100vh;
-  // max-width: 100%;
-  background-color: #fff;
+.battle {
+  // background-color: #fff;
+  // border: 1px solid
 }
 .messageArea {
   padding: 0.3em 1em;

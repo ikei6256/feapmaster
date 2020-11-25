@@ -1,12 +1,12 @@
 <template>
   <v-app>
-    <div class="root">
+    <v-container fluid class="root pa-0">
       <header-component class="header-component"></header-component>
       <transition name="fade" mode="out-in">
-        <router-view class="contents" />
+        <router-view class="contentsArea" />
       </transition>
       <div class="notify-logout"><span class="notify-logout-text">ログアウトしました。</span></div>
-    </div>
+    </v-container>
   </v-app>
 </template>
 
@@ -46,11 +46,10 @@ export default {
           // ローカルに保存する
           userObj.uid = user.uid;
           this.setUser(userObj);
+
+          // 現在の画面がログインページならマイページへ遷移する
+        if (this.$router.currentRoute.name === "Login") this.$router.push({ name: "Mypage" });
         })
-
-        // 現在の画面がログインページならホームへ遷移する
-        if (this.$router.currentRoute.name === "Login") this.$router.push({ name: "Home" });
-
       } else {
         // signed out
 
@@ -150,28 +149,27 @@ li {
 
 <style lang="scss" scoped>
 #app {
-  font-family: Roboto, "verdana", "Helvetica Neue", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans",
+  font-family: Roboto, "verdana", "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
   background-color: rgba(249, 182, 15, 0.75);
 }
 .root {
   min-height: 100vh;
-  max-width: 100%;
   display: grid;
   grid-template:
     "... header ..."
     "... contents ..." 1fr
-    / minmax(2%, auto) minmax(auto, 1024px) minmax(2%, auto);
+    / auto minmax(auto, 1024px) auto;
+  color: #263238;
 }
 
 .header-component {
   grid-area: header;
 }
 
-.contents {
+.contentsArea {
   grid-area: contents;
 }
 </style>

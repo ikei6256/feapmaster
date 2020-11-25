@@ -1,10 +1,10 @@
 <template>
-  <div class="login">
-    <div class="area-login">
+  <v-container fluid class="login pa-0">
+    <v-card class="area-login pa-0">
       <h1 class="login-title">ログイン / 新規登録</h1>
       <div id="firebaseui-auth-container"></div>
-    </div>
-  </div>
+    </v-card>
+  </v-container>
 </template>
 
 <script>
@@ -55,19 +55,18 @@ ul.firebaseui-idp-list {
   display: grid;
   grid-template:
     "... ... ..." 0.35fr
-    "... area-login ..." 500px
+    "... area-login ..." minmax(500px, auto)
     "... ... ..." minmax(2rem, 1fr)
-    / minmax(0, 1fr) minmax(auto, 580px) minmax(0, 1fr);
+    / minmax(2%, auto) minmax(auto, 580px) minmax(2%, auto);
 }
 .area-login {
   grid-area: area-login;
   background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  box-shadow: 0px 8px 16px -2px rgba(10, 10, 10, 0.1), 0px 0px 0px 1px rgba(10, 10, 10, 0.02);
+  text-align: center;
 }
 .login-title {
   margin-top: 5rem;
   margin-bottom: 3rem;
-  text-align: center;
+  color: #263238;
 }
 </style>
