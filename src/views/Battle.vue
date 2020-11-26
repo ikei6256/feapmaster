@@ -80,23 +80,27 @@
       <!-- ここから: 対戦終了後の表示エリア -->
 
       <!-- ここから: Modal -->
-      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">注意!</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">対戦中です！<br />対戦画面から離れてもよろしいですか？</div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
-              <button type="button" class="btn btn-primary" id="next">OK</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <v-dialog v-model="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
+        <!-- <template v-slot:activator="{ on, attrs }">
+          <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on"> Click Me </v-btn>
+        </template> -->
+
+        <v-card>
+          <v-card-title class="headline yellow lighten-2">注意!</v-card-title>
+
+          <v-card-text>
+            対戦を中止して画面を離れてもよろしいですか？
+          </v-card-text>
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text @click="dialog_battle_cancel = false">いいえ</v-btn>
+            <v-btn text @click="dialog_battle_cancel = false">はい</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <!-- ここまで: Modal-->
     </div>
   </v-container>
@@ -138,21 +142,91 @@ export default {
       },
       // 匿名用のランダムな画像と名前
       image_random: [
-        "Bear", "Bee", "Bird", "Butterfly", "Chameleon", "Cocker-spaniel", "Cow", "Dolphin", "Dove",
-        "Executive", "Flamingo", "Giraffe", "Gorilla", "Kangaroo", "Koala", "Paw", "Rabbit",
-        "Sheep", "Shrimp", "Sloth", "Snail", "Squirrel", "Turtle",
+        "Bear",
+        "Bee",
+        "Bird",
+        "Butterfly",
+        "Chameleon",
+        "Cocker-spaniel",
+        "Cow",
+        "Dolphin",
+        "Dove",
+        "Executive",
+        "Flamingo",
+        "Giraffe",
+        "Gorilla",
+        "Kangaroo",
+        "Koala",
+        "Paw",
+        "Rabbit",
+        "Sheep",
+        "Shrimp",
+        "Sloth",
+        "Snail",
+        "Squirrel",
+        "Turtle",
       ],
-      name_random:
-        [
-          "ラパン", "チオビタ", "ごぱん", "ポリデント", "半沢", "まちゅぴちゅ", "スーパームーン", "サンズ", "たぬきち",
-          "らーめん", "IKEA", "くま", "げすとさん", "忍者", "凄腕ハッカー", "りす", "かもめ", "のりせんべい", "七味",
-          "もぐら", "神", "プードル", "ピーマン", "きれいなジャイアン", "シンデレラ", "クロックス", "だし巻きたまご",
-          "ネプチューン", "しらす", "迷宮入り", "真実はいつも一つ", "タピオカ", "ミタゾノ", "キューピー",
-          "みかん", "ダヴィンチ", "ムツゴロウ", "あめんぼ", "ユンケル", "あまびえ", "チキンラーメン", "ダイヤモンド",
-          "ベルベットハンマー矢沢", "チェインレクイエム斎藤", "ふくろう", "マシュマロ", "焼きおにぎり", "焼肉定食",
-          "ピグレット", "フェアレディ", "JAXA", "メロン", "生クリーム", "亀仙人", "テトリス", "ダークホース",
-          "野菜生活", "パピコ", "チョコチップクッキー"
-        ],
+      name_random: [
+        "ラパン",
+        "チオビタ",
+        "ごぱん",
+        "ポリデント",
+        "半沢",
+        "まちゅぴちゅ",
+        "スーパームーン",
+        "サンズ",
+        "たぬきち",
+        "らーめん",
+        "IKEA",
+        "くま",
+        "げすとさん",
+        "忍者",
+        "凄腕ハッカー",
+        "りす",
+        "かもめ",
+        "のりせんべい",
+        "七味",
+        "もぐら",
+        "神",
+        "プードル",
+        "ピーマン",
+        "きれいなジャイアン",
+        "シンデレラ",
+        "クロックス",
+        "だし巻きたまご",
+        "ネプチューン",
+        "しらす",
+        "迷宮入り",
+        "真実はいつも一つ",
+        "タピオカ",
+        "ミタゾノ",
+        "キューピー",
+        "みかん",
+        "ダヴィンチ",
+        "ムツゴロウ",
+        "あめんぼ",
+        "ユンケル",
+        "あまびえ",
+        "チキンラーメン",
+        "ダイヤモンド",
+        "ベルベットハンマー矢沢",
+        "チェインレクイエム斎藤",
+        "ふくろう",
+        "マシュマロ",
+        "焼きおにぎり",
+        "焼肉定食",
+        "ピグレット",
+        "フェアレディ",
+        "JAXA",
+        "メロン",
+        "生クリーム",
+        "亀仙人",
+        "テトリス",
+        "ダークホース",
+        "野菜生活",
+        "パピコ",
+        "チョコチップクッキー",
+      ],
       time_limit: null, // 時間制限の最大値を保存
       timerId: null, // カウントダウンタイマーのIDを保存する
       timeoutId: null,
@@ -168,6 +242,7 @@ export default {
       isShowConfetti: false, // 紙吹雪を表示するタイミングを制御する
       isShowRestart: false, // 「もう一度」ボタンを表示するタイミングを制御する
       isShowReview: false, // 振り返りを表示するタイミングを制御する
+      dialog_battle_cancel: false, // 対戦中止を決定するモーダルの表示フラグ
 
       question_now: 0, // 現在の問題数
       questionRefs: [], // 問題の参照
@@ -225,8 +300,8 @@ export default {
   beforeMount() {
     // サインインユーザであるか確認してname、photoUrlをセットする
     // if (this.auth.currentUser == null) {
-      this.myData.name = this.name_random[Math.floor(Math.random()*this.name_random.length)];
-      this.myData.photoUrl = `/img/${this.image_random[Math.floor(Math.random()*this.image_random.length)]}.png`;
+    this.myData.name = this.name_random[Math.floor(Math.random() * this.name_random.length)];
+    this.myData.photoUrl = `/img/${this.image_random[Math.floor(Math.random() * this.image_random.length)]}.png`;
     // } else {
     //   this.myData.name = this.auth.currentUser.displayName;
     //   this.myData.photoUrl = this.auth.currentUser.photoUrl;
@@ -244,7 +319,8 @@ export default {
   beforeRouteLeave(to, from, next) {
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
     if (this.isPlaying) {
-      $("#exampleModal").modal("show"); // モーダルを表示する
+      // $("#exampleModal").modal("show"); // モーダルを表示する
+      this.dialog_battle_cancel = true;
       this.execModal(next);
     } else {
       this.routeLeave(next);
@@ -780,6 +856,13 @@ export default {
   }, // End: methods
 };
 </script>
+
+<style lang="scss">
+.v-dialog {
+  position: absolute;
+  top: 0;
+}
+</style>
 
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
