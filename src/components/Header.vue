@@ -53,23 +53,35 @@
         </v-menu>
       </transition>
     </div>
+
+    <!-- ここから: ログアウト用のスナックバー -->
+    <v-snackbar v-model="snackbar_logout" timeout=2800>
+      ログアウトしました。
+      <template v-slot:action="{ attrs }">
+        <v-btn icon v-bind="attrs" @click="snackbar_logout = false">
+          <v-icon color="#FA3E7E">mdi-close-circle-outline</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
+    <!-- ここまで: ログアウト用のスナックバー -->
   </header>
 </template>
 
 <script>
 import { mapState } from "vuex";
 export default {
+  data() {
+    return {
+      snackbar_logout: false,
+    };
+  },
   computed: {
     ...mapState(["auth", "currentUser"]),
   },
   methods: {
     logout() {
-      const notify = document.getElementsByClassName("notify-logout")[0];
       this.auth.signOut().then(() => {
-        notify.classList.toggle("notify-logout-active");
-        setTimeout(function () {
-          notify.classList.remove("notify-logout-active");
-        }, 2200);
+        this.snackbar_logout = true; // スナックバーを表示する
       });
     },
   },

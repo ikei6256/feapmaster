@@ -5,7 +5,6 @@
       <transition name="fade" mode="out-in">
         <router-view class="contentsArea" />
       </transition>
-      <div class="notify-logout"><span class="notify-logout-text">ログアウトしました。</span></div>
     </v-container>
   </v-app>
 </template>
@@ -48,7 +47,7 @@ export default {
           this.setUser(userObj);
 
           // 現在の画面がログインページならマイページへ遷移する
-        if (this.$router.currentRoute.name === "Login") this.$router.push({ name: "Mypage" });
+          if (this.$router.currentRoute.name === "Login") this.$router.push({ name: "Mypage" });
         })
       } else {
         // signed out
@@ -77,6 +76,14 @@ li {
 }
 :focus {
   outline: none;
+}
+
+#app {
+  font-family: Roboto, "verdana", "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fac84b;
 }
 
 .berlin-sans {
@@ -122,39 +129,9 @@ li {
     opacity: 0;
   }
 }
-
-// ログアウト通知
-.notify-logout {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  height: 0;
-  box-sizing: border-box;
-  color: #f5f5f5; // 「ログアウトしました」の文字色
-  text-align: center;
-  background: rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-  box-sizing: border-box;
-  transition: height 0.2s;
-}
-.notify-logout-active {
-  height: 3rem;
-}
-.notify-logout-text {
-  display: inline-block;
-  margin-top: 1rem;
-}
 </style>
 
 <style lang="scss" scoped>
-#app {
-  font-family: Roboto, "verdana", "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: rgba(249, 182, 15, 0.75);
-}
 .root {
   min-height: 100vh;
   display: grid;

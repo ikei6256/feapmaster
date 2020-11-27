@@ -81,23 +81,14 @@
 
       <!-- ここから: Modal -->
       <v-dialog v-model="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
-        <!-- <template v-slot:activator="{ on, attrs }">
-          <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on"> Click Me </v-btn>
-        </template> -->
-
         <v-card>
-          <v-card-title class="headline yellow lighten-2">注意!</v-card-title>
-
-          <v-card-text>
-            対戦を中止して画面を離れてもよろしいですか？
-          </v-card-text>
-
+          <v-card-title class="yellow lighten-2"><v-icon>mdi-alert-circle-outline</v-icon>注意</v-card-title>
+          <v-card-text class="pl-5 py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
           <v-divider></v-divider>
-
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="dialog_battle_cancel = false">いいえ</v-btn>
-            <v-btn text @click="dialog_battle_cancel = false">はい</v-btn>
+            <v-btn text @click="routeLeave" color="#FA3E7E">対戦をやめる<v-icon>mdi-stop-circle</v-icon></v-btn>
+            <v-btn text @click="dialog_battle_cancel = false" color="primary">対戦を続ける<v-icon>mdi-play-circle</v-icon></v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -124,6 +115,7 @@ export default {
       NUM_QUESTION: 5, // 総問題数
       room: null, // 部屋のDocumentReference
       unsubscribe: null, // リアルタイムリスナーの破棄に使用する
+      nextLocation: null, // 画面遷移メソッド
       myData: {
         name: null,
         photoUrl: null,
@@ -317,13 +309,12 @@ export default {
     this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
+    this.nextLocation = next;
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
     if (this.isPlaying) {
-      // $("#exampleModal").modal("show"); // モーダルを表示する
-      this.dialog_battle_cancel = true;
-      this.execModal(next);
+      this.dialog_battle_cancel = true; // モーダルを表示する
     } else {
-      this.routeLeave(next);
+      this.routeLeave();
     }
   },
   beforeDestroy() {
@@ -341,7 +332,7 @@ export default {
     search() {
       this.message_num = 0; // 「待機中...」
       this.question_now = 0;
-      this.isSearching = true;
+      this.isSearching = true; // ステータス:検索中
       this.isShowPlayerStatus = false;
       this.isShowQuestion = false;
       this.isShowJudge = false;
@@ -548,7 +539,7 @@ export default {
             this.SPEED_FADE_SLOW,
             () => {
               // eachブロックの中で1度だけ実行したいため、index:0を判定する
-              if (index == 0) {
+              if (index === 0) {
                 // 少し待ってから実行
                 this.timeoutId = setTimeout(() => {
                   this.timeoutId = null;
@@ -802,20 +793,9 @@ export default {
       });
     },
 
-    /*** モーダルの実行処理 ***/
-    execModal(next) {
-      document.getElementById("next").onclick = () => {
-        $("body").removeClass("modal-open");
-        $(".modal-backdrop").remove();
-        this.routeLeave(next); // OK
-      };
-      $("#exampleModal").on("hidden.bs.modal", () => {
-        next(false); // キャンセル
-      });
-    },
-
     /*** 画面遷移時の処理 ***/
-    routeLeave(next) {
+    routeLeave() {
+      clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
       clearInterval(this.timerId); // タイマーを停止する
       clearInterval(this.blinkIntervalId);
       this.setTimer({ time: null });
@@ -824,8 +804,9 @@ export default {
       }
       if (this.room != null) {
         this.room.delete();
+        this.room = null;
       }
-      next();
+      this.nextLocation();
     },
 
     /*** PlayerComponent - 「選択中」を点滅させる ***/
@@ -864,22 +845,23 @@ export default {
 }
 </style>
 
+<style lang="scss" module>
+.root {
+  background-color: white;
+}
+</style>
+
 <style lang="scss" scoped>
 @import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
-.battle {
-  // background-color: #fff;
-  // border: 1px solid
-}
 .messageArea {
-  padding: 0.3em 1em;
-  margin-bottom: 1em;
+  padding: 0.5rem;
   background: white;
-  border-right: solid 0.4rem #5f5f91; /* 線 */
+  border-right: solid 0.4rem #5f5f91;
   border-left: solid 0.4rem #5f5f91;
-  border-radius: 10px; /* 角の丸み */
+  border-radius: 10px;
   text-align: center;
   span {
-    color: #5e5ebc; /* 文字色 */
+    color: #5e5ebc;
     font-weight: bold;
     font-size: 1rem;
   }
