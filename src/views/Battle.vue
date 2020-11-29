@@ -1,36 +1,33 @@
 <template>
-  <v-container fluid class="battle rounded-lg pa-0">
-    <div class="container-md pr-1 pl-1 pr-sm-2 pl-sm-3">
+  <v-container fluid class="mt-4 pa-0">
+    <div class="battle">
+      <!-- 紙吹雪 -->
       <transition name="fade">
         <confetti v-if="isShowConfetti"></confetti>
       </transition>
 
-      <!-- ここから: メッセージ -->
+      <!-- メッセージ -->
       <div id="message" class="messageArea">
         <span>{{ message }}</span>
       </div>
-      <!-- ここまで: メッセージ -->
 
       <!-- ここから: プレイヤー表示エリア -->
-      <div class="row mb-3">
-        <div class="col p-0 overflow-hidden player1">
-          <div class="float-left text-center w-100">
-            <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
-          </div>
+      <div>
+        <div class="player1">
+          <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
           <div id="player1-flush" class="flush-area"></div>
         </div>
-        <div id="player1-score" class="col-1 p-0 text-center d-flex align-items-center">
+        <div id="player1-score">
           <span class="score">{{ myData.score }}</span>
         </div>
-        <div class="col-auto p-0 d-flex align-items-center font-weight-bold">:</div>
-        <div id="player2-score" class="col-1 p-0 text-center d-flex align-items-center">
+        <div>:</div>
+        <div id="player2-score">
           <span class="score">{{ oppData.score }}</span>
         </div>
-        <div class="col p-0 position-relative overflow-hidden player2">
-          <div class="float-left text-center w-100">
+        <div class="player2">
+          <div>
             <transition name="fade-slow" mode="out-in">
-              <div v-if="isSearching" class="loading position-absolute">
-                <div class="spinner-grow text-info" role="status"></div>
+              <div v-if="isSearching">
                 <span class="text-info">相手を探しています...</span>
               </div>
               <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
@@ -306,7 +303,7 @@ export default {
       }
     });
 
-    this.search(); // 対戦相手を検索する
+    // this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
     this.nextLocation = next;
@@ -839,15 +836,10 @@ export default {
 </script>
 
 <style lang="scss">
+// 対戦中に画面を離れる時の注意メッセージ
 .v-dialog {
   position: absolute;
   top: 0;
-}
-</style>
-
-<style lang="scss" module>
-.root {
-  background-color: white;
 }
 </style>
 
@@ -873,11 +865,6 @@ export default {
   font-size: 2.5rem;
   line-height: 1;
   font-family: "Itim", cursive;
-}
-.loading {
-  top: 50%;
-  left: 50%;
-  transform: translateY(-50%) translateX(-50%);
 }
 .player1,
 .player2 {
