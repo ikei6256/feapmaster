@@ -1,11 +1,11 @@
 <template>
   <v-app>
-    <v-container fluid class="root pa-0">
+    <div class="root">
       <header-component class="header-component"></header-component>
       <transition name="fade" mode="out-in">
         <router-view class="contentsArea" />
       </transition>
-    </v-container>
+    </div>
   </v-app>
 </template>
 
@@ -64,11 +64,12 @@ export default {
 </script>
 
 <style lang="scss">
+$background-color-main: #fac84b;
 #app {
-  font-family: Roboto, "verdana", "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif;
+  font-family: Roboto, "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Droid Sans Japanese", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #fac84b;
+  background-color: $background-color-main;
 }
 </style>
 
@@ -80,7 +81,6 @@ export default {
     "... header ..."
     "... contents ..." 1fr
     / auto minmax(auto, 1024px) auto;
-  color: #263238;
 }
 
 .header-component {

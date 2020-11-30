@@ -1,10 +1,10 @@
 <template>
-  <v-container fluid class="login pa-0">
+  <div class="login">
     <v-card class="area-login pa-0">
       <h1 class="login-title">ログイン / 新規登録</h1>
       <div id="firebaseui-auth-container"></div>
     </v-card>
-  </v-container>
+  </div>
 </template>
 
 <script>

@@ -1,5 +1,6 @@
 /* --------------------
  * フォント関連はここで定義する
+ * index.htmlでpreloadする
  * -------------------- */
 
 $roboto-weights: 100,
@@ -16,23 +17,22 @@ $roboto-weights: 100,
     font-style: normal;
     font-weight: $weight;
     font-display: swap;
-    src: local('Roboto'),
-    url('/font/Roboto#{$weight}.ttf') format('truetype');
+    src:
+      local('Roboto'),
+      url('/font/Roboto#{$weight}.ttf') format('truetype');
   }
 }
 
-.itim {
-  font-family: 'Itim', cursive;
+.pacifico {
+  font-family: 'Pacifico', cursive;
 
   @at-root {
     @font-face {
-      font-family: 'Itim';
-      font-style: normal;
-      font-weight: normal;
+      font-family: 'Pacifico';
       font-display: swap;
       src:
-        local('Itim'),
-        url('/font/Itim-Regular.ttf') format('truetype');
+        local('Pacifico'),
+        url('/font/Pacifico-Regular.ttf') format('truetype');
     }
   }
 }

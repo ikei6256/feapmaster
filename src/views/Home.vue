@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="home pa-0">
+  <div class="home">
     <div class="logo px-1 px-md-0">
       <img src="/img/logo/logo.png" alt="FE AP Master" />
     </div>
@@ -25,7 +25,7 @@
       </div>
       <span class="copyright">&copy; <span class="berlin-sans">FEAPMaster</span> 開発チーム</span>
     </v-footer>
-  </v-container>
+  </div>
 </template>
 
 <script>

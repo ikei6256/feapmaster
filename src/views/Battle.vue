@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="battle mt-4 pa-0">
+  <div class="mt-2 mt-sm-4">
     <!-- 紙吹雪 -->
     <transition name="fade">
       <confetti v-if="isShowConfetti"></confetti>
@@ -11,17 +11,16 @@
     </div>
 
     <!-- ここから: プレイヤー表示エリア -->
-    <div>
-      <div class="player1">
+    <div class="text-center">
+      <!-- <div class="player1">
         <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
-        <div id="player1-flush" class="flush-area"></div>
       </div>
       <div id="player1-score">
-        <span class="score itim">{{ myData.score }}</span>
-      </div>
-      <div>:</div>
+        <span class="score">{{ myData.score }}</span>
+      </div> -->
+      <!-- <div>:</div>
       <div id="player2-score">
-        <span class="score itim">{{ oppData.score }}</span>
+        <span class="score">{{ oppData.score }}</span>
       </div>
       <div class="player2">
         <div>
@@ -32,7 +31,32 @@
             <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
           </transition>
         </div>
-        <div id="player2-flush" class="flush-area"></div>
+      </div> -->
+
+      <div class="player-area mt-2 mt-sm-4">
+        <v-card class="player1" color="teal lighten-5">
+          <v-card-title>
+            <v-avatar color="white">
+              <img src="/img/Bear.png" alt="プレイヤーイメージ" />
+            </v-avatar>
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-card-text class="score pt-0 pb-2 pb-sm-4">
+            <span class="pacifico">2</span>
+          </v-card-text>
+        </v-card>
+        <v-card class="player2" color="green lighten-5">
+          <v-card-title>
+            <v-avatar color="white">
+              <img src="/img/Bird.png" alt="プレイヤーイメージ" />
+            </v-avatar>
+          </v-card-title>
+          <v-divider></v-divider>
+          <span class="caption">得点</span>
+          <v-card-text class="score pt-0 pb-2 pb-sm-4">
+            <span class="pacifico">5</span>
+          </v-card-text>
+        </v-card>
       </div>
     </div>
     <!-- ここまで: プレイヤー表示エリア -->
@@ -89,16 +113,16 @@
       </v-card>
     </v-dialog>
     <!-- ここまで: Modal-->
-  </v-container>
+  </div>
 </template>
 
 <script>
-import Player from "@/components/battle/Player.vue";
+// import Player from "@/components/battle/Player.vue";
 import { mapMutations, mapState } from "vuex";
 import $ from "jquery";
 export default {
   components: {
-    player: Player,
+    // player: Player,
     question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
     confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
     review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
@@ -842,45 +866,43 @@ export default {
 </style>
 
 <style lang="scss" scoped>
+$battle-blue: #113bad;
 .messageArea {
   padding: 0.5rem;
   background: white;
-  border-right: solid 0.4rem #5f5f91;
-  border-left: solid 0.4rem #5f5f91;
-  border-radius: 10px;
+  border-right: solid 0.4rem $battle-blue;
+  border-left: solid 0.4rem $battle-blue;
+  border-radius: 0.8rem;
   text-align: center;
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
   span {
-    color: #5e5ebc;
+    color: $battle-blue;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
 }
-.score {
-  opacity: 0;
-  width: 100%;
-  color: midnightblue;
-  line-height: 1;
-  font-size: 2.5rem;
+
+/* -------------------- *
+ * プレイヤー表示エリア
+ * -------------------- */
+.player-area {
+  display: grid;
+  grid-template:
+    "... player1 ... player2 ..."
+    / auto minmax(auto, 200px) auto minmax(auto, 200px) auto;
 }
-.player1,
+.player1 {
+  grid-area: player1;
+}
 .player2 {
-  border-radius: 15px;
+  grid-area: player2;
 }
-.flush-area {
-  height: 100%;
-  width: 20%;
+.player1, .player2 {
+  min-width: 50px;
 }
-.flush {
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 25%, #ffd1f9 50%, rgba(255, 255, 255, 0) 75%);
-  animation: slide_line 1.5s ease-in-out forwards;
-  @keyframes slide_line {
-    from {
-      margin-left: -20%;
-    }
-    to {
-      margin-left: 120%;
-    }
-  }
+
+.score {
+  font-size: 5.5rem;
 }
 .review {
   color: #333333;
