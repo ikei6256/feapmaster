@@ -1,96 +1,94 @@
 <template>
-  <v-container fluid class="mt-4 pa-0">
-    <div class="battle">
-      <!-- 紙吹雪 -->
-      <transition name="fade">
-        <confetti v-if="isShowConfetti"></confetti>
-      </transition>
+  <v-container fluid class="battle mt-4 pa-0">
+    <!-- 紙吹雪 -->
+    <transition name="fade">
+      <confetti v-if="isShowConfetti"></confetti>
+    </transition>
 
-      <!-- メッセージ -->
-      <div id="message" class="messageArea">
-        <span>{{ message }}</span>
-      </div>
-
-      <!-- ここから: プレイヤー表示エリア -->
-      <div>
-        <div class="player1">
-          <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
-          <div id="player1-flush" class="flush-area"></div>
-        </div>
-        <div id="player1-score">
-          <span class="score">{{ myData.score }}</span>
-        </div>
-        <div>:</div>
-        <div id="player2-score">
-          <span class="score">{{ oppData.score }}</span>
-        </div>
-        <div class="player2">
-          <div>
-            <transition name="fade-slow" mode="out-in">
-              <div v-if="isSearching">
-                <span class="text-info">相手を探しています...</span>
-              </div>
-              <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
-            </transition>
-          </div>
-          <div id="player2-flush" class="flush-area"></div>
-        </div>
-      </div>
-      <!-- ここまで: プレイヤー表示エリア -->
-
-      <!-- ここから: 問題表示エリア -->
-      <transition name="fade-slow">
-        <question
-          @selected="selected"
-          v-if="isShowQuestionArea"
-          :myData="myData"
-          :oppData="oppData"
-          :question_now="question_now"
-          :question="questions[question_now - 1]"
-          :isShowQuestion="isShowQuestion"
-          :isShowJudge="isShowJudge"
-          :time_limit="time_limit"
-          :winner="winner"
-        ></question>
-      </transition>
-      <!-- ここまで: 問題表示 -->
-
-      <!-- ここから: 対戦終了後の表示エリア  -->
-      <transition name="fade">
-        <div v-show="isShowRestart">
-          <div class="text-center mb-3">
-            <button @click="restart" class="btn btn-primary mr-1">もう一度</button>
-            <router-link :to="{ name: 'Home' }">
-              <button class="btn btn-secondary">ホームへ戻る</button>
-            </router-link>
-          </div>
-        </div>
-      </transition>
-      <transition name="fade">
-        <div v-if="isShowReview">
-          <div>
-            <p class="mb-1 ml-1 review">▼振り返り</p>
-            <review :questions="questions" :myAns="myAns"></review>
-          </div>
-        </div>
-      </transition>
-      <!-- ここから: 対戦終了後の表示エリア -->
-
-      <!-- ここから: Modal -->
-      <v-dialog v-model="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
-        <v-card>
-          <v-card-title class="yellow lighten-2"><v-icon>mdi-alert-circle-outline</v-icon>注意</v-card-title>
-          <v-card-text class="pl-5 py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
-          <v-divider></v-divider>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn text @click="routeLeave" color="#FA3E7E">対戦をやめる<v-icon>mdi-stop-circle</v-icon></v-btn>
-            <v-btn text @click="dialog_battle_cancel = false" color="primary">対戦を続ける<v-icon>mdi-play-circle</v-icon></v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <!-- ここまで: Modal-->
+    <!-- メッセージ -->
+    <div id="message" class="messageArea">
+      <span>{{ message }}</span>
     </div>
+
+    <!-- ここから: プレイヤー表示エリア -->
+    <div>
+      <div class="player1">
+        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+        <div id="player1-flush" class="flush-area"></div>
+      </div>
+      <div id="player1-score">
+        <span class="score itim">{{ myData.score }}</span>
+      </div>
+      <div>:</div>
+      <div id="player2-score">
+        <span class="score itim">{{ oppData.score }}</span>
+      </div>
+      <div class="player2">
+        <div>
+          <transition name="fade-slow" mode="out-in">
+            <div v-if="isSearching">
+              <span class="text-info">相手を探しています...</span>
+            </div>
+            <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
+          </transition>
+        </div>
+        <div id="player2-flush" class="flush-area"></div>
+      </div>
+    </div>
+    <!-- ここまで: プレイヤー表示エリア -->
+
+    <!-- ここから: 問題表示エリア -->
+    <transition name="fade-slow">
+      <question
+        @selected="selected"
+        v-if="isShowQuestionArea"
+        :myData="myData"
+        :oppData="oppData"
+        :question_now="question_now"
+        :question="questions[question_now - 1]"
+        :isShowQuestion="isShowQuestion"
+        :isShowJudge="isShowJudge"
+        :time_limit="time_limit"
+        :winner="winner"
+      ></question>
+    </transition>
+    <!-- ここまで: 問題表示 -->
+
+    <!-- ここから: 対戦終了後の表示エリア  -->
+    <transition name="fade">
+      <div v-show="isShowRestart">
+        <div class="text-center mb-3">
+          <button @click="restart" class="btn btn-primary mr-1">もう一度</button>
+          <router-link :to="{ name: 'Home' }">
+            <button class="btn btn-secondary">ホームへ戻る</button>
+          </router-link>
+        </div>
+      </div>
+    </transition>
+    <transition name="fade">
+      <div v-if="isShowReview">
+        <div>
+          <p class="mb-1 ml-1 review">▼振り返り</p>
+          <review :questions="questions" :myAns="myAns"></review>
+        </div>
+      </div>
+    </transition>
+    <!-- ここから: 対戦終了後の表示エリア -->
+
+    <!-- ここから: Modal -->
+    <v-dialog v-model="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
+      <v-card>
+        <v-card-title class="yellow lighten-2"><v-icon>mdi-alert-circle-outline</v-icon>注意</v-card-title>
+        <v-card-text class="pl-5 py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="routeLeave" color="#FA3E7E">対戦をやめる<v-icon>mdi-stop-circle</v-icon></v-btn>
+          <v-btn text @click="dialog_battle_cancel = false" color="primary">対戦を続ける<v-icon>mdi-play-circle</v-icon></v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- ここまで: Modal-->
   </v-container>
 </template>
 
@@ -836,7 +834,7 @@ export default {
 </script>
 
 <style lang="scss">
-// 対戦中に画面を離れる時の注意メッセージ
+// 対戦中に画面を離れる時の注意メッセージモーダル
 .v-dialog {
   position: absolute;
   top: 0;
@@ -844,7 +842,6 @@ export default {
 </style>
 
 <style lang="scss" scoped>
-@import url("https://fonts.googleapis.com/css2?family=Itim&display=swap");
 .messageArea {
   padding: 0.5rem;
   background: white;
@@ -862,9 +859,8 @@ export default {
   opacity: 0;
   width: 100%;
   color: midnightblue;
-  font-size: 2.5rem;
   line-height: 1;
-  font-family: "Itim", cursive;
+  font-size: 2.5rem;
 }
 .player1,
 .player2 {

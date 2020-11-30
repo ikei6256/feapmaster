@@ -10,5 +10,12 @@ module.exports = {
       favicon32: 'img/icon_orange.png',
       favicon16: 'img/icon_orange.png',
     }
+  },
+  css: {
+    loaderOptions: {
+      scss: {
+        additionalData: '@import "@/sass/main.scss";'
+      }
+    }
   }
 }

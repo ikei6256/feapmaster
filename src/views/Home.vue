@@ -3,7 +3,6 @@
     <div class="logo px-1 px-md-0">
       <img src="/img/logo/logo.png" alt="FE AP Master" />
     </div>
-    <!-- <nav class="select"> -->
     <v-list class="select py-0" style="background-color:inherit">
       <ul>
         <li class="berlin-sans">
@@ -14,7 +13,6 @@
         </li>
       </ul>
     </v-list>
-    <!-- </nav> -->
 
     <v-footer class="home-footer py-0 px-1 px-md-0" style="background-color:inherit">
       <div class="left">

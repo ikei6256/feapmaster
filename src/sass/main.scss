@@ -1,0 +1,18 @@
+@import 'fontLoad', 'transition';
+
+* {
+  line-height: 1;
+  text-decoration: none;
+}
+
+img {
+  vertical-align: middle;
+}
+
+li {
+  list-style-type: none;
+}
+
+:focus {
+  outline: none;
+}

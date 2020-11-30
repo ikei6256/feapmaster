@@ -1,0 +1,50 @@
+/* --------------------
+ * フォント関連はここで定義する
+ * -------------------- */
+
+$roboto-weights: 100,
+300,
+400,
+500,
+700,
+900;
+
+@each $weight in $roboto-weights {
+  @font-face {
+    font-family: Roboto;
+    font-display: swap;
+    font-style: normal;
+    font-weight: $weight;
+    font-display: swap;
+    src: local('Roboto'),
+    url('/font/Roboto#{$weight}.ttf') format('truetype');
+  }
+}
+
+.itim {
+  font-family: 'Itim', cursive;
+
+  @at-root {
+    @font-face {
+      font-family: 'Itim';
+      font-style: normal;
+      font-weight: normal;
+      font-display: swap;
+      src:
+        local('Itim'),
+        url('/font/Itim-Regular.ttf') format('truetype');
+    }
+  }
+}
+
+.berlin-sans {
+  font-family: 'Berlin Sans FB Demi Bold', sans-serif;
+
+  @at-root {
+    @font-face {
+      font-family: 'Berlin Sans FB Demi Bold';
+      font-display: swap;
+      src: url('/font/BRLNSDB.ttf') format('truetype');
+    }
+  }
+}

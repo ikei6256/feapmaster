@@ -64,70 +64,11 @@ export default {
 </script>
 
 <style lang="scss">
-* {
-  line-height: 1;
-  text-decoration: none;
-}
-img {
-  vertical-align: middle;
-}
-li {
-  list-style-type: none;
-}
-:focus {
-  outline: none;
-}
-
 #app {
-  font-family: Roboto, "verdana", "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Hiragino sans", "verdana", "Droid Sans",
-    sans-serif;
+  font-family: Roboto, "verdana", "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #fac84b;
-}
-
-.berlin-sans {
-  font-family: "Berlin Sans FB Demi", sans-serif;
-  @at-root {
-    @font-face {
-      font-family: "Berlin Sans FB Demi";
-      src: url("/font/BRLNSDB.ttf");
-    }
-  }
-}
-
-// 画面遷移のアニメーション (フェードイン/フェードアウト)
-.fade {
-  &-enter-active,
-  &-leave-active {
-    transition: opacity 0.35s ease-in-out;
-  }
-  &-enter,
-  &-leave-to {
-    opacity: 0;
-  }
-}
-// 少し遅くしたフェードアウト/フェードイン
-.fade-slow {
-  &-enter-active,
-  &-leave-active {
-    transition: opacity 0.75s ease-in-out;
-  }
-  &-enter,
-  &-leave-to {
-    opacity: 0;
-  }
-}
-// フェードイン/フェードアウト 200ms
-.fade-200 {
-  &-enter-active,
-  &-leave-active {
-    transition: opacity 0.1s ease-in-out;
-  }
-  &-enter,
-  &-leave-to {
-    opacity: 0;
-  }
 }
 </style>
 
