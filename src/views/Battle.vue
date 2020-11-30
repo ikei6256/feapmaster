@@ -11,14 +11,14 @@
     </div>
 
     <!-- ここから: プレイヤー表示エリア -->
-    <div class="text-center">
-      <!-- <div class="player1">
+    <!-- <div>
+      <div class="player1">
         <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
       </div>
       <div id="player1-score">
         <span class="score">{{ myData.score }}</span>
       </div> -->
-      <!-- <div>:</div>
+    <!-- <div>:</div>
       <div id="player2-score">
         <span class="score">{{ oppData.score }}</span>
       </div>
@@ -26,38 +26,43 @@
         <div>
           <transition name="fade-slow" mode="out-in">
             <div v-if="isSearching">
-              <span class="text-info">相手を探しています...</span>
+              <span>相手を探しています...</span>
             </div>
             <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
           </transition>
         </div>
-      </div> -->
-
-      <div class="player-area mt-2 mt-sm-4">
-        <v-card class="player1" color="teal lighten-5">
-          <v-card-title>
-            <v-avatar color="white">
-              <img src="/img/Bear.png" alt="プレイヤーイメージ" />
-            </v-avatar>
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-text class="score pt-0 pb-2 pb-sm-4">
-            <span class="pacifico">2</span>
-          </v-card-text>
-        </v-card>
-        <v-card class="player2" color="green lighten-5">
-          <v-card-title>
-            <v-avatar color="white">
-              <img src="/img/Bird.png" alt="プレイヤーイメージ" />
-            </v-avatar>
-          </v-card-title>
-          <v-divider></v-divider>
-          <span class="caption">得点</span>
-          <v-card-text class="score pt-0 pb-2 pb-sm-4">
-            <span class="pacifico">5</span>
-          </v-card-text>
-        </v-card>
       </div>
+    </div>-->
+
+    <div class="player-area mt-2 mt-sm-4">
+      <v-card class="player1" color="teal lighten-5">
+        <v-card-title>
+          <v-avatar color="white">
+            <img src="/img/Bear.png" alt="プレイヤーイメージ" />
+          </v-avatar>
+          <span class="pl-2"><span class="subtitle-1">くま</span><br>
+            <span class="caption">Level 1</span>
+          </span>
+        </v-card-title>
+        <v-divider></v-divider>
+        <div class="score text-center pb-2 pb-sm-4">
+          <span class="score-text berlin-sans">SCORE</span>
+          <span class="points pacifico">2</span>
+        </div>
+      </v-card>
+
+      <v-card class="player2" color="green lighten-5">
+        <v-card-title>
+          <v-avatar color="white">
+            <img src="/img/Bird.png" alt="プレイヤーイメージ" />
+          </v-avatar>
+        </v-card-title>
+        <v-divider></v-divider>
+        <div class="score text-center">
+          <span class="score-text berlin-sans">SCORE</span>
+          <span class="points pacifico">5</span>
+        </div>
+      </v-card>
     </div>
     <!-- ここまで: プレイヤー表示エリア -->
 
@@ -889,21 +894,28 @@ $battle-blue: #113bad;
   display: grid;
   grid-template:
     "... player1 ... player2 ..."
-    / auto minmax(auto, 200px) auto minmax(auto, 200px) auto;
-}
-.player1 {
-  grid-area: player1;
-}
-.player2 {
-  grid-area: player2;
-}
-.player1, .player2 {
-  min-width: 50px;
+    / minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto);
+  .player1 {
+    grid-area: player1;
+  }
+  .player2 {
+    grid-area: player2;
+  }
+  .score {
+    position: relative;
+    .score-text {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      font-size: 0.875rem;
+      color: #757575;
+    }
+  }
+  .points {
+    font-size: 5.5rem;
+  }
 }
 
-.score {
-  font-size: 5.5rem;
-}
 .review {
   color: #333333;
 }
