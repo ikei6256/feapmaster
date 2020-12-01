@@ -5,7 +5,7 @@
         <img :src="playerData.photoURL" alt="Player" />
       </v-avatar>
       <span class="playerName">{{ playerData.name }}</span>
-      <div class="playerStatus caption">
+      <div class="playerStatus">
         <transition name="fade">
           <div v-show="isShowPlayerStatus">
             <transition mode="out-in">
@@ -62,6 +62,7 @@ export default {
   }
   .playerStatus {
     grid-area: status;
+    font-size: 0.75rem;
   }
 }
 

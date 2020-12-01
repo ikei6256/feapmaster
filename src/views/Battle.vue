@@ -6,7 +6,7 @@
     </transition>
 
     <!-- メッセージ -->
-    <div id="message" class="messageArea">
+    <div id="message" class="messageArea text-center py-1 py-sm-2">
       <span>{{ message }}</span>
     </div>
 
@@ -23,9 +23,17 @@
     </div>
     <!-- ここまで: プレイヤー表示エリア -->
 
+    <!-- プログレスバー -->
+    <transition name="fade-slow">
+      <!-- <div v-if="isShowQuestionArea" class="mt-2 mt-sm-4 px-1 px-sm-2"> -->
+      <div v-if="true" class="mt-2 mt-sm-4 px-1 px-sm-2">
+        <progressbar :timer_limit="timer_limit" :timer_valuenow="timer_valuenow"></progressbar>
+      </div>
+    </transition>
+
     <!-- ここから: 問題表示エリア -->
     <transition name="fade-slow">
-      <question
+      <!-- <question
         @selected="selected"
         v-if="isShowQuestionArea"
         :myData="myData"
@@ -34,9 +42,12 @@
         :question="questions[question_now - 1]"
         :isShowQuestion="isShowQuestion"
         :isShowJudge="isShowJudge"
-        :time_limit="time_limit"
         :winner="winner"
-      ></question>
+      ></question> -->
+
+      <div v-if="true" class="mt-2 mt-sm-4">
+        <question></question>
+      </div>
     </transition>
     <!-- ここまで: 問題表示 -->
 
@@ -85,6 +96,7 @@ import $ from "jquery";
 export default {
   components: {
     player: Player,
+    progressbar: () => import(/* webpackChunkName: "progressbar" */ "../components/battle/ProgressBar.vue"),
     question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
     confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
     review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
@@ -94,6 +106,12 @@ export default {
       SPEED_FADE: 350, // フェードイン/フェードアウトの入れ替え速度 350
       SPEED_FADE_SLOW: 700,
       NUM_QUESTION: 5, // 総問題数
+
+      TIMER_DEFAULT: 150, // 制限時間のデフォルト値
+      timer_limit: 0, // 制限時間
+      timer_valuenow: 0,
+      timerId: null, // カウントダウンタイマーのIDを保存する
+
       room: null, // 部屋のDocumentReference
       unsubscribe: null, // リアルタイムリスナーの破棄に使用する
       nextLocation: null, // 画面遷移メソッド
@@ -152,7 +170,6 @@ export default {
         "らーめん",
         "IKEA",
         "くま",
-        "げすとさん",
         "忍者",
         "凄腕ハッカー",
         "りす",
@@ -200,8 +217,7 @@ export default {
         "パピコ",
         "チョコチップクッキー",
       ],
-      time_limit: null, // 時間制限の最大値を保存
-      timerId: null, // カウントダウンタイマーのIDを保存する
+
       timeoutId: null,
       blinkIntervalId: null, // 「選択中」を点滅させるためのInterval ID
 
@@ -227,7 +243,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["TIMER_DEFAULT", "timer_valuenow", "auth", "currentUser", "db"]),
+    ...mapState(["auth", "currentUser", "db"]),
     message() {
       return this.messages[this.message_num];
     },
@@ -273,7 +289,8 @@ export default {
   beforeMount() {
     // サインインユーザであるか確認してname、photoURLをセットする
     if (this.currentUser == null) {
-      this.myData.name = this.name_random[Math.floor(Math.random() * this.name_random.length)];
+      // this.myData.name = this.name_random[Math.floor(Math.random() * this.name_random.length)];
+      this.myData.name = "あなた";
       this.myData.photoURL = `/img/${this.image_random[Math.floor(Math.random() * this.image_random.length)]}.png`;
     } else {
       this.myData.name = this.currentUser.name;
@@ -287,7 +304,7 @@ export default {
       }
     });
 
-    this.search(); // 対戦相手を検索する
+    // this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
     this.nextLocation = next;
@@ -343,20 +360,26 @@ export default {
           } else {
             // 空き部屋がある場合
             this.isHost = false; // ゲストで参加
+
+            // 相手の情報をローカルに保存する
             this.room = querySnapshot.docs[0].ref;
-            this.oppData.name = querySnapshot.docs[0].get("host_name");
+            if (this.oppData.name === "あなた") {
+              this.oppData.name = "ゲストユーザ";
+            } else {
+              this.oppData.name = querySnapshot.docs[0].get("host_name");
+            }
             this.oppData.photoURL = querySnapshot.docs[0].get("host_photoURL");
             if (this.oppData.photoURL == null) this.oppData.photoURL = "/img/Squirrel.png";
 
-            this.questionRefs = querySnapshot.docs[0].get("questions");
-            // const  = querySnapshot.docs[0].get("questions");
+            // 問題の参照型を取得する
+            const refs = querySnapshot.docs[0].get("questions");
 
-            // 取得した参照型をDocumentReference型に直す
-            // for (let questionRef of this.questionRefs) {
-            //   this.questionRefs.push
-            // }
+            // 取得した参照型でDocumentReferenceを取得する
+            for (let ref of refs) {
+              this.questionRefs.push(this.db.doc(ref.path));
+            }
 
-            this.createObserver(this.room); // リアルタイムリスナー作成
+            this.createObserver(); // リアルタイムリスナー作成
           }
         });
     },
@@ -376,6 +399,7 @@ export default {
           host_ans: null, // ホスト回答
           guest_ans: null, // ゲスト回答
           questions: this.questionRefs, // ランダムな問題の参照リスト
+          _ver: "dev",
         })
         .then((documentReference) => {
           this.room = documentReference;
@@ -404,9 +428,9 @@ export default {
     },
 
     /*** 部屋ドキュメントのリアルタイムリスナーを作成する ***/
-    createObserver(room) {
-      this.unsubscribe = room.onSnapshot((snapshot) => {
-        // 接続エラーの処理
+    createObserver() {
+      this.unsubscribe = this.room.onSnapshot((snapshot) => {
+        // 接続エラー時の処理
         if (!snapshot.exists) {
           clearTimeout(this.timeoutId); // 処理をストップ
           clearInterval(this.timerId); // タイマーストップ
@@ -427,16 +451,20 @@ export default {
 
         const data = snapshot.data();
 
-        /*** ここから: 検索中 ***/
+        // 検索中の処理
         if (this.isSearching) {
           // 自身がホストの場合、相手の名前をローカルに保存する
           if (this.isHost && data.guest_name != null) {
-            this.oppData.name = data.guest_name;
+            if (data.guest_name === "あなた") {
+              this.oppData.name = "ゲストユーザ";
+            } else {
+              this.oppData.name = data.guest_name;
+            }
             this.oppData.photoURL = data.guest_photoURL != null ? data.guest_photoURL : "/img/Squirrel.png";
           }
           // 自身がゲストの場合、自身の名前と画像をドキュメントに反映する
           if (!this.isHost && data.guest_name == null) {
-            room.update({
+            this.room.update({
               guest_name: this.myData.name,
               guest_photoURL: this.myData.photoURL,
               // guest_photoURL: null,
@@ -449,7 +477,6 @@ export default {
             return;
           }
         }
-        /*** ここまで: 検索中 ***/
 
         // 相手の回答をローカルに反映する
         if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData.select) {
@@ -475,13 +502,8 @@ export default {
 
       // 問題の参照を用いて問題データを取得する
       for (let questionRef of this.questionRefs) {
-
-        if(!this.isHost){
-          questionRef = this.db.doc(questionRef.path);
-        }
-
-        // question は DocumentReference型
-        questionRef.get().then((querySnapshot) => { // !!!ここでエラーがおこる
+        // questionRef は DocumentReference
+        questionRef.get().then((querySnapshot) => {
           const data = querySnapshot.data();
 
           this.questions.push({
@@ -598,8 +620,7 @@ export default {
                 // 少し待ってから次の問題へ進む
                 this.timeoutId = setTimeout(() => {
                   this.timeoutId = null;
-                  this.time_limit = this.TIMER_DEFAULT; // ひとまず制限時間にデフォルトタイムをセット
-                  this.setTimer({ time: this.time_limit }); // 回答タイマーをセットする
+                  this.timer_limit = this.TIMER_DEFAULT; // ひとまず制限時間にデフォルトタイムをセット
                   this.resetPlayerStatus(); // プレイヤーの状態をリセットする
                   this.isShowPlayerStatus = true; // プレイヤーステータスを表示する
                   this.isShowQuestion = true; // 問題を表示する
@@ -633,7 +654,8 @@ export default {
     /*** 回答タイマー開始 ***/
     startTimer() {
       this.timerId = setInterval(() => {
-        this.timer_countdown(); // カウントダウン
+        // カウントダウン
+        this.timer_valuenow--;
         // 制限時間を超えた場合の処理
         if (this.timer_valuenow < 0) {
           clearInterval(this.timerId);
@@ -659,10 +681,6 @@ export default {
 
     /*** 勝敗判定: 時間制限を過ぎた | 両者の回答が揃った ***/
     judge() {
-      // フラッシュを取り除く
-      document.getElementById("player1-flush").classList.remove("flush");
-      document.getElementById("player2-flush").classList.remove("flush");
-
       // 少し待ってから処理を行う
       this.timeoutId = setTimeout(() => {
         this.timeoutId = null;
@@ -704,11 +722,9 @@ export default {
       const oppTime = this.oppData.time; // 相手の回答タイム
       const correctAns = this.questions[this.question_now - 1].correctAns; // 正答
       if ((mySelect == correctAns && oppSelect != correctAns) || (mySelect == correctAns && oppSelect == correctAns && myTime < oppTime)) {
-        document.getElementById("player1-flush").classList.add("flush");
         this.winner = 1; // 自分の勝ち
         this.myData.score++;
       } else if ((oppSelect == correctAns && mySelect != correctAns) || (oppSelect == correctAns && mySelect == correctAns && oppTime < myTime)) {
-        document.getElementById("player2-flush").classList.add("flush");
         this.winner = 2; // 相手の勝ち
         this.oppData.score++;
       } else {
@@ -792,7 +808,6 @@ export default {
       clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
       clearInterval(this.timerId); // タイマーを停止する
       clearInterval(this.blinkIntervalId);
-      this.setTimer({ time: null });
       if (this.unsubscribe != null) {
         this.unsubscribe(); // リアルタイムリスナーを破棄する
       }
@@ -819,12 +834,12 @@ export default {
       if (this.isHost) {
         this.room.update({
           host_ans: ans,
-          host_time: this.time_limit - this.timer_valuenow,
+          host_time: this.timer_limit - this.timer_valuenow,
         });
       } else {
         this.room.update({
           guest_ans: ans,
-          guest_time: this.time_limit - this.timer_valuenow,
+          guest_time: this.timer_limit - this.timer_valuenow,
         });
       }
     },
@@ -842,18 +857,22 @@ export default {
 
 <style lang="scss" scoped>
 $battle-blue: #113bad;
+
+/* -------------------- *
+ * メッセージ表示エリア
+ * -------------------- */
 .messageArea {
-  padding: 0.5rem;
-  background: white;
-  border-right: solid 0.4rem $battle-blue;
-  border-left: solid 0.4rem $battle-blue;
-  border-radius: 0.8rem;
-  text-align: center;
-  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  background: #fff;
+  border-right: solid 0.5rem $battle-blue;
+  border-left: solid 0.5rem $battle-blue;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 1px 5px 0 rgba(0, 0, 0, 0.12);
   span {
     color: $battle-blue;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 }
 
@@ -872,48 +891,5 @@ $battle-blue: #113bad;
   .player2 {
     grid-area: player2;
   }
-
-  .card-userInfo {
-    display: grid;
-    grid-template:
-      "userPhoto name"
-      "userPhoto status"
-      / auto 1fr;
-
-    .userPhoto {
-      grid-area: userPhoto;
-    }
-    .userName {
-      grid-area: name;
-      font-size: 0.875rem;
-      font-weight: bold;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .userStatus {
-      grid-area: status;
-    }
-  }
-
-  .score {
-    position: relative;
-
-    .score-text {
-      position: absolute;
-      top: 0.5rem;
-      left: 0.5rem;
-      font-size: 0.875rem;
-      color: #757575;
-    }
-
-    .points {
-      font-size: 5.5rem;
-    }
-  }
-}
-
-.review {
-  color: #333333;
 }
 </style>

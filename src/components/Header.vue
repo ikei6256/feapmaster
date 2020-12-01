@@ -54,7 +54,7 @@
       </transition>
     </div>
 
-    <!-- ここから: ログアウト用のスナックバー -->
+    <!-- ログアウト用のスナックバー -->
     <v-snackbar v-model="snackbar_logout" timeout=2800>
       ログアウトしました。
       <template v-slot:action="{ attrs }">
@@ -63,7 +63,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <!-- ここまで: ログアウト用のスナックバー -->
   </header>
 </template>
 
