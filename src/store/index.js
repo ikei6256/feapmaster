@@ -9,7 +9,7 @@ export default new Vuex.Store({
     TIMER_DEFAULT: 150, // 基本タイム 150
     timer_valuenow: null,
     auth: firebase.auth(), // 認証情報
-    currentUser: null, // ユーザの情報
+    currentUser: null, // ユーザの情報をローカルに保存する
     db: firebase.firestore(), // Firestoreへの参照
   },
   mutations: {
@@ -25,6 +25,7 @@ export default new Vuex.Store({
     setDb (state, payload) {
       state.db = payload.db;
     },
+    // currentUserにデータをセットする
     setUser (state, payload) {
       state.currentUser = {
         name: payload.name,

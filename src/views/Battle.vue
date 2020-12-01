@@ -11,58 +11,15 @@
     </div>
 
     <!-- ここから: プレイヤー表示エリア -->
-    <!-- <div>
-      <div class="player1">
-        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
-      </div>
-      <div id="player1-score">
-        <span class="score">{{ myData.score }}</span>
-      </div> -->
-    <!-- <div>:</div>
-      <div id="player2-score">
-        <span class="score">{{ oppData.score }}</span>
-      </div>
-      <div class="player2">
-        <div>
-          <transition name="fade-slow" mode="out-in">
-            <div v-if="isSearching">
-              <span>相手を探しています...</span>
-            </div>
-            <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
-          </transition>
-        </div>
-      </div>
-    </div>-->
-
     <div class="player-area mt-2 mt-sm-4">
-      <v-card class="player1" color="teal lighten-5">
-        <v-card-title>
-          <v-avatar color="white">
-            <img src="/img/Bear.png" alt="プレイヤーイメージ" />
-          </v-avatar>
-          <span class="pl-2"><span class="subtitle-1">くま</span><br>
-            <span class="caption">Level 1</span>
-          </span>
-        </v-card-title>
-        <v-divider></v-divider>
-        <div class="score text-center pb-2 pb-sm-4">
-          <span class="score-text berlin-sans">SCORE</span>
-          <span class="points pacifico">2</span>
-        </div>
-      </v-card>
+      <player class="player1" :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
 
-      <v-card class="player2" color="green lighten-5">
-        <v-card-title>
-          <v-avatar color="white">
-            <img src="/img/Bird.png" alt="プレイヤーイメージ" />
-          </v-avatar>
-        </v-card-title>
-        <v-divider></v-divider>
-        <div class="score text-center">
-          <span class="score-text berlin-sans">SCORE</span>
-          <span class="points pacifico">5</span>
-        </div>
-      </v-card>
+      <div class="player2">
+        <transition name="fade-slow" mode="out-in">
+          <span v-if="isSearching">相手を探しています...</span>
+          <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
+        </transition>
+      </div>
     </div>
     <!-- ここまで: プレイヤー表示エリア -->
 
@@ -122,12 +79,12 @@
 </template>
 
 <script>
-// import Player from "@/components/battle/Player.vue";
+import Player from "@/components/battle/Player.vue";
 import { mapMutations, mapState } from "vuex";
 import $ from "jquery";
 export default {
   components: {
-    // player: Player,
+    player: Player,
     question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
     confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
     review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
@@ -142,7 +99,7 @@ export default {
       nextLocation: null, // 画面遷移メソッド
       myData: {
         name: null,
-        photoUrl: null,
+        photoURL: null,
         status: null, // selecting | waiting | timeup | win | lose | draw | error
         score: 0, // 得点
         select: null, // 回答番号
@@ -150,7 +107,7 @@ export default {
       },
       oppData: {
         name: null,
-        photoUrl: null,
+        photoURL: null,
         status: null,
         score: 0,
         select: null,
@@ -270,7 +227,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["TIMER_DEFAULT", "timer_valuenow", "auth", "db"]),
+    ...mapState(["TIMER_DEFAULT", "timer_valuenow", "auth", "currentUser", "db"]),
     message() {
       return this.messages[this.message_num];
     },
@@ -314,14 +271,14 @@ export default {
     /*** ここまで: 時間切れの場合の処理 ***/
   },
   beforeMount() {
-    // サインインユーザであるか確認してname、photoUrlをセットする
-    // if (this.auth.currentUser == null) {
-    this.myData.name = this.name_random[Math.floor(Math.random() * this.name_random.length)];
-    this.myData.photoUrl = `/img/${this.image_random[Math.floor(Math.random() * this.image_random.length)]}.png`;
-    // } else {
-    //   this.myData.name = this.auth.currentUser.displayName;
-    //   this.myData.photoUrl = this.auth.currentUser.photoUrl;
-    // }
+    // サインインユーザであるか確認してname、photoURLをセットする
+    if (this.currentUser == null) {
+      this.myData.name = this.name_random[Math.floor(Math.random() * this.name_random.length)];
+      this.myData.photoURL = `/img/${this.image_random[Math.floor(Math.random() * this.image_random.length)]}.png`;
+    } else {
+      this.myData.name = this.currentUser.name;
+      this.myData.photoURL = this.currentUser.photoURL;
+    }
   },
   mounted() {
     window.addEventListener("beforeunload", () => {
@@ -330,7 +287,7 @@ export default {
       }
     });
 
-    // this.search(); // 対戦相手を検索する
+    this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
     this.nextLocation = next;
@@ -364,7 +321,7 @@ export default {
       this.questions = [];
       this.myAns = [];
       this.oppData.name = null;
-      this.oppData.photoUrl = null;
+      this.oppData.photoURL = null;
       this.myData.score = 0;
       this.oppData.score = 0;
       this.myData.status = null;
@@ -388,9 +345,17 @@ export default {
             this.isHost = false; // ゲストで参加
             this.room = querySnapshot.docs[0].ref;
             this.oppData.name = querySnapshot.docs[0].get("host_name");
-            this.oppData.photoUrl = querySnapshot.docs[0].get("host_photoUrl");
-            if (this.oppData.photoUrl == null) this.oppData.photoUrl = "/img/Squirrel.png";
+            this.oppData.photoURL = querySnapshot.docs[0].get("host_photoURL");
+            if (this.oppData.photoURL == null) this.oppData.photoURL = "/img/Squirrel.png";
+
             this.questionRefs = querySnapshot.docs[0].get("questions");
+            // const  = querySnapshot.docs[0].get("questions");
+
+            // 取得した参照型をDocumentReference型に直す
+            // for (let questionRef of this.questionRefs) {
+            //   this.questionRefs.push
+            // }
+
             this.createObserver(this.room); // リアルタイムリスナー作成
           }
         });
@@ -404,8 +369,8 @@ export default {
         .add({
           host_name: this.myData.name, // ホスト名
           guest_name: null, // ゲスト名
-          host_photoUrl: this.myData.photoUrl, // サインインユーザでない場合はnull
-          guest_photoUrl: null,
+          host_photoURL: this.myData.photoURL, // サインインユーザでない場合はnull
+          guest_photoURL: null,
           host_time: null, // ホスト回答タイム
           guest_time: null, // ゲスト回答タイム
           host_ans: null, // ホスト回答
@@ -467,20 +432,19 @@ export default {
           // 自身がホストの場合、相手の名前をローカルに保存する
           if (this.isHost && data.guest_name != null) {
             this.oppData.name = data.guest_name;
-            this.oppData.photoUrl = data.guest_photoUrl != null ? data.guest_photoUrl : "/img/Squirrel.png";
+            this.oppData.photoURL = data.guest_photoURL != null ? data.guest_photoURL : "/img/Squirrel.png";
           }
           // 自身がゲストの場合、自身の名前と画像をドキュメントに反映する
           if (!this.isHost && data.guest_name == null) {
             room.update({
               guest_name: this.myData.name,
-              guest_photoUrl: this.myData.photoUrl,
-              // guest_photoUrl: null,
+              guest_photoURL: this.myData.photoURL,
+              // guest_photoURL: null,
             });
             return;
           }
           // 両者が揃ったときに検索終了
           if (data.host_name != null && data.guest_name != null) {
-            this.isSearching = false;
             this.searched();
             return;
           }
@@ -507,11 +471,17 @@ export default {
     searched() {
       this.isPlaying = true; // ステータス:対戦中
       this.isSearching = false; // 検索を終えて対戦相手の画像を出現させる
+      this.blink();
 
       // 問題の参照を用いて問題データを取得する
-      for (const questionRef of this.questionRefs) {
+      for (let questionRef of this.questionRefs) {
+
+        if(!this.isHost){
+          questionRef = this.db.doc(questionRef.path);
+        }
+
         // question は DocumentReference型
-        questionRef.get().then((querySnapshot) => {
+        questionRef.get().then((querySnapshot) => { // !!!ここでエラーがおこる
           const data = querySnapshot.data();
 
           this.questions.push({
@@ -895,14 +865,40 @@ $battle-blue: #113bad;
   grid-template:
     "... player1 ... player2 ..."
     / minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto);
+
   .player1 {
     grid-area: player1;
   }
   .player2 {
     grid-area: player2;
   }
+
+  .card-userInfo {
+    display: grid;
+    grid-template:
+      "userPhoto name"
+      "userPhoto status"
+      / auto 1fr;
+
+    .userPhoto {
+      grid-area: userPhoto;
+    }
+    .userName {
+      grid-area: name;
+      font-size: 0.875rem;
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .userStatus {
+      grid-area: status;
+    }
+  }
+
   .score {
     position: relative;
+
     .score-text {
       position: absolute;
       top: 0.5rem;
@@ -910,9 +906,10 @@ $battle-blue: #113bad;
       font-size: 0.875rem;
       color: #757575;
     }
-  }
-  .points {
-    font-size: 5.5rem;
+
+    .points {
+      font-size: 5.5rem;
+    }
   }
 }
 

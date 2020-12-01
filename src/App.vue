@@ -26,6 +26,7 @@ export default {
     this.auth.onAuthStateChanged((user) => {
       if (user) {
         // signed in
+
         const userObj = {
           name: user.displayName,
           email: user.email,
@@ -34,12 +35,13 @@ export default {
         const docRef = this.db.collection("users").doc(user.uid);
 
         docRef.get().then( (snapshot) => {
-          // ユーザ情報がデータベースに存在するかチェックしてレベルを取得する。無ければデータベースに新しく登録する。
-          if (!snapshot.exists) {
+          // ユーザ情報がデータベースに存在するかチェックしてレベルを取得する
+          if (snapshot.exists) {
+            userObj.level = snapshot.data().level;
+          } else {
+            // ユーザ情報が無ければデータベースに新しく登録する
             userObj.level = 1;
             docRef.set(userObj);
-          } else {
-            userObj.level = snapshot.data().level;
           }
 
           // ローカルに保存する
