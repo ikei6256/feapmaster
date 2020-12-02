@@ -6,19 +6,20 @@
     </transition>
 
     <!-- メッセージ -->
-    <div id="message" class="messageArea text-center py-1 py-sm-2">
+    <div id="message" class="area-message text-center py-1 py-sm-2">
       <span>{{ message }}</span>
     </div>
 
     <!-- ここから: プレイヤー表示エリア -->
-    <div class="player-area mt-2 mt-sm-4">
+    <div class="area-players mt-2 mt-sm-4">
       <player class="player1" :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
 
       <div class="player2">
-        <transition name="fade-slow" mode="out-in">
+        <!-- <transition name="fade-slow" mode="out-in">
           <span v-if="isSearching">相手を探しています...</span>
           <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
-        </transition>
+        </transition> -->
+        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
       </div>
     </div>
     <!-- ここまで: プレイヤー表示エリア -->
@@ -45,7 +46,7 @@
         :winner="winner"
       ></question> -->
 
-      <div v-if="true" class="mt-2 mt-sm-4">
+      <div v-if="true" class="my-2 my-sm-4">
         <question></question>
       </div>
     </transition>
@@ -222,7 +223,6 @@ export default {
       blinkIntervalId: null, // 「選択中」を点滅させるためのInterval ID
 
       isHost: null, // 部屋のホストかゲストか
-      isPlaying: false, // 対戦中かどうか
       isSearching: true, // 対戦相手検索中
       isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
       isShowQuestion: false, // 問題を表示するタイミングを制御する
@@ -243,7 +243,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["auth", "currentUser", "db"]),
+    ...mapState(["auth", "currentUser", "db", "isPlaying"]),
     message() {
       return this.messages[this.message_num];
     },
@@ -325,7 +325,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(["timer_countdown", "setTimer"]),
+    ...mapMutations(["stateBattleTrue", "stateBattleFalse"]),
     /*** 対戦相手を検索する ***/
     search() {
       this.message_num = 0; // 「待機中...」
@@ -435,7 +435,7 @@ export default {
           clearTimeout(this.timeoutId); // 処理をストップ
           clearInterval(this.timerId); // タイマーストップ
           this.unsubscribe(); // リアルタイムリスナーを破棄する
-          this.isPlaying = false;
+          this.stateBattleFalse();
           this.isShowQuestionArea = false; // 問題エリアを非表示
           this.oppData.status = "error";
           this.myData.status = "error";
@@ -496,7 +496,7 @@ export default {
 
     /*** 対戦相手が見つかった(部屋入室後)後の処理 ***/
     searched() {
-      this.isPlaying = true; // ステータス:対戦中
+      this.stateBattleTrue(); // ステータス:対戦中
       this.isSearching = false; // 検索を終えて対戦相手の画像を出現させる
       this.blink();
 
@@ -735,7 +735,7 @@ export default {
     /*** 全問題が終了後 ***/
     endBattle() {
       const message = $("#message span");
-      this.isPlaying = false; // ステータス: 対戦終了
+      this.stateBattleFalse(); // ステータス: 対戦終了
       clearInterval(this.blinkIntervalId);
 
       // メッセージをフェードアウトする
@@ -861,29 +861,36 @@ $battle-blue: #113bad;
 /* -------------------- *
  * メッセージ表示エリア
  * -------------------- */
-.messageArea {
-  background: #fff;
+.area-message {
+  background-color: #fff;
   border-right: solid 0.5rem $battle-blue;
   border-left: solid 0.5rem $battle-blue;
   border-radius: 0.5rem;
-  box-shadow:
-    0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-    0 1px 5px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+
   span {
+    display: inline-block;
+    min-height: 0.8rem;
+    font-size: 1.1rem;
     color: $battle-blue;
     font-weight: bold;
-    font-size: 1.1rem;
   }
 }
 
 /* -------------------- *
  * プレイヤー表示エリア
  * -------------------- */
-.player-area {
+.area-players {
   display: grid;
   grid-template:
     "... player1 ... player2 ..."
-    / minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto);
+    / minmax(0.2rem, auto) minmax(auto, 49.5%) minmax(0.2rem, auto) minmax(auto, 49.5%) minmax(0.2rem, auto);
+
+  @media screen and (min-width: 600px) {
+    grid-template:
+      "... player1 ... player2 ..."
+      / minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto) minmax(auto, 250px) minmax(0.2rem, auto);
+  }
 
   .player1 {
     grid-area: player1;

@@ -9,9 +9,9 @@
     </transition>
     <div class="menu">
       <transition name="fade-200" mode="out-in">
-        <v-btn v-if="currentUser === null" :to="{ name: 'Login' }" color="indigo" text class="font-weight-bold">ログイン</v-btn>
+        <v-btn v-if="currentUser === null && isPlaying === false" :to="{ name: 'Login' }" color="indigo" text class="font-weight-bold">ログイン</v-btn>
 
-        <v-menu v-else open-on-hover bottom offset-y rounded>
+        <v-menu v-else-if="currentUser !== null && isPlaying === false" open-on-hover bottom offset-y rounded>
           <template v-slot:activator="{ on }">
             <v-btn class="avater" v-on="on" text>
               <img :src="currentUser.photoURL" alt="ユーザ画像" />
@@ -75,7 +75,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["auth", "currentUser"]),
+    ...mapState(["auth", "currentUser", "isPlaying"]),
   },
   methods: {
     logout() {
@@ -89,6 +89,7 @@ export default {
 
 <style lang="scss" scoped>
 $header-height: 2.5rem;
+
 header {
   margin-top: 0.5rem;
   display: grid;

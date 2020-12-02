@@ -3,7 +3,7 @@
     <div class="root">
       <header-component class="header-component"></header-component>
       <transition name="fade" mode="out-in">
-        <router-view class="contentsArea" />
+        <router-view class="area-contents" />
       </transition>
     </div>
   </v-app>
@@ -89,7 +89,7 @@ $background-color-main: #fac84b;
   grid-area: header;
 }
 
-.contentsArea {
+.area-contents {
   grid-area: contents;
 }
 </style>

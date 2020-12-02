@@ -1,5 +1,5 @@
 <template>
-  <div class="questionArea">
+  <div class="question">
     <!-- ここから: 問題表示エリア -->
     <transition name="fade">
       <!-- <div v-if="isShowQuestion">
@@ -58,21 +58,47 @@
       <!-- 問題文 -->
       <div v-if="true">
         <div class="pa-2 pa-sm-4">
-          <span
-            >Lorem ipsum, dolor sit amet consectetur adipisicing elit. Earum quaerat quis quidem quisquam doloribus iure nam. Necessitatibus sint,
-            saepe tenetur ea adipisci iusto! Sequi veritatis dolorum quas necessitatibus minima cumque.</span
-          >
+          <p class="question-body mb-0">
+            PCとWebサーバがHTTPで通信している。PCからWebサーバ宛てのパケットでは，送信元ポート番号はPC側で割り当てた50001，宛先ポート番号は80であった。WebサーバからPCへの戻りのパケットでのポート番号の組合せはどれか。
+          </p>
           <!-- 画像があれば表示する -->
           <!-- <div v-if="question.questionImageUrl != null" class="text-center"> -->
           <div class="text-center mt-2 mt-sm-4">
-            <img src="/img/Bear.png" alt="Question Image" />
+            <img src="/img/Bear.png" alt="Question Image" style="max-width: 100%" />
           </div>
         </div>
 
-        <v-divider></v-divider>
+        <v-divider class="mx-1 mx-sm-2"></v-divider>
 
         <!-- 回答 -->
-        <div>アイウエ</div>
+        <div class="area-select pa-2 pa-sm-4">
+          <v-btn text>
+            <v-icon>ア</v-icon>
+            <span class="pl-2 pl-sm-4">
+              個々の行動に対しての善しあしを得点として与えることによって，得点が最も多く得られるような方策を学習する。
+            </span>
+          </v-btn>
+          <v-btn class="option mt-4" text block>
+            <v-icon class="option-icon">イ</v-icon>
+            <span class="option-text mb-0 pl-2 pl-sm-4">
+              コンピュータ利用者の挙動データを蓄積し，挙動データの出現頻度に従って次の挙動を推論する。Lorem ipsum dolor sit, amet consectetur
+              adipisicing elit. Quidem deserunt culpa ullam nulla cumque numquam laboriosam ipsa recusandae eum aut labore saepe similique nam
+              quibusdam qui, maxime itaque tempore vitae.
+            </span>
+          </v-btn>
+          <v-btn class="option mt-4" text block>
+            <v-icon class="option-icon">ウ</v-icon>
+            <p class="option-text mb-0 pl-2 pl-sm-4">
+              正解のデータを提示したり，データが誤りであることを指摘したりすることによって，未知のデータに対して正誤を得ることを助ける。
+            </p>
+          </v-btn>
+          <v-btn class="option mt-4" text block>
+            <v-icon class="option-icon">エ</v-icon>
+            <p class="option-text mb-0 pl-2 pl-sm-4">
+              正解のデータを提示せずに，統計的性質や，ある種の条件によって入力パターンを判定したり，クラスタリングしたりする。
+            </p>
+          </v-btn>
+        </div>
       </div>
     </transition>
     <!-- ここまで: 問題表示エリア -->
@@ -150,26 +176,26 @@ export default {
   },
   methods: {
     selected(event, ans) {
-      var waves, d, x, y;
+      // var waves, d, x, y;
 
       /*** ボタンに色をつける ***/
-      if ($(event.target).find(".waves").length === 0) {
-        $(event.target).prepend('<span class="waves"></span>');
-      }
+      // if ($(event.target).find(".waves").length === 0) {
+      //   $(event.target).prepend('<span class="waves"></span>');
+      // }
 
-      waves = $(event.target).find(".waves");
-      waves.removeClass("ripple");
+      // waves = $(event.target).find(".waves");
+      // waves.removeClass("ripple");
 
-      if (!waves.height() && !waves.width()) {
-        d = Math.max($(event.target).outerWidth(), $(event.target).outerHeight());
-        waves.css({ height: d, width: d });
-      }
+      // if (!waves.height() && !waves.width()) {
+      //   d = Math.max($(event.target).outerWidth(), $(event.target).outerHeight());
+      //   waves.css({ height: d, width: d });
+      // }
 
-      x = event.pageX - $(event.target).offset().left - waves.width() / 2;
-      y = event.pageY - $(event.target).offset().top - waves.height() / 2;
+      // x = event.pageX - $(event.target).offset().left - waves.width() / 2;
+      // y = event.pageY - $(event.target).offset().top - waves.height() / 2;
 
-      $(event.target).css({ color: "white" });
-      waves.css({ top: y + "px", left: x + "px" }).addClass("ripple");
+      // $(event.target).css({ color: "white" });
+      // waves.css({ top: y + "px", left: x + "px" }).addClass("ripple");
       /**********/
 
       this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
@@ -181,16 +207,46 @@ export default {
 <style lang="scss" scoped>
 $battle-blue: #113bad;
 
-/* --------------------
- * 問題表示エリア
- * -------------------- */
-.questionArea {
+.question {
   min-height: 30rem;
-  background: #fff;
+  background-color: #fff;
   border-right: solid 0.5rem $battle-blue;
   border-left: solid 0.5rem $battle-blue;
   border-radius: 0.5rem;
   box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+
+  .question-body,
+  .option-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    letter-spacing: 0.025rem;
+  }
+
+
+  // .option {
+  //   display: grid;
+  //   grid-template:
+  //     "option-icon option-text"
+  //     / auto 1fr;
+
+  //   .option-icon {
+  //     grid-area: option-icon;
+  //   }
+  //   .option-text {
+  //     grid-area: option-text;
+  //     align-self: center;
+  //   }
+  // }
+
+  .area-select {
+    .v-btn {
+      padding: 0;
+      width: 100%;
+      justify-content: left;
+      text-transform: none;
+      letter-spacing: 0.025rem;
+    }
+  }
 }
 
 .result {

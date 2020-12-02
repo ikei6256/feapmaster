@@ -1,6 +1,7 @@
 <template>
   <v-progress-linear class="bar" :value="timer_percentage" height="1rem" rounded>
-    <span class="progress-text px-2">残り {{ timer_valuenow }}</span>
+    <!-- <span class="progress-text px-2">残り {{ timer_valuenow }}</span> -->
+    <span class="progress-text px-2">0:00</span>
   </v-progress-linear>
 </template>
 

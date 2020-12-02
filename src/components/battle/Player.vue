@@ -44,8 +44,8 @@ export default {
 .card-playerInfo {
   display: grid;
   grid-template:
-    "userPhoto name"
-    "userPhoto status"
+    "userPhoto name" 1fr
+    "userPhoto status" 1fr
     / auto 1fr;
 
   .playerPhoto {
