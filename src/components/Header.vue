@@ -9,12 +9,16 @@
     </transition>
     <div class="menu">
       <transition name="fade-200" mode="out-in">
-        <v-btn v-if="currentUser === null && isPlaying === false" :to="{ name: 'Login' }" color="indigo" text class="font-weight-bold">ログイン</v-btn>
+        <v-btn v-if="currentUser === null && isPlaying === false" :to="{ name: 'Login' }" color="indigo" text class="font-weight-bold"
+          >ログイン</v-btn
+        >
 
         <v-menu v-else-if="currentUser !== null && isPlaying === false" open-on-hover bottom offset-y rounded>
           <template v-slot:activator="{ on }">
-            <v-btn class="avater" v-on="on" text>
-              <img :src="currentUser.photoURL" alt="ユーザ画像" />
+            <v-btn class="btn-user" v-on="on" text>
+              <v-avatar color="#fff" size="2.4rem">
+                <v-img :src="currentUser.photoURL" alt="User Photo"></v-img>
+              </v-avatar>
               <v-icon small>mdi-chevron-down</v-icon>
             </v-btn>
           </template>
@@ -24,7 +28,7 @@
             <v-list dense color="grey lighten-5">
               <v-list-item>
                 <v-layout justify-center>
-                  <v-list-item-avatar class="mr-0 mb-0">
+                  <v-list-item-avatar class="mr-0 mb-0" color="#fff">
                     <v-img :src="currentUser.photoURL"></v-img>
                   </v-list-item-avatar>
                 </v-layout>
@@ -32,10 +36,11 @@
 
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title class="title text-center">{{ currentUser.name }}</v-list-item-title>
+                  <v-list-item-title class="userName text-center">{{ currentUser.name }}</v-list-item-title>
                   <v-list-item-subtitle class="text-center">{{ currentUser.email }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
+
               <v-divider></v-divider>
 
               <v-list-item>
@@ -55,7 +60,7 @@
     </div>
 
     <!-- ログアウト用のスナックバー -->
-    <v-snackbar v-model="snackbar_logout" timeout=2800>
+    <v-snackbar v-model="snackbar_logout" timeout="2800">
       ログアウトしました。
       <template v-slot:action="{ attrs }">
         <v-btn icon v-bind="attrs" @click="snackbar_logout = false">
@@ -97,25 +102,45 @@ header {
     "logo ... menu" $header-height
     / auto 1fr auto;
   align-items: center;
-}
-.logo {
-  grid-area: logo;
-  img {
-    max-height: $header-height;
+
+  .logo {
+    grid-area: logo;
+    img {
+      max-height: $header-height;
+    }
   }
-}
-.menu {
-  grid-area: menu;
-  justify-self: right;
-  font-size: 14px;
-}
-.avater {
-  &.v-btn.v-btn {
-    padding: 0;
+
+  .menu {
+    grid-area: menu;
+    justify-self: right;
+    font-size: 14px;
+
+    .btn-user {
+      &.v-btn.v-btn {
+        padding: 0;
+      }
+
+      .userPhoto {
+      //   display: inline-flex;
+      //   align-items: center;
+      //   justify-content: center;
+      //   border-radius: 50%;
+      //   background-color: #fff;
+      //   overflow: hidden;
+        // height: $header-height - 0.3rem;
+      //   width: $header-height - 0.3rem;
+      //   img {
+      //     display: inline-flex;
+      //     height: inherit;
+      //     width: inherit;
+      //     //max-height: $header-height - 0.3rem;
+      //   }
+      }
+    }
   }
-  img {
-    border-radius: 50%;
-    max-height: $header-height - 0.3rem;
+
+  .userName {
+    line-height: normal;
   }
 }
 </style>

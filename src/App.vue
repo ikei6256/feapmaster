@@ -28,19 +28,27 @@ export default {
         // signed in
 
         const userObj = {
-          name: user.displayName,
           email: user.email,
-          photoURL: user.photoURL
         }
         const docRef = this.db.collection("users").doc(user.uid);
 
         docRef.get().then( (snapshot) => {
-          // ユーザ情報がデータベースに存在するかチェックしてレベルを取得する
+          // ユーザ情報がFirestoreに存在するかチェック
           if (snapshot.exists) {
             userObj.level = snapshot.data().level;
+            userObj.name = snapshot.data().name;
+            userObj.photoURL = snapshot.data().photoURL;
           } else {
-            // ユーザ情報が無ければデータベースに新しく登録する
+            // ユーザ情報がFirestoreに無ければ新しく登録する
             userObj.level = 1;
+            userObj.name = user.displayName;
+            // 画像があるかチェックする
+            if (user.photoURL === null) {
+              // 画像が無い場合はデフォルトで保存する
+              userObj.photoURL = "/img/no-image.png";
+            } else {
+              userObj.photoURL = user.photoURL;
+            }
             docRef.set(userObj);
           }
 

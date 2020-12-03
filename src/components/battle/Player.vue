@@ -2,7 +2,7 @@
   <v-card color="teal lighten-5">
     <v-card-title class="card-playerInfo">
       <v-avatar class="playerPhoto mr-1 mr-sm-2" color="#fff">
-        <img :src="playerData.photoURL" alt="Player" />
+        <v-img :src="playerData.photoURL" alt="Player Photo" />
       </v-avatar>
       <span class="playerName">{{ playerData.name }}</span>
       <div class="playerStatus">
@@ -58,7 +58,8 @@ export default {
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; //「...」の表示
+    line-height: normal;
   }
   .playerStatus {
     grid-area: status;

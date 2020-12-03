@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-2 mt-sm-4">
+  <div class="battle mt-2 mt-sm-4">
     <!-- 紙吹雪 -->
     <transition name="fade">
       <confetti v-if="isShowConfetti"></confetti>
@@ -34,20 +34,19 @@
 
     <!-- ここから: 問題表示エリア -->
     <transition name="fade-slow">
-      <!-- <question
-        @selected="selected"
-        v-if="isShowQuestionArea"
-        :myData="myData"
-        :oppData="oppData"
-        :question_now="question_now"
-        :question="questions[question_now - 1]"
-        :isShowQuestion="isShowQuestion"
-        :isShowJudge="isShowJudge"
-        :winner="winner"
-      ></question> -->
-
       <div v-if="true" class="my-2 my-sm-4">
-        <question></question>
+        <question
+          class="my-2 my-sm-4"
+          @selected="selected"
+          v-if="isShowQuestionArea"
+          :myData="myData"
+          :oppData="oppData"
+          :question_now="question_now"
+          :question="questions[question_now - 1]"
+          :isShowQuestion="isShowQuestion"
+          :isShowJudge="isShowJudge"
+          :winner="winner"
+        ></question>
       </div>
     </transition>
     <!-- ここまで: 問題表示 -->

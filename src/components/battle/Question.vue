@@ -2,101 +2,69 @@
   <div class="question">
     <!-- ここから: 問題表示エリア -->
     <transition name="fade">
-      <!-- <div v-if="isShowQuestion">
-        <div>
-          問題文
-          <div v-if="question.questionImageUrl != null" class="text-center">
-            <img :src="question.questionImageUrl" alt="Question Image" />
-          </div>
-        </div>
-
-        <v-divider></v-divider>
-
-        <div>
-          <div>
-            <img :src="question.answerAllImageUrl" alt="回答用イメージ" />
-          </div>
-          <div>
-            <div>
-              <button @click="selected($event, 1)" :disabled="myData.status != 'selecting'">ア</button>
-            </div>
-            <div>
-              <span v-if="question.option1 != 'ア'">{{ question.option1 }}</span>
-              <img v-if="question.answerImageUrl1 != null" :src="question.answerImageUrl1" alt="回答用イメージその1" />
-            </div>
-          </div>
-          <div>
-            <div>
-              <button @click="selected($event, 2)" :disabled="myData.status != 'selecting'">イ</button>
-            </div>
-            <div>
-              <span v-if="question.option2 != 'イ'">{{ question.option2 }}</span>
-              <img v-if="question.answerImageUrl2 != null" :src="question.answerImageUrl2" alt="回答用イメージその2" />
-            </div>
-          </div>
-          <div>
-            <div>
-              <button @click="selected($event, 3)" :disabled="myData.status != 'selecting'">ウ</button>
-            </div>
-            <div>
-              <span v-if="question.option3 != 'ウ'">{{ question.option3 }}</span>
-              <img v-if="question.answerImageUrl3 != null" :src="question.answerImageUrl3" alt="回答用イメージその3" />
-            </div>
-          </div>
-          <div>
-            <div>
-              <button @click="selected($event, 4)" :disabled="myData.status != 'selecting'">エ</button>
-            </div>
-            <div>
-              <span v-if="question.option4 != 'エ'">{{ question.option4 }}</span>
-              <img v-if="question.answerImageUrl4 != null" :src="question.answerImageUrl4" alt="回答用イメージその4" />
-            </div>
-          </div>
-        </div>
-      </div> -->
-
-      <!-- 問題文 -->
-      <div v-if="true">
+      <div v-if="isShowQuestion">
+        <!-- 問題文 -->
         <div class="pa-2 pa-sm-4">
-          <p class="question-body mb-0">
-            PCとWebサーバがHTTPで通信している。PCからWebサーバ宛てのパケットでは，送信元ポート番号はPC側で割り当てた50001，宛先ポート番号は80であった。WebサーバからPCへの戻りのパケットでのポート番号の組合せはどれか。
-          </p>
-          <!-- 画像があれば表示する -->
-          <!-- <div v-if="question.questionImageUrl != null" class="text-center"> -->
-          <div class="text-center mt-2 mt-sm-4">
-            <img src="/img/Bear.png" alt="Question Image" style="max-width: 100%" />
+          <p class="question-body mb-0" v-html="question.body"></p>
+          <div v-if="question.questionImageUrl !== null" class="text-center mt-2 mt-sm-4">
+            <img :src="question.questionImageUrl" alt="Question Image" style="max-width: 100%" />
           </div>
         </div>
 
         <v-divider class="mx-1 mx-sm-2"></v-divider>
 
         <!-- 回答 -->
-        <div class="area-select pa-2 pa-sm-4">
-          <v-btn text>
+        <div class="options pa-2 pa-sm-4">
+          <div v-if="question.answerAllImageUrl !== null" class="text-center">
+            <img :src="question.answerAllImageUrl" alt="回答用イメージ" />
+          </div>
+          <v-btn
+            class="text-left mt-2 px-0 py-2"
+            @click="selected($event, 1)"
+            :disabled="myData.status != 'selecting'"
+            height="auto"
+            width="100%"
+            text
+          >
             <v-icon>ア</v-icon>
-            <span class="pl-2 pl-sm-4">
-              個々の行動に対しての善しあしを得点として与えることによって，得点が最も多く得られるような方策を学習する。
-            </span>
+            <span v-if="question.option1 !== null" class="option-text pl-2 pl-sm-4" v-html="question.option1"></span>
+            <img v-if="question.answerImageUrl1 !== null" :src="question.answerImageUrl1" alt="Option Image 1" />
           </v-btn>
-          <v-btn class="option mt-4" text block>
-            <v-icon class="option-icon">イ</v-icon>
-            <span class="option-text mb-0 pl-2 pl-sm-4">
-              コンピュータ利用者の挙動データを蓄積し，挙動データの出現頻度に従って次の挙動を推論する。Lorem ipsum dolor sit, amet consectetur
-              adipisicing elit. Quidem deserunt culpa ullam nulla cumque numquam laboriosam ipsa recusandae eum aut labore saepe similique nam
-              quibusdam qui, maxime itaque tempore vitae.
-            </span>
+          <v-btn
+            class="text-left mt-2 px-0 py-2"
+            @click="selected($event, 2)"
+            :disabled="myData.status != 'selecting'"
+            height="auto"
+            width="100%"
+            text
+          >
+            <v-icon>イ</v-icon>
+            <span v-if="question.option2 !== null" class="option-text mb-0 pl-2 pl-sm-4" v-html="question.option2"></span>
+            <img v-if="question.answerImageUrl2 !== null" :src="question.answerImageUrl2" alt="Option Image 2" />
           </v-btn>
-          <v-btn class="option mt-4" text block>
-            <v-icon class="option-icon">ウ</v-icon>
-            <p class="option-text mb-0 pl-2 pl-sm-4">
-              正解のデータを提示したり，データが誤りであることを指摘したりすることによって，未知のデータに対して正誤を得ることを助ける。
-            </p>
+          <v-btn
+            class="text-left mt-2 px-0 py-2"
+            @click="selected($event, 3)"
+            :disabled="myData.status != 'selecting'"
+            height="auto"
+            width="100%"
+            text
+          >
+            <v-icon>ウ</v-icon>
+            <span v-if="question.option3 !== null" class="option-text mb-0 pl-2 pl-sm-4" v-html="question.option3"></span>
+            <img v-if="question.answerImageUrl3 !== null" :src="question.answerImageUrl3" alt="Option Image 3" />
           </v-btn>
-          <v-btn class="option mt-4" text block>
-            <v-icon class="option-icon">エ</v-icon>
-            <p class="option-text mb-0 pl-2 pl-sm-4">
-              正解のデータを提示せずに，統計的性質や，ある種の条件によって入力パターンを判定したり，クラスタリングしたりする。
-            </p>
+          <v-btn
+            class="text-left mt-2 px-0 py-2"
+            @click="selected($event, 4)"
+            :disabled="myData.status != 'selecting'"
+            height="auto"
+            width="100%"
+            text
+          >
+            <v-icon>エ</v-icon>
+            <span v-if="question.option4 !== null" class="option-text mb-0 pl-2 pl-sm-4" v-html="question.option4"></span>
+            <img v-if="question.answerImageUrl4 !== null" :src="question.answerImageUrl3" alt="Option Image 4" />
           </v-btn>
         </div>
       </div>
@@ -176,28 +144,6 @@ export default {
   },
   methods: {
     selected(event, ans) {
-      // var waves, d, x, y;
-
-      /*** ボタンに色をつける ***/
-      // if ($(event.target).find(".waves").length === 0) {
-      //   $(event.target).prepend('<span class="waves"></span>');
-      // }
-
-      // waves = $(event.target).find(".waves");
-      // waves.removeClass("ripple");
-
-      // if (!waves.height() && !waves.width()) {
-      //   d = Math.max($(event.target).outerWidth(), $(event.target).outerHeight());
-      //   waves.css({ height: d, width: d });
-      // }
-
-      // x = event.pageX - $(event.target).offset().left - waves.width() / 2;
-      // y = event.pageY - $(event.target).offset().top - waves.height() / 2;
-
-      // $(event.target).css({ color: "white" });
-      // waves.css({ top: y + "px", left: x + "px" }).addClass("ripple");
-      /**********/
-
       this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
     },
   },
@@ -215,36 +161,22 @@ $battle-blue: #113bad;
   border-radius: 0.5rem;
   box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 
-  .question-body,
-  .option-text {
-    font-size: 0.9rem;
+  .question-body {
+    font-size: 0.875rem;
     line-height: 1.5;
-    letter-spacing: 0.025rem;
+    letter-spacing: 0.05rem;
   }
 
-
-  // .option {
-  //   display: grid;
-  //   grid-template:
-  //     "option-icon option-text"
-  //     / auto 1fr;
-
-  //   .option-icon {
-  //     grid-area: option-icon;
-  //   }
-  //   .option-text {
-  //     grid-area: option-text;
-  //     align-self: center;
-  //   }
-  // }
-
-  .area-select {
+  .options {
     .v-btn {
-      padding: 0;
-      width: 100%;
-      justify-content: left;
-      text-transform: none;
-      letter-spacing: 0.025rem;
+      display: inline-block; // デフォルト flex
+      justify-content: left; // デフォルト center
+      text-transform: none; // デフォルト uppercase
+      white-space: normal; // デフォルト nowrap
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+    .option-text {
+      line-height: 1.5;
     }
   }
 }

@@ -12,7 +12,7 @@
 
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="title">{{ currentUser.name }}</v-list-item-title>
+              <v-list-item-title>{{ currentUser.name }}</v-list-item-title>
               <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
