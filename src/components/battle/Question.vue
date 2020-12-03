@@ -112,7 +112,7 @@ export default {
     myData: Object,
     oppData: Object,
     question_now: Number,
-    question: Object,
+    // question: Object, // 仮の問題データを置く
     isShowQuestion: Boolean,
     isShowJudge: Boolean,
     winner: Number,
@@ -120,6 +120,19 @@ export default {
   data() {
     return {
       option: ["ア", "イ", "ウ", "エ"],
+      question: {
+        body: "もんだいぶん",
+        questionImageUrl: null,
+        answerAllImageUrl: null,
+        answerImageUrl1: null,
+        answerImageUrl2: null,
+        answerImageUrl3: null,
+        answerImageUrl4: null,
+        option1: "かいとう1",
+        option2: "かいとう2",
+        option3: "かいとう3",
+        option4: "かいとう4"
+      }
     };
   },
   watch: {

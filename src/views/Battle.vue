@@ -15,11 +15,10 @@
       <player class="player1" :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
 
       <div class="player2">
-        <!-- <transition name="fade-slow" mode="out-in">
+        <transition name="fade-slow" mode="out-in">
           <span v-if="isSearching">相手を探しています...</span>
           <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
-        </transition> -->
-        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+        </transition>
       </div>
     </div>
     <!-- ここまで: プレイヤー表示エリア -->
@@ -109,7 +108,7 @@ export default {
 
       TIMER_DEFAULT: 150, // 制限時間のデフォルト値
       timer_limit: 0, // 制限時間
-      timer_valuenow: 0,
+      timer_valuenow: 0, // 経過時間
       timerId: null, // カウントダウンタイマーのIDを保存する
 
       room: null, // 部屋のDocumentReference
@@ -367,8 +366,11 @@ export default {
             } else {
               this.oppData.name = querySnapshot.docs[0].get("host_name");
             }
-            this.oppData.photoURL = querySnapshot.docs[0].get("host_photoURL");
-            if (this.oppData.photoURL == null) this.oppData.photoURL = "/img/Squirrel.png";
+            if (this.oppData.photoURL !== null) {
+              this.oppData.photoURL = querySnapshot.docs[0].get("host_photoURL");
+            } else {
+              this.oppData.photoURL = "/img/no-image.png";
+            }
 
             // 問題の参照型を取得する
             const refs = querySnapshot.docs[0].get("questions");
