@@ -222,7 +222,7 @@ export default {
 
       isHost: null, // 部屋のホストかゲストか
       isSearching: true, // 対戦相手検索中
-      isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
+      // isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
       isShowQuestion: false, // 問題を表示するタイミングを制御する
       isShowPlayerStatus: false, // プレイヤーの状態を表示するタイミングを制御する
       isShowJudge: false, // 結果を表示するタイミングを制御する
@@ -238,6 +238,9 @@ export default {
       winner: null, // 勝敗 --- 0 引き分け | 1 自分 | 2 相手
       message_num: 0,
       messages: ["待機中...", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
+
+      /* テスト用 */
+      isShowQuestionArea: true,
     };
   },
   computed: {

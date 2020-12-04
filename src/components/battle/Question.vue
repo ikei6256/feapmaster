@@ -25,6 +25,7 @@
             height="auto"
             width="100%"
             text
+            v-ripple="{ class: 'blue--text text--darken-1' }"
           >
             <v-icon>ア</v-icon>
             <span v-if="question.option1 !== null" class="option-text pl-2 pl-sm-4" v-html="question.option1"></span>
@@ -72,12 +73,11 @@
     <!-- ここまで: 問題表示エリア -->
 
     <!-- 結果表示エリア -->
-    <transition name="fade">
+    <!-- <transition name="fade">
       <div v-if="isShowJudge" class="result">
         <p class="correctAns">
           正答
           <span>{{ option[question.correctAns - 1] }}</span>
-          <!-- 勝敗結果 -->
           <transition name="fade">
             <span v-if="winner == 1" key="win">WIN</span>
             <span v-else-if="winner == 2" key="lose">LOSE</span>
@@ -101,20 +101,34 @@
           <span v-else>時間切れ</span>
         </p>
       </div>
-    </transition>
+    </transition> -->
+
+    <!-- ここから: Modal -->
+    <!-- <v-dialog v-model="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
+      <v-card>
+        <v-card-title class="yellow lighten-2"><v-icon>mdi-alert-circle-outline</v-icon>注意</v-card-title>
+        <v-card-text class="pl-5 py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="routeLeave" color="#FA3E7E">対戦をやめる<v-icon>mdi-stop-circle</v-icon></v-btn>
+          <v-btn text @click="dialog_battle_cancel = false" color="primary">対戦を続ける<v-icon>mdi-play-circle</v-icon></v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog> -->
+    <!-- ここまで: Modal-->
   </div>
 </template>
 
 <script>
-import $ from "jquery";
 export default {
   props: {
     myData: Object,
     oppData: Object,
     question_now: Number,
     // question: Object, // 仮の問題データを置く
-    isShowQuestion: Boolean,
-    isShowJudge: Boolean,
+    // isShowQuestion: Boolean,
+    // isShowJudge: Boolean,
     winner: Number,
   },
   data() {
@@ -131,8 +145,10 @@ export default {
         option1: "かいとう1",
         option2: "かいとう2",
         option3: "かいとう3",
-        option4: "かいとう4"
-      }
+        option4: "かいとう4",
+      },
+      isShowQuestion: true,
+      isShowJudge: true,
     };
   },
   watch: {
@@ -140,7 +156,6 @@ export default {
     isShowJudge: function (val) {
       if (val) {
         // 色をつける
-        $(`.option:eq(${this.question.correctAns - 1})`).css("background-color", "rgba(249, 182, 15, 0.2)");
       }
     },
   },
@@ -157,7 +172,9 @@ export default {
   },
   methods: {
     selected(event, ans) {
-      this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
+      console.log(event, ans);
+      // this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
+      event.currentTarget.style.backgroundColor = "#E3F2FD";
     },
   },
 };
@@ -174,7 +191,8 @@ $battle-blue: #113bad;
   border-radius: 0.5rem;
   box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 
-  .question-body {
+  .question-body,
+  .option-text {
     font-size: 0.875rem;
     line-height: 1.5;
     letter-spacing: 0.05rem;
@@ -188,8 +206,14 @@ $battle-blue: #113bad;
       white-space: normal; // デフォルト nowrap
       background-color: rgba(0, 0, 0, 0.02);
     }
-    .option-text {
-      line-height: 1.5;
+
+    .option-btn {
+      .v-icon {
+        color: inherit;
+      }
+      .option-text {
+        line-height: 1.5;
+      }
     }
   }
 }
