@@ -12,55 +12,56 @@
 
     <!-- ここから: プレイヤー表示エリア -->
     <div class="area-players mt-2 mt-sm-4">
-      <player class="player1" :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+      <div class="player1">
+        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+      </div>
 
       <div class="player2">
         <transition name="fade-slow" mode="out-in">
-          <span v-if="isSearching">相手を探しています...</span>
-          <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus" @blink="blink"></player>
+          <v-skeleton-loader v-if="isSearching" type="image" :height="player2_height" elevation="2"></v-skeleton-loader>
+          <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus"></player>
         </transition>
       </div>
     </div>
     <!-- ここまで: プレイヤー表示エリア -->
 
-    <!-- プログレスバー -->
-    <transition name="fade-slow">
-      <!-- <div v-if="isShowQuestionArea" class="mt-2 mt-sm-4 px-1 px-sm-2"> -->
-      <div v-if="true" class="mt-2 mt-sm-4 px-1 px-sm-2">
-        <progressbar :timer_limit="timer_limit" :timer_valuenow="timer_valuenow"></progressbar>
-      </div>
-    </transition>
-
     <!-- ここから: 問題表示エリア -->
     <transition name="fade-slow">
-      <div v-if="true" class="my-2 my-sm-4">
+      <div v-if="isShowQuestionArea" class="my-2 my-sm-4">
+        <!-- プログレスバー -->
+        <div class="mt-2 mt-sm-4 px-1 px-sm-2">
+          <progressbar :timer_limit="timer_limit" :timer_valuenow="timer_valuenow"></progressbar>
+        </div>
+
         <question
           class="my-2 my-sm-4"
           @selected="selected"
+          @toggleShowJudge="isShowJudge = $event"
           v-if="isShowQuestionArea"
-          :myData="myData"
-          :oppData="oppData"
-          :question_now="question_now"
-          :question="questions[question_now - 1]"
           :isShowQuestion="isShowQuestion"
           :isShowJudge="isShowJudge"
+          :myData="myData"
+          :oppData="oppData"
+          :question="questions[question_now - 1]"
           :winner="winner"
         ></question>
       </div>
     </transition>
     <!-- ここまで: 問題表示 -->
 
-    <!-- ここから: 対戦終了後の表示エリア  -->
+    <!-- 再戦ボタン  -->
     <transition name="fade">
-      <div v-show="isShowRestart">
-        <div class="text-center mb-3">
-          <button @click="restart" class="btn btn-primary mr-1">もう一度</button>
-          <router-link :to="{ name: 'Home' }">
-            <button class="btn btn-secondary">ホームへ戻る</button>
-          </router-link>
-        </div>
+      <!-- <div v-if="isShowRestart" class="text-center"> -->
+      <div v-if="true" class="text-center py-2 py-sm-4">
+        <!-- @click="restrart" のボタン -->
+        <v-btn color="teal" class="white--text">もう一度</v-btn>
+        <!-- <router-link :to="{ name: 'Home' }"> -->
+          <v-btn>ホームへ戻る</v-btn>
+        <!-- </router-link> -->
       </div>
     </transition>
+
+    <!-- 振り返り -->
     <transition name="fade">
       <div v-if="isShowReview">
         <div>
@@ -69,18 +70,19 @@
         </div>
       </div>
     </transition>
-    <!-- ここから: 対戦終了後の表示エリア -->
 
     <!-- ここから: Modal -->
-    <v-dialog v-model="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
-      <v-card>
-        <v-card-title class="yellow lighten-2"><v-icon>mdi-alert-circle-outline</v-icon>注意</v-card-title>
-        <v-card-text class="pl-5 py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
-        <v-divider></v-divider>
+    <v-dialog v-model="isShowDialogBattleCancel" content-class="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
+      <v-card color="grey lighten-5">
+        <v-card-title class="dialog_battle_cancel_title"
+          ><v-icon>{{ icons.mdiAlertCircleOutline }}</v-icon
+          >注意</v-card-title
+        >
+        <v-card-text class="py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="routeLeave" color="#FA3E7E">対戦をやめる<v-icon>mdi-stop-circle</v-icon></v-btn>
-          <v-btn text @click="dialog_battle_cancel = false" color="primary">対戦を続ける<v-icon>mdi-play-circle</v-icon></v-btn>
+          <v-btn text @click="dialog_battle_cancel = false" color="indigo darken-3">キャンセル</v-btn>
+          <v-btn text @click="routeLeave" color="red darken-1">対戦をやめる</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -91,6 +93,7 @@
 <script>
 import Player from "@/components/battle/Player.vue";
 import { mapMutations, mapState } from "vuex";
+import { mdiAlertCircleOutline } from "@mdi/js";
 import $ from "jquery";
 export default {
   components: {
@@ -102,6 +105,11 @@ export default {
   },
   data() {
     return {
+      icons: {
+        mdiAlertCircleOutline,
+      },
+      player2_height: 0,
+
       SPEED_FADE: 350, // フェードイン/フェードアウトの入れ替え速度 350
       SPEED_FADE_SLOW: 700,
       NUM_QUESTION: 5, // 総問題数
@@ -114,7 +122,9 @@ export default {
       room: null, // 部屋のDocumentReference
       unsubscribe: null, // リアルタイムリスナーの破棄に使用する
       nextLocation: null, // 画面遷移メソッド
+
       myData: {
+        cardColor: "blue lighten-5",
         name: null,
         photoURL: null,
         status: null, // selecting | waiting | timeup | win | lose | draw | error
@@ -123,6 +133,7 @@ export default {
         time: null, // 回答タイム(秒)
       },
       oppData: {
+        cardColor: "red lighten-5",
         name: null,
         photoURL: null,
         status: null,
@@ -222,14 +233,16 @@ export default {
 
       isHost: null, // 部屋のホストかゲストか
       isSearching: true, // 対戦相手検索中
-      // isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
+
+      isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
       isShowQuestion: false, // 問題を表示するタイミングを制御する
-      isShowPlayerStatus: false, // プレイヤーの状態を表示するタイミングを制御する
       isShowJudge: false, // 結果を表示するタイミングを制御する
+
+      isShowPlayerStatus: false, // プレイヤーの状態を表示するタイミングを制御する
       isShowConfetti: false, // 紙吹雪を表示するタイミングを制御する
       isShowRestart: false, // 「もう一度」ボタンを表示するタイミングを制御する
       isShowReview: false, // 振り返りを表示するタイミングを制御する
-      dialog_battle_cancel: false, // 対戦中止を決定するモーダルの表示フラグ
+      isShowDialogBattleCancel: false, // 対戦中止を決定するモーダルの表示フラグ
 
       question_now: 0, // 現在の問題数
       questionRefs: [], // 問題の参照
@@ -237,10 +250,7 @@ export default {
       myAns: [], // 自分が回答したデータを保存する
       winner: null, // 勝敗 --- 0 引き分け | 1 自分 | 2 相手
       message_num: 0,
-      messages: ["待機中...", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
-
-      /* テスト用 */
-      isShowQuestionArea: true,
+      messages: ["待機中", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
     };
   },
   computed: {
@@ -299,11 +309,15 @@ export default {
     }
   },
   mounted() {
+    // 画面を離れる際は部屋を削除する
     window.addEventListener("beforeunload", () => {
       if (this.room != null) {
         this.room.delete();
       }
     });
+
+    // プレイヤー1の高さを取得してローダーの高さにセットする
+    this.player2_height = document.getElementsByClassName("player1")[0].clientHeight;
 
     // this.search(); // 対戦相手を検索する
   },
@@ -311,7 +325,7 @@ export default {
     this.nextLocation = next;
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
     if (this.isPlaying) {
-      this.dialog_battle_cancel = true; // モーダルを表示する
+      this.isShowDialogBattleCancel = true; // モーダルを表示する
     } else {
       this.routeLeave();
     }
@@ -789,22 +803,8 @@ export default {
       this.isShowConfetti = false; // 花吹雪を消す
       this.isShowReview = false; // 「振り返り」のエリアを消す
       this.isShowRestart = false; // 「もう一度」のエリアを消す
-      // スコアをフェードアウトする
-      $(".score").each((index, element) => {
-        $(element).animate(
-          {
-            opacity: 0, // スコアを非表示
-          },
-          this.SPEED_FADE,
-          // スコアのフェードアウトが終わったあとの処理
-          () => {
-            // eachブロックの中で1度だけ実行したいため、index:0を判定する
-            if (index == 0) {
-              this.search();
-            }
-          }
-        );
-      });
+
+      this.search(); // 検索開始
     },
 
     /*** 画面遷移時の処理 ***/
@@ -854,8 +854,13 @@ export default {
 <style lang="scss">
 // 対戦中に画面を離れる時の注意メッセージモーダル
 .v-dialog {
-  position: absolute;
-  top: 0;
+  &.dialog_battle_cancel {
+    position: absolute;
+    top: 0; // 画面上部に配置する
+    .dialog_battle_cancel_title {
+      background-color: #fded3f;
+    }
+  }
 }
 </style>
 

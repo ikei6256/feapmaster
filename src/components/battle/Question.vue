@@ -38,6 +38,7 @@
             height="auto"
             width="100%"
             text
+            v-ripple="{ class: 'blue--text text--darken-1' }"
           >
             <v-icon>イ</v-icon>
             <span v-if="question.option2 !== null" class="option-text mb-0 pl-2 pl-sm-4" v-html="question.option2"></span>
@@ -50,6 +51,7 @@
             height="auto"
             width="100%"
             text
+            v-ripple="{ class: 'blue--text text--darken-1' }"
           >
             <v-icon>ウ</v-icon>
             <span v-if="question.option3 !== null" class="option-text mb-0 pl-2 pl-sm-4" v-html="question.option3"></span>
@@ -62,6 +64,7 @@
             height="auto"
             width="100%"
             text
+            v-ripple="{ class: 'blue--text text--darken-1' }"
           >
             <v-icon>エ</v-icon>
             <span v-if="question.option4 !== null" class="option-text mb-0 pl-2 pl-sm-4" v-html="question.option4"></span>
@@ -72,98 +75,121 @@
     </transition>
     <!-- ここまで: 問題表示エリア -->
 
-    <!-- 結果表示エリア -->
-    <!-- <transition name="fade">
-      <div v-if="isShowJudge" class="result">
-        <p class="correctAns">
-          正答
-          <span>{{ option[question.correctAns - 1] }}</span>
-          <transition name="fade">
-            <span v-if="winner == 1" key="win">WIN</span>
-            <span v-else-if="winner == 2" key="lose">LOSE</span>
-            <span v-else-if="winner == 0" key="draw">DRAW</span>
-          </transition>
-        </p>
-        <p>
-          {{ myData.name }}
-          <span v-if="myData.select != null">
-            <span>{{ option[myData.select - 1] }}</span>
-            [タイム: {{ myData.time | to_ms }}]
-          </span>
-          <span v-else>時間切れ</span>
-        </p>
-        <p>
-          {{ oppData.name }}
-          <span v-if="oppData.select != null">
-            <span>{{ option[oppData.select - 1] }}</span>
-            [タイム: {{ oppData.time | to_ms }}]
-          </span>
-          <span v-else>時間切れ</span>
-        </p>
-      </div>
-    </transition> -->
-
-    <!-- ここから: Modal -->
-    <!-- <v-dialog v-model="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
-      <v-card>
-        <v-card-title class="yellow lighten-2"><v-icon>mdi-alert-circle-outline</v-icon>注意</v-card-title>
-        <v-card-text class="pl-5 py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="routeLeave" color="#FA3E7E">対戦をやめる<v-icon>mdi-stop-circle</v-icon></v-btn>
-          <v-btn text @click="dialog_battle_cancel = false" color="primary">対戦を続ける<v-icon>mdi-play-circle</v-icon></v-btn>
-        </v-card-actions>
+    <!-- ここから: 結果表示モーダル -->
+    <v-dialog v-model="judge" content-class="dialog-result mx-1" width="500" transition="scroll-y-transition" hide-overlay>
+      <v-card color="grey lighten-5">
+        <div class="wrap-result text-center">
+          <div class="result-header berlin-sans py-2">
+            <span class="judge_title">JUDGE</span>
+            <span v-if="winner === 1" class="judge red--text">WIN</span>
+            <span v-else-if="winner === 2" class="judge blue--text">LOSE</span>
+            <span v-else class="judge green--text">DRAW</span>
+          </div>
+          <div class="result-body py-3">
+            <div class="name pb-3">
+              <span class="left px-1 px-sm-2">{{ myData.name }}</span>
+              <span class="right px-1 px-sm-2">{{ oppData.name }}</span>
+            </div>
+            <div class="detail white--text py-2 my-2">
+              <span class="detail-item">回答</span>
+              <div class="left">
+                <v-icon v-if="question.correctAns === myData.select" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
+                <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>{{ option[myData.select - 1] }}
+              </div>
+              <div class="right">
+                <v-icon v-if="question.correctAns === oppData.select" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
+                <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>{{ option[oppData.select - 1] }}
+              </div>
+            </div>
+            <div class="detail white--text py-2 my-2">
+              <span class="detail-item">タイム</span>
+              <span v-if="myData.status !== 'timeup'" class="left">{{ myData.time | formatTime }}</span>
+              <span v-else class="left">-</span>
+              <span v-if="oppData.status !== 'timeup'" class="right">{{ oppData.time | formatTime }}</span>
+              <span v-else class="right">-</span>
+            </div>
+          </div>
+          <div class="result-footer py-4">
+            <div class="left text-left pl-1 pl-sm-2">正答:<span class="correctAns pl-1">{{ option[question.correctAns - 1] }}</span></div>
+            <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます</div>
+          </div>
+        </div>
       </v-card>
-    </v-dialog> -->
-    <!-- ここまで: Modal-->
+    </v-dialog>
+    <!-- ここまで: 結果表示モーダル -->
   </div>
 </template>
 
 <script>
+import { mdiCircleOutline, mdiCloseThick } from "@mdi/js";
 export default {
   props: {
+    isShowQuestion: Boolean,
+    isShowJudge: Boolean,
     myData: Object,
     oppData: Object,
-    question_now: Number,
-    // question: Object, // 仮の問題データを置く
-    // isShowQuestion: Boolean,
-    // isShowJudge: Boolean,
+    question: Object, // 仮の問題データを置く
     winner: Number,
   },
   data() {
     return {
-      option: ["ア", "イ", "ウ", "エ"],
-      question: {
-        body: "もんだいぶん",
-        questionImageUrl: null,
-        answerAllImageUrl: null,
-        answerImageUrl1: null,
-        answerImageUrl2: null,
-        answerImageUrl3: null,
-        answerImageUrl4: null,
-        option1: "かいとう1",
-        option2: "かいとう2",
-        option3: "かいとう3",
-        option4: "かいとう4",
+      icons: {
+        mdiCircleOutline,
+        mdiCloseThick,
       },
-      isShowQuestion: true,
-      isShowJudge: true,
+      option: ["ア", "イ", "ウ", "エ"],
+
+      /* テスト用 */
+      // question: {
+      //   body: "もんだいぶん",
+      //   questionImageUrl: null,
+      //   answerAllImageUrl: null,
+      //   answerImageUrl1: null,
+      //   answerImageUrl2: null,
+      //   answerImageUrl3: null,
+      //   answerImageUrl4: null,
+      //   option1: "かいとう1",
+      //   option2: "かいとう2",
+      //   option3: "かいとう3",
+      //   option4: "かいとう4",
+      //   correctAns: 1,
+      // },
+      // winner: 1,
+      // myData: {
+      //   name: "あなた",
+      //   photoURL: null,
+      //   status: null, // selecting | waiting | timeup | win | lose | draw | error
+      //   score: 0, // 得点
+      //   select: 1, // 回答番号
+      //   time: 30, // 回答タイム(秒)
+      // },
+      // oppData: {
+      //   name: "あいて",
+      //   photoURL: null,
+      //   status: null,
+      //   score: 0,
+      //   select: 2,
+      //   time: 180,
+      // },
     };
   },
-  watch: {
-    // 正誤判定が表示されるタイミングで正答の背景色を変える
-    isShowJudge: function (val) {
-      if (val) {
-        // 色をつける
-      }
+  computed: {
+    // 判定結果の表示時には親コンポーネントの isShowJudge を用いる
+    // isShowJudge を更新する場合は toggleShowJudge イベントを発生させる
+    judge: {
+      get() {
+        return this.isShowJudge;
+      },
+      set(val) {
+        this.$emit("toggleShowJudge", val);
+      },
     },
   },
   filters: {
     // 秒数を受け取って 0:00 の形式に直す
-    to_ms(val) {
-      var minute = Math.floor(val / 60);
-      var second = Math.floor(val % 60);
+    formatTime(val) {
+      const minute = Math.floor(val / 60);
+      let second = Math.floor(val % 60);
       if (second < 10) {
         second = "0" + second;
       }
@@ -184,12 +210,11 @@ export default {
 $battle-blue: #113bad;
 
 .question {
-  min-height: 30rem;
+  min-height: 22rem;
   background-color: #fff;
   border-right: solid 0.5rem $battle-blue;
   border-left: solid 0.5rem $battle-blue;
   border-radius: 0.5rem;
-  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 
   .question-body,
   .option-text {
@@ -218,22 +243,100 @@ $battle-blue: #113bad;
   }
 }
 
-.result {
-  border-top: solid 1rem #e6b9f8;
-  border-bottom: solid 1rem #e6b9f8;
-  padding: 1rem 0.5rem;
-}
-.correctAns {
-  position: relative;
-  padding: 0.3em;
-  ::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 0.5rem;
-    background: repeating-linear-gradient(-45deg, #e6b9f8, #e6b9f8 2px, white 2px, white 4px);
+/* --------------------
+ * 結果表示モーダル
+ * -------------------- */
+.wrap-result {
+  .result-header {
+    position: relative;
+
+    .judge_title {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      font-size: 0.8rem;
+      color: #9e9e9e;
+    }
+    .judge {
+      font-size: 2.5rem;
+      text-shadow: 1px 1px 0 rgba(68, 68, 68, 0.8);
+    }
+  }
+
+  .result-body {
+    background: linear-gradient(to right, #bbdefb 50%, #ffcdd2 50%);
+    font-weight: bold;
+
+    .name {
+      display: grid;
+      grid-template:
+        "left right"
+        / 1fr 1fr;
+      font-weight: bold;
+      letter-spacing: 0.01rem;
+      white-space: nowrap;
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+      line-height: normal; // 絵文字に対応する
+
+      .left,
+      .right {
+        overflow: hidden;
+        text-overflow: ellipsis; // 「...」の表示
+      }
+      .left {
+        grid-area: left;
+      }
+      .right {
+        grid-area: right;
+      }
+    }
+
+    .detail {
+      position: relative;
+      display: grid;
+      grid-template:
+        "left right"
+        / 1fr 1fr;
+      align-items: center;
+      min-height: 1.5rem;
+      background-color: rgba(0, 0, 0, 0.6);
+      font-size: 0.9rem;
+      letter-spacing: 0.1rem;
+
+      .detail-item {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateY(-50%) translateX(-50%);
+        margin: auto;
+      }
+
+      .left {
+        grid-area: left;
+      }
+      .right {
+        grid-area: right;
+      }
+    }
+  }
+
+  .result-footer {
+    display: grid;
+    grid-template:
+      "left right"
+      / 1fr 1fr;
+    font-size: 0.875rem;
+
+    .left {
+      grid-area: left;
+
+      .correctAns {
+        font-weight: bold;
+      }
+    }
+    .right {
+      grid-area: right;
+    }
   }
 }
 </style>

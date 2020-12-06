@@ -1,5 +1,5 @@
 <template>
-  <v-card color="teal lighten-5">
+  <v-card :color="playerData.cardColor">
     <v-card-title class="card-playerInfo">
       <v-avatar class="playerPhoto mr-1 mr-sm-2" color="#fff">
         <v-img :src="playerData.photoURL" alt="Player Photo" />
@@ -56,10 +56,12 @@ export default {
     grid-area: name;
     font-size: 0.875rem;
     font-weight: bold;
+    letter-spacing: 0.01rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; //「...」の表示
-    line-height: normal;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+    line-height: normal; // 絵文字に対応するため
   }
   .playerStatus {
     grid-area: status;

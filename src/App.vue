@@ -74,12 +74,14 @@ export default {
 </script>
 
 <style lang="scss">
-$background-color-main: #fac84b;
 #app {
   font-family: Roboto, "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Droid Sans Japanese", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: $background-color-main;
+  background-color: #fac84b;
+}
+.rotate-45 {
+  transform: rotate(45deg);
 }
 </style>
 

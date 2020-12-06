@@ -9,7 +9,7 @@
           <router-link :to="{ name: 'Battle' }">Battle ></router-link>
         </li>
         <li class="feedback">
-          <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <v-icon class="icon-external">mdi-open-in-new</v-icon></a>
+          <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <v-icon class="icon-external">{{ icons.mdiOpenInNew }}</v-icon></a>
         </li>
       </ul>
     </v-list>
@@ -29,7 +29,16 @@
 </template>
 
 <script>
-export default {};
+import { mdiOpenInNew } from "@mdi/js";
+export default {
+  data() {
+    return {
+      icons: {
+        mdiOpenInNew: mdiOpenInNew
+      }
+    }
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -72,8 +81,9 @@ export default {};
       font-size: 0.9rem;
     }
     .icon-external {
+      height: 0.9rem;
+      width: 0.9rem;
       color: inherit;
-      vertical-align: baseline;
     }
   }
 }

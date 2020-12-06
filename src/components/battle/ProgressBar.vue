@@ -1,7 +1,6 @@
 <template>
   <v-progress-linear class="bar" :value="timer_percentage" height="1rem" rounded>
-    <!-- <span class="progress-text px-2">残り {{ timer_valuenow }}</span> -->
-    <span class="progress-text px-2">0:00</span>
+    <span class="progress-text px-2">{{ timer_valuenow | formatTime }}</span>
   </v-progress-linear>
 </template>
 
@@ -16,6 +15,17 @@ export default {
       return (this.timer_valuenow / this.timer_limit) * 100;
     },
   },
+  filters: {
+    // 秒数を受け取って 0:00 の形式に直す
+    formatTime(val) {
+      const minute = Math.floor(val / 60);
+      let second = Math.floor(val % 60);
+      if (second < 10) {
+        second = "0" + second;
+      }
+      return "" + minute + ":" + second;
+    },
+  },
 };
 </script>
 
@@ -25,7 +35,8 @@ export default {
 
   .progress-text {
     font-size: 0.875rem;
-    background-color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.05rem;
+    background-color: rgba(255, 255, 255, 0.6);
     border-radius: 1rem;
   }
 }
