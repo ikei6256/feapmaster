@@ -37,7 +37,6 @@
           class="my-2 my-sm-4"
           @selected="selected"
           @toggleShowJudge="isShowJudge = $event"
-          v-if="isShowQuestionArea"
           :isShowQuestion="isShowQuestion"
           :isShowJudge="isShowJudge"
           :myData="myData"
@@ -51,23 +50,20 @@
 
     <!-- 再戦ボタン  -->
     <transition name="fade">
-      <!-- <div v-if="isShowRestart" class="text-center"> -->
-      <div v-if="true" class="text-center py-2 py-sm-4">
+      <div v-if="isShowRestart" class="text-center my-4 my-sm-8">
         <!-- @click="restrart" のボタン -->
-        <v-btn color="teal" class="white--text">もう一度</v-btn>
-        <!-- <router-link :to="{ name: 'Home' }"> -->
-          <v-btn>ホームへ戻る</v-btn>
-        <!-- </router-link> -->
+        <v-btn color="teal darken-1 mx-2" class="white--text">もう一度</v-btn>
+        <router-link :to="{ name: 'Home' }">
+          <v-btn color="grey lighten-5 mx-2">ホームへ戻る</v-btn>
+        </router-link>
       </div>
     </transition>
 
     <!-- 振り返り -->
     <transition name="fade">
-      <div v-if="isShowReview">
-        <div>
-          <p class="mb-1 ml-1 review">▼振り返り</p>
-          <review :questions="questions" :myAns="myAns"></review>
-        </div>
+      <div v-if="isShowReview" class="my-2 my-sm-4">
+        <v-subheader>▼振り返り</v-subheader>
+        <review :questions="questions" :myAns="myAns"></review>
       </div>
     </transition>
 
@@ -114,7 +110,8 @@ export default {
       SPEED_FADE_SLOW: 700,
       NUM_QUESTION: 5, // 総問題数
 
-      TIMER_DEFAULT: 150, // 制限時間のデフォルト値
+      // TIMER_LIMIT_DEFAULT: 150, // 制限時間のデフォルト値
+      TIMER_LIMIT_DEFAULT: 3, // 制限時間のデフォルト値
       timer_limit: 0, // 制限時間
       timer_valuenow: 0, // 経過時間
       timerId: null, // カウントダウンタイマーのIDを保存する
@@ -141,7 +138,7 @@ export default {
         select: null,
         time: null,
       },
-      // 匿名用のランダムな画像と名前
+      // 匿名用のランダムに表示する画像と名前
       image_random: [
         "Bear",
         "Bee",
@@ -244,9 +241,10 @@ export default {
       isShowReview: false, // 振り返りを表示するタイミングを制御する
       isShowDialogBattleCancel: false, // 対戦中止を決定するモーダルの表示フラグ
 
-      question_now: 0, // 現在の問題数
       questionRefs: [], // 問題の参照
       questions: [], // 実際の問題データ
+      question_now: 0, // 現在の問題数
+
       myAns: [], // 自分が回答したデータを保存する
       winner: null, // 勝敗 --- 0 引き分け | 1 自分 | 2 相手
       message_num: 0,
@@ -316,10 +314,10 @@ export default {
       }
     });
 
-    // プレイヤー1の高さを取得してローダーの高さにセットする
+    // プレイヤー1の高さを取得してローダーの高さと同じにする
     this.player2_height = document.getElementsByClassName("player1")[0].clientHeight;
 
-    // this.search(); // 対戦相手を検索する
+    this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
     this.nextLocation = next;
@@ -515,7 +513,7 @@ export default {
     /*** 対戦相手が見つかった(部屋入室後)後の処理 ***/
     searched() {
       this.stateBattleTrue(); // ステータス:対戦中
-      this.isSearching = false; // 検索を終えて対戦相手の画像を出現させる
+      this.isSearching = false; // 検索を終えて対戦相手を表示する
       this.blink();
 
       // 問題の参照を用いて問題データを取得する
@@ -529,31 +527,28 @@ export default {
             season: questionRef.parent.id,
             no: questionRef.id, // 問番号
             body: data.text, // 問題文
-            option1: data.ans1,
-            option2: data.ans2,
-            option3: data.ans3,
-            option4: data.ans4,
+            options: { ア: data.ans1, イ: data.ans2, ウ: data.ans3, エ: data.ans4 },
             correctAns: data.correctAns,
             questionImageUrl: data.questionImageUrl,
             answerAllImageUrl: data.answerAllImageUrl,
-            answerImageUrl1: data.answerImageUrl1,
-            answerImageUrl2: data.answerImageUrl2,
-            answerImageUrl3: data.answerImageUrl3,
-            answerImageUrl4: data.answerImageUrl4,
+            answerImageUrls: [data.answerImageUrl1, data.answerImageUrl2, data.answerImageUrl3, data.answerImageUrl4],
           });
+
+          // 問題の取得が終わったら処理を進める
+          if (this.questions.length === this.NUM_QUESTION) {
+            // メッセージをフェードアウト(animateでopacityを変更して高さを確保)
+            $("#message span").animate(
+              {
+                opacity: 0,
+              },
+              this.SPEED_FADE,
+              () => {
+                this.startBattle(); // 対戦開始
+              }
+            );
+          }
         });
       }
-
-      // 相手表示と同時にメッセージはフェードアウト(animateでopacityを変更して高さを確保)
-      $("#message span").animate(
-        {
-          opacity: 0,
-        },
-        this.SPEED_FADE,
-        () => {
-          this.startBattle(); // 対戦開始
-        }
-      );
     },
 
     /*** 対戦を開始する ***/
@@ -565,38 +560,26 @@ export default {
       this.timeoutId = setTimeout(() => {
         this.timeoutId = null;
         this.isShowQuestionArea = true; // 問題エリアを表示する
-        $(".score").each((index, element) => {
-          $(element).animate(
+
+        // 少し待ってから実行
+        this.timeoutId = setTimeout(() => {
+          this.timeoutId = null;
+          // メッセージ「対戦を開始します」をフェードイン
+          message.animate(
             {
-              opacity: 1, // スコアを表示する
+              opacity: 1,
             },
-            this.SPEED_FADE_SLOW,
+            this.SPEED_FADE,
             () => {
-              // eachブロックの中で1度だけ実行したいため、index:0を判定する
-              if (index === 0) {
-                // 少し待ってから実行
-                this.timeoutId = setTimeout(() => {
-                  this.timeoutId = null;
-                  // メッセージ「対戦を開始します」をフェードイン
-                  message.animate(
-                    {
-                      opacity: 1,
-                    },
-                    this.SPEED_FADE,
-                    () => {
-                      // 少し待ってから実行
-                      this.timeoutId = setTimeout(() => {
-                        this.timeoutId = null;
-                        this.resetPlayerStatus(); // プレイヤーの状態をリセットする
-                        this.nextQuestion(); // 出題開始
-                      }, 2000);
-                    }
-                  );
-                }, 1500);
-              }
+              // 少し待ってから実行
+              this.timeoutId = setTimeout(() => {
+                this.timeoutId = null;
+                this.resetPlayerStatus(); // プレイヤーの状態をリセットする
+                this.nextQuestion(); // 出題開始
+              }, 2000);
             }
-          ); // End: animate
-        }); // End: each
+          );
+        }, 1500);
       }, 1500);
     }, // End: afterEnterShowOpp
 
@@ -638,7 +621,8 @@ export default {
                 // 少し待ってから次の問題へ進む
                 this.timeoutId = setTimeout(() => {
                   this.timeoutId = null;
-                  this.timer_limit = this.TIMER_DEFAULT; // ひとまず制限時間にデフォルトタイムをセット
+                  this.timer_limit = this.TIMER_LIMIT_DEFAULT; // 制限時間を設定する
+                  this.timer_valuenow = this.timer_limit;
                   this.resetPlayerStatus(); // プレイヤーの状態をリセットする
                   this.isShowPlayerStatus = true; // プレイヤーステータスを表示する
                   this.isShowQuestion = true; // 問題を表示する
