@@ -9,15 +9,15 @@
         <transition name="fade">
           <div v-show="isShowPlayerStatus">
             <transition mode="out-in">
-              <span v-if="playerData.status === 'selecting'" class="blink" key="selecting"> 選択中... </span>
+              <span v-if="playerData.status === 'selecting'" class="blink" key="selecting">選択中...</span>
               <svg v-if="playerData.status === 'waiting'" class="animated-check" viewBox="0 0 24 24" key="waiting">
                 <path d="M4.1 12.7L9 17.6 20.3 6.3" fill="none" />
               </svg>
-              <span v-if="playerData.status === 'timeup'" key="timeup">時間切れ</span>
-              <span v-if="playerData.status === 'win'" key="win">WIN</span>
-              <span v-if="playerData.status === 'lose'" key="lose">LOSE</span>
-              <span v-if="playerData.status === 'draw'" key="draw">DRAW</span>
-              <span v-if="playerData.status === 'error'" key="error">接続エラー</span>
+              <span v-if="playerData.status === 'timeup'" key="timeup" class="grey--text text--darken-3">時間切れ</span>
+              <span v-if="playerData.status === 'win'" key="win" class="red--text">WIN</span>
+              <span v-if="playerData.status === 'lose'" key="lose" class="blue--text">LOSE</span>
+              <span v-if="playerData.status === 'draw'" key="draw" class="green--text">DRAW</span>
+              <span v-if="playerData.status === 'error'" key="error" class="grey--text text--darken-2">接続エラー</span>
             </transition>
           </div>
         </transition>

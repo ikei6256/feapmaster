@@ -36,7 +36,7 @@
         <question
           class="my-2 my-sm-4"
           @selected="selected"
-          @toggleShowJudge="isShowJudge = $event"
+          @toggleShowJudge="isShowJudge = !isShowJudge"
           :isShowQuestion="isShowQuestion"
           :isShowJudge="isShowJudge"
           :myData="myData"
@@ -51,8 +51,7 @@
     <!-- 再戦ボタン  -->
     <transition name="fade">
       <div v-if="isShowRestart" class="text-center my-4 my-sm-8">
-        <!-- @click="restrart" のボタン -->
-        <v-btn color="teal darken-1 mx-2" class="white--text">もう一度</v-btn>
+        <v-btn class="white--text" @click="restart" color="teal darken-1 mx-2">もう一度</v-btn>
         <router-link :to="{ name: 'Home' }">
           <v-btn color="grey lighten-5 mx-2">ホームへ戻る</v-btn>
         </router-link>
@@ -77,7 +76,7 @@
         <v-card-text class="py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="dialog_battle_cancel = false" color="indigo darken-3">キャンセル</v-btn>
+          <v-btn text @click="isShowDialogBattleCancel = false" color="indigo darken-3">キャンセル</v-btn>
           <v-btn text @click="routeLeave" color="red darken-1">対戦をやめる</v-btn>
         </v-card-actions>
       </v-card>
@@ -241,6 +240,7 @@ export default {
       isShowReview: false, // 振り返りを表示するタイミングを制御する
       isShowDialogBattleCancel: false, // 対戦中止を決定するモーダルの表示フラグ
 
+      question_year: [2018, 2019],
       questionRefs: [], // 問題の参照
       questions: [], // 実際の問題データ
       question_now: 0, // 現在の問題数
@@ -309,7 +309,7 @@ export default {
   mounted() {
     // 画面を離れる際は部屋を削除する
     window.addEventListener("beforeunload", () => {
-      if (this.room != null) {
+      if (this.room !== null) {
         this.room.delete();
       }
     });
@@ -317,24 +317,31 @@ export default {
     // プレイヤー1の高さを取得してローダーの高さと同じにする
     this.player2_height = document.getElementsByClassName("player1")[0].clientHeight;
 
-    this.search(); // 対戦相手を検索する
+    // this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
-    this.nextLocation = next;
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
     if (this.isPlaying) {
+      this.nextLocation = next; // 遷移メソッドを保存
       this.isShowDialogBattleCancel = true; // モーダルを表示する
     } else {
-      this.routeLeave();
+      next();
     }
   },
   beforeDestroy() {
-    if (this.unsubscribe != null) {
+    clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
+    clearInterval(this.timerId); // タイマーを停止する
+    clearInterval(this.blinkIntervalId);
+    if (this.unsubscribe !== null) {
       this.unsubscribe(); // リアルタイムリスナーを破棄する
     }
 
-    if (this.room != null) {
+    if (this.room !== null) {
       this.room.delete(); // 部屋を削除
+    }
+
+    if (this.isPlaying) {
+      this.stateBattleFalse();
     }
   },
   methods: {
@@ -376,12 +383,12 @@ export default {
 
             // 相手の情報をローカルに保存する
             this.room = querySnapshot.docs[0].ref;
-            if (this.oppData.name === "あなた") {
+            if (querySnapshot.docs[0].get("host_name") === "あなた") {
               this.oppData.name = "ゲストユーザ";
             } else {
               this.oppData.name = querySnapshot.docs[0].get("host_name");
             }
-            if (this.oppData.photoURL !== null) {
+            if (querySnapshot.docs[0].get("host_photoURL") !== null) {
               this.oppData.photoURL = querySnapshot.docs[0].get("host_photoURL");
             } else {
               this.oppData.photoURL = "/img/no-image.png";
@@ -415,7 +422,6 @@ export default {
           host_ans: null, // ホスト回答
           guest_ans: null, // ゲスト回答
           questions: this.questionRefs, // ランダムな問題の参照リスト
-          _ver: "dev",
         })
         .then((documentReference) => {
           this.room = documentReference;
@@ -427,8 +433,8 @@ export default {
     setQuestionRefs() {
       let i = 0;
       do {
-        const year = 2019;
-        const season = Math.floor(Math.random() * 2) == 0 ? "spring" : "autumn";
+        const year = this.question_year[Math.floor(Math.random() * this.question_year.length)];
+        const season = Math.floor(Math.random() * 2) === 0 ? "spring" : "autumn";
         let no = Math.floor(Math.random() * 80) + 1; // 問題番号 1~80
         if (no < 10) {
           no = "0" + no; // 0パディング
@@ -450,6 +456,7 @@ export default {
         if (!snapshot.exists) {
           clearTimeout(this.timeoutId); // 処理をストップ
           clearInterval(this.timerId); // タイマーストップ
+          clearInterval(this.blinkIntervalId);
           this.unsubscribe(); // リアルタイムリスナーを破棄する
           this.stateBattleFalse();
           this.isShowQuestionArea = false; // 問題エリアを非表示
@@ -461,11 +468,11 @@ export default {
           this.timeoutId = setTimeout(() => {
             this.timeoutId = null;
             this.isShowRestart = true; // 再戦ボタンを表示
-          }, 3000);
+          }, 2000);
           return;
         }
 
-        const data = snapshot.data();
+        const data = snapshot.data(); // データを保存
 
         // 検索中の処理
         if (this.isSearching) {
@@ -520,7 +527,12 @@ export default {
       for (let questionRef of this.questionRefs) {
         // questionRef は DocumentReference
         questionRef.get().then((querySnapshot) => {
-          const data = querySnapshot.data();
+          let data = querySnapshot.data();
+
+          // 数値へ変換する
+          if (typeof data.correctAns === "string") {
+            data.correctAns = parseInt(data.correctAns);
+          }
 
           this.questions.push({
             year: questionRef.parent.parent.id,
@@ -595,9 +607,9 @@ export default {
 
       const message = $("#message span");
 
-      this.winner = null; // 勝敗結果をリセット
       this.isShowJudge = false; // 判定結果を非表示
       this.isShowQuestion = false; // 問題を非表示
+      this.winner = null; // 勝敗結果をリセット
 
       // メッセージを切り替える
       message.animate(
@@ -695,7 +707,6 @@ export default {
           // 少し待ってから次の問題へ
           this.timeoutId = setTimeout(() => {
             this.timeoutId = null;
-            this.winner = null;
             this.nextQuestion();
           }, 4000);
         }, 1500);
@@ -791,18 +802,8 @@ export default {
       this.search(); // 検索開始
     },
 
-    /*** 画面遷移時の処理 ***/
+    /*** モーダルで対戦中に遷移する場合の処理 ***/
     routeLeave() {
-      clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
-      clearInterval(this.timerId); // タイマーを停止する
-      clearInterval(this.blinkIntervalId);
-      if (this.unsubscribe != null) {
-        this.unsubscribe(); // リアルタイムリスナーを破棄する
-      }
-      if (this.room != null) {
-        this.room.delete();
-        this.room = null;
-      }
       this.nextLocation();
     },
 

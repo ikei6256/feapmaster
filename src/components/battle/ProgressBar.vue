@@ -18,6 +18,9 @@ export default {
   filters: {
     // 秒数を受け取って 0:00 の形式に直す
     formatTime(val) {
+      if (val < 0) {
+        return "0:00";
+      }
       const minute = Math.floor(val / 60);
       let second = Math.floor(val % 60);
       if (second < 10) {

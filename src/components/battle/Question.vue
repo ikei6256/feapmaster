@@ -36,11 +36,12 @@
         </div>
 
         <!-- ここから: 結果表示モーダル -->
-        <v-dialog v-model="judge" content-class="dialog-result mx-1" width="500" transition="scroll-y-transition" hide-overlay>
+        <v-dialog :value="isShowJudge" content-class="mx-1" width="500" transition="scroll-y-transition" hide-overlay persistent no-click-animation>
           <v-card color="grey lighten-5">
             <div class="wrap-result text-center">
               <div class="result-header berlin-sans py-2">
                 <span class="judge_title">JUDGE</span>
+                <v-btn class="judge_close" icon x-small @click.stop="closeDialogResult"><v-icon>{{ icons.mdiClose }}</v-icon></v-btn>
                 <span v-if="winner === 1" class="judge red--text">WIN</span>
                 <span v-else-if="winner === 2" class="judge blue--text">LOSE</span>
                 <span v-else class="judge green--text">DRAW</span>
@@ -52,15 +53,17 @@
                 </div>
                 <div class="detail white--text py-2 my-2">
                   <span class="detail-item">回答</span>
-                  <div class="left">
+                  <div class="left detail-ans-left">
+                    {{ Object.keys(question.options)[myData.select - 1] }}
                     <v-icon v-if="question.correctAns === myData.select" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
-                    <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon
-                    >{{ Object.keys(question.options)[myData.select - 1] }}
+                    <span v-else-if="myData.select === null">-</span>
+                    <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>
                   </div>
-                  <div class="right">
+                  <div class="right detail-ans-right">
+                    {{ Object.keys(question.options)[oppData.select - 1] }}
                     <v-icon v-if="question.correctAns === oppData.select" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
-                    <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon
-                    >{{ Object.keys(question.options)[oppData.select - 1] }}
+                    <span v-else-if="oppData.select === null">-</span>
+                    <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>
                   </div>
                 </div>
                 <div class="detail white--text py-2 my-2">
@@ -88,7 +91,7 @@
 </template>
 
 <script>
-import { mdiCircleOutline, mdiCloseThick } from "@mdi/js";
+import { mdiCircleOutline, mdiCloseThick , mdiClose } from "@mdi/js";
 export default {
   props: {
     isShowQuestion: Boolean,
@@ -103,38 +106,63 @@ export default {
       icons: {
         mdiCircleOutline,
         mdiCloseThick,
+        mdiClose,
       },
+
+      /* テスト用 */
+      // question: {
+      //   body: "問題文",
+      //   questionImageUrl: null,
+      //   answerAllImageUrl: null,
+      //   answerImageUrls: [null, null, null, null],
+      //   options: { ア: "かいとう1", イ: "回答2", ウ: "回答3", エ: "回答4" },
+      //   correctAns: 1,
+      // },
+      // myData: {
+      //   name: "あなた",
+      //   photoURL: null,
+      //   status: null, // selecting | waiting | timeup | win | lose | draw | error
+      //   score: 0, // 得点
+      //   select: 1, // 回答番号
+      //   time: 30, // 回答タイム(秒)
+      // },
+      // oppData: {
+      //   name: "あいて",
+      //   photoURL: null,
+      //   status: null,
+      //   score: 0,
+      //   select: 2,
+      //   time: 180,
+      // },
+      // isShowQuestion: true,
+      // isShowJudge: true,
+      // winner: 1,
     };
-  },
-  computed: {
-    // 判定結果の表示時には親コンポーネントの isShowJudge を用いる
-    // isShowJudge を更新する場合は toggleShowJudge イベントを発生させる
-    judge: {
-      get() {
-        return this.isShowJudge;
-      },
-      set(val) {
-        this.$emit("toggleShowJudge", val);
-      },
-    },
   },
   filters: {
     // 秒数を受け取って 0:00 の形式に直す
     formatTime(val) {
+      // マイナス値をとるときは何もしない
+      if (val < 0) {
+        return;
+      }
+
       const minute = Math.floor(val / 60);
       let second = Math.floor(val % 60);
       if (second < 10) {
-        second = "0" + second;
+        second = "0" + second; // ゼロパディングを付与
       }
       return "" + minute + ":" + second;
     },
   },
   methods: {
     selected(event, ans) {
-      console.log(event, ans);
-      // this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
-      event.currentTarget.style.backgroundColor = "#E3F2FD";
+      this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
+      event.currentTarget.style.backgroundColor = "#E3F2FD"; // ボタンに色をつける
     },
+    closeDialogResult() {
+      this.$emit("toggleShowJudge");
+    }
   },
 };
 </script>
@@ -190,6 +218,11 @@ $battle-blue: #113bad;
       font-size: 0.8rem;
       color: #9e9e9e;
     }
+    .judge_close {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+    }
     .judge {
       font-size: 2.5rem;
       text-shadow: 1px 1px 0 rgba(68, 68, 68, 0.8);
@@ -235,6 +268,11 @@ $battle-blue: #113bad;
       background-color: rgba(0, 0, 0, 0.6);
       font-size: 0.9rem;
       letter-spacing: 0.1rem;
+
+      .detail-ans-right,
+      .detail-ans-left {
+        letter-spacing: normal;
+      }
 
       .detail-item {
         position: absolute;
