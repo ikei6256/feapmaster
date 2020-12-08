@@ -1,7 +1,7 @@
 <template>
   <header>
     <transition name="fade">
-      <div v-if="$route.name != 'Home'" class="logo">
+      <div v-if="$route.name !== 'Home'" class="logo">
         <router-link :to="{ name: 'Home' }">
           <img src="/img/logo/logo.png" alt="FE AP Master" />
         </router-link>
@@ -121,20 +121,20 @@ header {
       }
 
       .userPhoto {
-      //   display: inline-flex;
-      //   align-items: center;
-      //   justify-content: center;
-      //   border-radius: 50%;
-      //   background-color: #fff;
-      //   overflow: hidden;
+        //   display: inline-flex;
+        //   align-items: center;
+        //   justify-content: center;
+        //   border-radius: 50%;
+        //   background-color: #fff;
+        //   overflow: hidden;
         // height: $header-height - 0.3rem;
-      //   width: $header-height - 0.3rem;
-      //   img {
-      //     display: inline-flex;
-      //     height: inherit;
-      //     width: inherit;
-      //     //max-height: $header-height - 0.3rem;
-      //   }
+        //   width: $header-height - 0.3rem;
+        //   img {
+        //     display: inline-flex;
+        //     height: inherit;
+        //     width: inherit;
+        //     //max-height: $header-height - 0.3rem;
+        //   }
       }
     }
   }

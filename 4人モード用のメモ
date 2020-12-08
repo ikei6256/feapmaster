@@ -1,0 +1,9 @@
+・Battleに変数BATTLE_MODE4を追加
+
+BATTLE_MODE4 | Boolean
+ - false 通常の2人対戦
+ - true 4人対戦
+
+・beforeMountでBATTLE_MODE4の判定を行う
+
+・「oppData」を「oppData1」に変更

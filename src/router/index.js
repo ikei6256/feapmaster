@@ -33,6 +33,11 @@ const routes = [
     name: "Battle",
     component: () => import(/* webpackChunkName: "battle" */ "../views/Battle.vue")
   },
+  {
+    path: "/battle4", // 4人対戦
+    name: "Battle4",
+    component: () => import(/* webpackChunkName: "battle" */ "../views/Battle.vue")
+  }
 ]
 
 const router = new VueRouter({

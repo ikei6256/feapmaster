@@ -3,18 +3,31 @@
     <div class="logo px-1 px-md-0">
       <img src="/img/logo/logo.png" alt="FE AP Master" />
     </div>
-    <v-list class="select py-0" style="background-color:inherit">
-      <ul>
-        <li class="berlin-sans">
-          <router-link :to="{ name: 'Battle' }">Battle ></router-link>
-        </li>
-        <li class="feedback">
-          <a href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank">ご意見・ご要望 <v-icon class="icon-external">{{ icons.mdiOpenInNew }}</v-icon></a>
-        </li>
-      </ul>
-    </v-list>
+    <div class="select text-center">
+      <div class="links">
+        <p>
+          <router-link :to="{ name: 'Battle' }">
+            <v-btn text color="primary">
+              <span class="link-text berlin-sans">Battle</span>
+            </v-btn>
+          </router-link>
+        </p>
+        <p>
+          <router-link :to="{ name: 'Battle4' }">
+            <v-btn text color="primary">
+              <span class="link-text berlin-sans">Battle<span class="detail ml-1">[4Players]</span></span>
+            </v-btn>
+          </router-link>
+        </p>
+      </div>
+      <div class="feedback mt-2">
+        <v-btn class="feedback-btn" color="primary" href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank" text
+          >ご意見・ご要望<v-icon class="icon-external ml-1">{{ icons.mdiOpenInNew }}</v-icon></v-btn
+        >
+      </div>
+    </div>
 
-    <v-footer class="home-footer py-0 px-1 px-md-0" style="background-color:inherit">
+    <v-footer class="home-footer py-0 px-1 px-md-0" style="background-color: inherit">
       <div class="left">
         <a class="logo-firebase" href="https://firebase.google.com" target="_blank">
           <img src="/img/logo/Built_with_Firebase_Logo_Light.png" alt="Firebase" />
@@ -34,10 +47,10 @@ export default {
   data() {
     return {
       icons: {
-        mdiOpenInNew: mdiOpenInNew
-      }
-    }
-  }
+        mdiOpenInNew: mdiOpenInNew,
+      },
+    };
+  },
 };
 </script>
 
@@ -57,33 +70,41 @@ export default {
 .logo {
   grid-area: logo;
   text-align: center;
+
+  img {
+    max-height: 100%;
+    max-width: 100%;
+  }
 }
-.logo img {
-  max-height: 100%;
-  max-width: 100%;
-}
+
+/*********************
+ * ナビゲーション
+ *********************/
 .select {
   grid-area: nav;
-  text-align: center;
-  ul {
-    padding-left: 0;
+
+  .links {
+    .v-btn {
+      height: 3rem;
+      text-transform: none;
+    }
+    .link-text {
+      font-size: 2.5rem;
+
+      .detail {
+        font-size: 1.5rem;
+      }
+    }
   }
-}
-.select ul li {
-  & a {
-    font-size: 3rem;
-    color: #4b79fa;
-  }
-  &.feedback {
-    margin-top: 1rem;
-    & a,
+
+  .feedback {
+    .feedback-btn,
     .icon-external {
       font-size: 0.9rem;
     }
     .icon-external {
       height: 0.9rem;
       width: 0.9rem;
-      color: inherit;
     }
   }
 }

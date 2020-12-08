@@ -2,7 +2,7 @@
   <div class="battle mt-2 mt-sm-4">
     <!-- 紙吹雪 -->
     <transition name="fade">
-      <confetti v-if="isShowConfetti"></confetti>
+      <confetti v-show="isShowConfetti"></confetti>
     </transition>
 
     <!-- メッセージ -->
@@ -19,7 +19,7 @@
       <div class="player2">
         <transition name="fade-slow" mode="out-in">
           <v-skeleton-loader v-if="isSearching" type="image" :height="player2_height" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus"></player>
         </transition>
       </div>
     </div>
@@ -40,7 +40,7 @@
           :isShowQuestion="isShowQuestion"
           :isShowJudge="isShowJudge"
           :myData="myData"
-          :oppData="oppData"
+          :oppData1="oppData1"
           :question="questions[question_now - 1]"
           :winner="winner"
         ></question>
@@ -60,14 +60,14 @@
 
     <!-- 振り返り -->
     <transition name="fade">
-      <div v-if="isShowReview" class="my-2 my-sm-4">
+      <div v-show="isShowReview" class="my-2 my-sm-4">
         <v-subheader>▼振り返り</v-subheader>
         <review :questions="questions" :myAns="myAns"></review>
       </div>
     </transition>
 
     <!-- ここから: Modal -->
-    <v-dialog v-model="isShowDialogBattleCancel" content-class="dialog_battle_cancel" width="500" transition="scroll-y-transition" hide-overlay>
+    <v-dialog v-model="isShowDialogBattleCancel" content-class="dialog_battle_cancel" transition="scroll-y-transition" hide-overlay>
       <v-card color="grey lighten-5">
         <v-card-title class="dialog_battle_cancel_title"
           ><v-icon>{{ icons.mdiAlertCircleOutline }}</v-icon
@@ -108,12 +108,15 @@ export default {
       SPEED_FADE: 350, // フェードイン/フェードアウトの入れ替え速度 350
       SPEED_FADE_SLOW: 700,
       NUM_QUESTION: 5, // 総問題数
+      BATTLE_MODE4: false, // true: 4人対戦
 
       // TIMER_LIMIT_DEFAULT: 150, // 制限時間のデフォルト値
       TIMER_LIMIT_DEFAULT: 3, // 制限時間のデフォルト値
       timer_limit: 0, // 制限時間
       timer_valuenow: 0, // 経過時間
       timerId: null, // カウントダウンタイマーのIDを保存する
+      timeoutId: null,
+      blinkIntervalId: null, // 「選択中」を点滅させるためのInterval ID
 
       room: null, // 部屋のDocumentReference
       unsubscribe: null, // リアルタイムリスナーの破棄に使用する
@@ -128,7 +131,7 @@ export default {
         select: null, // 回答番号
         time: null, // 回答タイム(秒)
       },
-      oppData: {
+      oppData1: {
         cardColor: "red lighten-5",
         name: null,
         photoURL: null,
@@ -163,69 +166,6 @@ export default {
         "Squirrel",
         "Turtle",
       ],
-      name_random: [
-        "ラパン",
-        "チオビタ",
-        "ごぱん",
-        "ポリデント",
-        "半沢",
-        "まちゅぴちゅ",
-        "スーパームーン",
-        "サンズ",
-        "たぬきち",
-        "らーめん",
-        "IKEA",
-        "くま",
-        "忍者",
-        "凄腕ハッカー",
-        "りす",
-        "かもめ",
-        "のりせんべい",
-        "七味",
-        "もぐら",
-        "神",
-        "プードル",
-        "ピーマン",
-        "きれいなジャイアン",
-        "シンデレラ",
-        "クロックス",
-        "だし巻きたまご",
-        "ネプチューン",
-        "しらす",
-        "迷宮入り",
-        "真実はいつも一つ",
-        "タピオカ",
-        "ミタゾノ",
-        "キューピー",
-        "みかん",
-        "ダヴィンチ",
-        "ムツゴロウ",
-        "あめんぼ",
-        "ユンケル",
-        "あまびえ",
-        "チキンラーメン",
-        "ダイヤモンド",
-        "ベルベットハンマー矢沢",
-        "チェインレクイエム斎藤",
-        "ふくろう",
-        "マシュマロ",
-        "焼きおにぎり",
-        "焼肉定食",
-        "ピグレット",
-        "フェアレディ",
-        "JAXA",
-        "メロン",
-        "生クリーム",
-        "亀仙人",
-        "テトリス",
-        "ダークホース",
-        "野菜生活",
-        "パピコ",
-        "チョコチップクッキー",
-      ],
-
-      timeoutId: null,
-      blinkIntervalId: null, // 「選択中」を点滅させるためのInterval ID
 
       isHost: null, // 部屋のホストかゲストか
       isSearching: true, // 対戦相手検索中
@@ -233,7 +173,6 @@ export default {
       isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
       isShowQuestion: false, // 問題を表示するタイミングを制御する
       isShowJudge: false, // 結果を表示するタイミングを制御する
-
       isShowPlayerStatus: false, // プレイヤーの状態を表示するタイミングを制御する
       isShowConfetti: false, // 紙吹雪を表示するタイミングを制御する
       isShowRestart: false, // 「もう一度」ボタンを表示するタイミングを制御する
@@ -264,15 +203,15 @@ export default {
         this.myAns.push(val);
         this.myData.status = "waiting";
         // 両者が回答していればタイマーを止めて勝敗判定を行う
-        if (this.oppData.select != null) {
+        if (this.oppData1.select != null) {
           clearInterval(this.timerId);
           this.judge();
         }
       }
     },
-    "oppData.select": function (val) {
+    "oppData1.select": function (val) {
       if (val != null) {
-        this.oppData.status = "waiting";
+        this.oppData1.status = "waiting";
         if (this.myData.select != null) {
           clearInterval(this.timerId);
           this.judge();
@@ -284,11 +223,11 @@ export default {
     /*** ここから: ステータス変更時の処理 ***/
     "myData.status": function (val) {
       // 時間切れの場合の処理
-      if (val == "timeup" && (this.oppData.select != null || this.oppData.status == "timeup")) {
+      if (val == "timeup" && (this.oppData1.select != null || this.oppData1.status == "timeup")) {
         this.judge(); // 相手が回答済みか時間切れの場合判定処理へ
       }
     },
-    "oppData.status": function (val) {
+    "oppData1.status": function (val) {
       if (val == "timeup" && (this.myData.select != null || this.myData.status == "timeup")) {
         this.judge(); // 自分が回答済みか時間切れの場合判定処理へ
       }
@@ -305,6 +244,11 @@ export default {
       this.myData.name = this.currentUser.name;
       this.myData.photoURL = this.currentUser.photoURL;
     }
+
+    // 4人モードの判定を行う
+    if (this.$router.currentRoute.name === "Battle4") {
+      this.BATTLE_MODE4 = true;
+    }
   },
   mounted() {
     // 画面を離れる際は部屋を削除する
@@ -317,7 +261,7 @@ export default {
     // プレイヤー1の高さを取得してローダーの高さと同じにする
     this.player2_height = document.getElementsByClassName("player1")[0].clientHeight;
 
-    // this.search(); // 対戦相手を検索する
+    this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
@@ -357,14 +301,14 @@ export default {
       this.questionRefs = [];
       this.questions = [];
       this.myAns = [];
-      this.oppData.name = null;
-      this.oppData.photoURL = null;
+      this.oppData1.name = null;
+      this.oppData1.photoURL = null;
       this.myData.score = 0;
-      this.oppData.score = 0;
+      this.oppData1.score = 0;
       this.myData.status = null;
-      this.oppData.status = null;
+      this.oppData1.status = null;
       this.myData.select = null;
-      this.oppData.select = null;
+      this.oppData1.select = null;
       this.winner = null;
 
       this.db
@@ -384,14 +328,14 @@ export default {
             // 相手の情報をローカルに保存する
             this.room = querySnapshot.docs[0].ref;
             if (querySnapshot.docs[0].get("host_name") === "あなた") {
-              this.oppData.name = "ゲストユーザ";
+              this.oppData1.name = "ゲストさん";
             } else {
-              this.oppData.name = querySnapshot.docs[0].get("host_name");
+              this.oppData1.name = querySnapshot.docs[0].get("host_name");
             }
             if (querySnapshot.docs[0].get("host_photoURL") !== null) {
-              this.oppData.photoURL = querySnapshot.docs[0].get("host_photoURL");
+              this.oppData1.photoURL = querySnapshot.docs[0].get("host_photoURL");
             } else {
-              this.oppData.photoURL = "/img/no-image.png";
+              this.oppData1.photoURL = "/img/no-image.png";
             }
 
             // 問題の参照型を取得する
@@ -460,7 +404,7 @@ export default {
           this.unsubscribe(); // リアルタイムリスナーを破棄する
           this.stateBattleFalse();
           this.isShowQuestionArea = false; // 問題エリアを非表示
-          this.oppData.status = "error";
+          this.oppData1.status = "error";
           this.myData.status = "error";
           this.message_num = this.messages.length - 1; // 「接続エラーが発生しました。」
           $("#message span").css({ opacity: 1 });
@@ -479,11 +423,11 @@ export default {
           // 自身がホストの場合、相手の名前をローカルに保存する
           if (this.isHost && data.guest_name != null) {
             if (data.guest_name === "あなた") {
-              this.oppData.name = "ゲストユーザ";
+              this.oppData1.name = "ゲストさん";
             } else {
-              this.oppData.name = data.guest_name;
+              this.oppData1.name = data.guest_name;
             }
-            this.oppData.photoURL = data.guest_photoURL != null ? data.guest_photoURL : "/img/Squirrel.png";
+            this.oppData1.photoURL = data.guest_photoURL != null ? data.guest_photoURL : "/img/Squirrel.png";
           }
           // 自身がゲストの場合、自身の名前と画像をドキュメントに反映する
           if (!this.isHost && data.guest_name == null) {
@@ -502,12 +446,12 @@ export default {
         }
 
         // 相手の回答をローカルに反映する
-        if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData.select) {
-          this.oppData.select = this.isHost ? data.guest_ans : data.host_ans;
-          this.oppData.time = this.isHost ? data.guest_time : data.host_time;
+        if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData1.select) {
+          this.oppData1.select = this.isHost ? data.guest_ans : data.host_ans;
+          this.oppData1.time = this.isHost ? data.guest_time : data.host_time;
         } else if (this.isHost ? data.guest_time : data.host_time == "timeup") {
           // 相手が時間切れの場合
-          this.oppData.status = "timeup";
+          this.oppData1.status = "timeup";
         }
         // 自分の回答をローカルに反映する
         if (this.isHost ? data.host_ans : data.guest_ans != null && this.isHost ? data.host_ans : data.guest_ans != this.myData.select) {
@@ -521,7 +465,6 @@ export default {
     searched() {
       this.stateBattleTrue(); // ステータス:対戦中
       this.isSearching = false; // 検索を終えて対戦相手を表示する
-      this.blink();
 
       // 問題の参照を用いて問題データを取得する
       for (let questionRef of this.questionRefs) {
@@ -567,6 +510,12 @@ export default {
     startBattle() {
       const message = $("#message span");
       this.message_num++; // 「対戦を開始します」
+
+     // 「選択中」の点滅を開始する
+      this.blinkIntervalId = setInterval(() => {
+        // 「選択中」を点滅させる
+        $(".blink").fadeOut(450).fadeIn(450);
+      }, 2000);
 
       // 少し待ってから実行
       this.timeoutId = setTimeout(() => {
@@ -650,9 +599,9 @@ export default {
     /*** プレイヤーの状態をリセットする ***/
     resetPlayerStatus() {
       this.myData.status = "selecting";
-      this.oppData.status = "selecting";
+      this.oppData1.status = "selecting";
       this.myData.select = null;
-      this.oppData.select = null;
+      this.oppData1.select = null;
 
       // ホストであればFirebase上のデータをリセット
       if (this.isHost) {
@@ -694,27 +643,7 @@ export default {
     },
 
     /*** 勝敗判定: 時間制限を過ぎた | 両者の回答が揃った ***/
-    judge() {
-      // 少し待ってから処理を行う
-      this.timeoutId = setTimeout(() => {
-        this.timeoutId = null;
-        this.isShowJudge = true; // 回答結果を表示する
-        // 少し待ってから処理を行う
-        this.timeoutId = setTimeout(() => {
-          this.timeoutId = null;
-          this.showJudgeDetail(); // 1問の勝敗結果を表示して得点を反映する
-
-          // 少し待ってから次の問題へ
-          this.timeoutId = setTimeout(() => {
-            this.timeoutId = null;
-            this.nextQuestion();
-          }, 4000);
-        }, 1500);
-      }, 1000);
-    },
-
-    /*
-     * 回答結果を表示して得点を反映する
+    /***** 判定詳細 *****
      * 自分の勝ち:
      *   自分が正解 & 相手が不正解か時間切れ
      *   自分が正解 & 相手が正解 & 相手より回答が早い
@@ -728,21 +657,45 @@ export default {
      *   両者不正解
      *   両者正解 & タイムが同じ
      */
-    showJudgeDetail() {
-      const mySelect = this.myData.select; // 自分の回答
-      const oppSelect = this.oppData.select; // 相手の回答
-      const myTime = this.myData.time; // 自分の回答タイム
-      const oppTime = this.oppData.time; // 相手の回答タイム
-      const correctAns = this.questions[this.question_now - 1].correctAns; // 正答
-      if ((mySelect == correctAns && oppSelect != correctAns) || (mySelect == correctAns && oppSelect == correctAns && myTime < oppTime)) {
-        this.winner = 1; // 自分の勝ち
-        this.myData.score++;
-      } else if ((oppSelect == correctAns && mySelect != correctAns) || (oppSelect == correctAns && mySelect == correctAns && oppTime < myTime)) {
-        this.winner = 2; // 相手の勝ち
-        this.oppData.score++;
-      } else {
-        this.winner = 0; // 引き分け
-      }
+    judge() {
+      // 少し待ってから処理を行う
+      this.timeoutId = setTimeout(() => {
+        this.timeoutId = null;
+
+        // 判定を行う
+        const mySelect = this.myData.select; // 自分の回答
+        const oppSelect = this.oppData1.select; // 相手の回答
+        const myTime = this.myData.time; // 自分の回答タイム
+        const oppTime = this.oppData1.time; // 相手の回答タイム
+        const correctAns = this.questions[this.question_now - 1].correctAns; // 正答
+        if ((mySelect == correctAns && oppSelect != correctAns) || (mySelect == correctAns && oppSelect == correctAns && myTime < oppTime)) {
+          this.winner = 1; // 自分の勝ち
+        } else if ((oppSelect == correctAns && mySelect != correctAns) || (oppSelect == correctAns && mySelect == correctAns && oppTime < myTime)) {
+          this.winner = 2; // 相手の勝ち
+        } else {
+          this.winner = 0; // 引き分け
+        }
+
+        this.isShowJudge = true; // 回答結果を表示する
+
+        // 少し待ってから処理を行う
+        this.timeoutId = setTimeout(() => {
+          this.timeoutId = null;
+
+          // 得点に反映する
+          if (this.winner === 1) {
+            this.myData.score++;
+          } else if (this.winner === 2) {
+            this.oppData1.score++;
+          }
+
+          // 少し待ってから次の問題へ
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
+            this.nextQuestion();
+          }, 4000);
+        }, 1500);
+      }, 1000);
     },
 
     /*** 全問題が終了後 ***/
@@ -764,31 +717,31 @@ export default {
             if (this.isHost) this.room.delete(); // 部屋削除
 
             // 勝敗結果を反映する
-            if (this.myData.score > this.oppData.score) {
+            if (this.myData.score > this.oppData1.score) {
               this.myData.status = "win";
-              this.oppData.status = "lose";
-            } else if (this.myData.score < this.oppData.score) {
+              this.oppData1.status = "lose";
+
+              // 少しの間紙吹雪を出現させる
+              this.isShowConfetti = true;
+              this.timeoutId = setTimeout(() => {
+                this.timeoutId = null;
+                this.isShowConfetti = false; // 紙吹雪非表示
+              }, 12000);
+            } else if (this.myData.score < this.oppData1.score) {
               this.myData.status = "lose";
-              this.oppData.status = "win";
+              this.oppData1.status = "win";
             } else {
               this.myData.status = "draw";
-              this.oppData.status = "draw";
+              this.oppData1.status = "draw";
             }
 
-            // 少しの間紙吹雪を出現させる
-            this.isShowConfetti = true;
             this.timeoutId = setTimeout(() => {
               this.timeoutId = null;
-              this.isShowConfetti = false; // 紙吹雪非表示
-            }, 10000);
 
-            // 少し待ってから再戦ボタンを出現させる
-            this.timeoutId = setTimeout(() => {
-              this.timeoutId = null;
-              this.isShowRestart = true;
-              this.isShowReview = true;
-            }, 3000);
-          }, 2000);
+              this.isShowRestart = true; // 再戦ボタン出現
+              this.isShowReview = true; // 振り返り出現
+            }, 2000);
+          }, 1000);
         });
       });
     },
@@ -805,16 +758,6 @@ export default {
     /*** モーダルで対戦中に遷移する場合の処理 ***/
     routeLeave() {
       this.nextLocation();
-    },
-
-    /*** PlayerComponent - 「選択中」を点滅させる ***/
-    blink() {
-      if (this.blinkIntervalId == null) {
-        this.blinkIntervalId = setInterval(() => {
-          // 「選択中」を点滅させる
-          $(".blink").fadeOut(500).fadeIn(500);
-        }, 3000);
-      }
     },
 
     /*** QuestionComponent - 回答時の処理 ***/
@@ -842,6 +785,12 @@ export default {
   &.dialog_battle_cancel {
     position: absolute;
     top: 0; // 画面上部に配置する
+    max-width: 98%;
+
+    @media screen and (min-width: 600px) {
+      width: 588px;
+    }
+
     .dialog_battle_cancel_title {
       background-color: #fded3f;
     }
@@ -878,7 +827,7 @@ $battle-blue: #113bad;
   display: grid;
   grid-template:
     "... player1 ... player2 ..."
-    / minmax(0.2rem, auto) minmax(auto, 49.5%) minmax(0.2rem, auto) minmax(auto, 49.5%) minmax(0.2rem, auto);
+    / minmax(0.2rem, auto) 1fr minmax(0.2rem, auto) 1fr minmax(0.2rem, auto);
 
   @media screen and (min-width: 600px) {
     grid-template:

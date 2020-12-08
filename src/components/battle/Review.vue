@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panels accordion hover multiple>
+  <v-expansion-panels v-model="panel" accordion hover multiple>
     <v-expansion-panel v-for="(question, i) in questions" :key="i">
       <v-expansion-panel-header color="grey lighten-4" disable-icon-rotate>
         <span class="question-body">{{ question.body }}</span>
@@ -8,8 +8,8 @@
         </template>
       </v-expansion-panel-header>
       <v-expansion-panel-content>
-        <div class="review-content pt-1 pt-sm-2">
-          <span class="question-data grey--text text--darken-2">{{ question | formatData }}</span>
+        <div class="review-content pt-4 pt-sm-2">
+          <span class="question-data grey--text text--darken-2">{{ question | formatQuestionData }}</span>
           <div v-if="question.questionImageUrl !== null" class="text-center my-2 my-sm-4">
             <img :src="question.questionImageUrl" alt="Question Image" style="max-width: 100%" />
             <v-divider class="my-2 my-sm-4"></v-divider>
@@ -21,7 +21,8 @@
             <li v-for="(value, key, index) in question.options" :key="index" class="my-2 my-sm-4">
               <div v-if="value !== null" class="question-option">
                 <v-icon size="1.2rem">{{ key }}</v-icon>
-                <span class="pl-2 pl-sm-4">{{ value }}</span>
+                <span v-if="value !== null" class="question-option-text pl-2 pl-sm-4">{{ value }}</span>
+                <img v-if="question.answerImageUrls[index] !== null" :src="question.answerImageUrls[index]" alt="Option Image" class="pl-2 pl-sm-4" />
               </div>
             </li>
           </ul>
@@ -62,6 +63,7 @@ export default {
         mdiCloseThick,
         mdiCheck,
       },
+      panel: [],
 
       /* テスト用 */
       // questions: [
@@ -71,22 +73,39 @@ export default {
       //     no: "1",
       //     body: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Repudiandae suscipit sequi non nam inventore fugit dicta laborum nostrum deserunt ratione! Id ullam quisquam impedit harum quis accusantium facere exercitationem aliquid?",
       //     options: [ {ア: null}, {イ: null}, {ウ: null}, {エ: null}],
+      //     answerImageUrls: [null, null, null, null]
+      //   },
+      //   {
+      //     year: 2020,
+      //     season: "autumn",
+      //     no: "1",
+      //     body: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Repudiandae suscipit sequi non nam inventore fugit dicta laborum nostrum deserunt ratione! Id ullam quisquam impedit harum quis accusantium facere exercitationem aliquid?",
+      //     options: {ア: null, イ: null, ウ: null, エ: null},
+      //     answerImageUrls: [null, null, null, null]
+      //   },
+      //   {
+      //     year: 2020,
+      //     season: "autumn",
+      //     no: "1",
+      //     body: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Repudiandae suscipit sequi non nam inventore fugit dicta laborum nostrum deserunt ratione! Id ullam quisquam impedit harum quis accusantium facere exercitationem aliquid?",
+      //     options: [ {ア: null}, {イ: null}, {ウ: null}, {エ: null}],
+      //     answerImageUrls: [null, null, null, null]
       //   },
       // ],
     };
   },
   filters: {
-    formatData: function (val) {
+    formatQuestionData: function (val) {
       const season = val.season === "spring" ? "春" : "秋";
       return "" + val.year + season + " 問" + val.no;
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 .question-body,
-.question-option span,
+.question-option-text,
 .judge {
   letter-spacing: 0.05rem;
   line-height: 1.5;
@@ -103,13 +122,6 @@ export default {
     letter-spacing: 0.05rem;
   }
 
-  .question-body,
-  .question-option span,
-  .judge {
-    letter-spacing: 0.05rem;
-    line-height: 1.5;
-    font-size: 0.875rem;
-  }
   .question-option {
     display: flex;
     align-items: center;

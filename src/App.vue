@@ -44,8 +44,8 @@ export default {
             userObj.name = user.displayName;
             // 画像があるかチェックする
             if (user.photoURL === null) {
-              // 画像が無い場合はデフォルトで保存する
-              userObj.photoURL = "/img/no-image.png";
+              // 画像が無い場合はデフォルトの画像
+              userObj.photoURL = "https://firebasestorage.googleapis.com/v0/b/feapmaster-5b5ad.appspot.com/o/userImage%2Fno-image.png?alt=media&token=7eb5ca9d-911b-4871-9929-9aaae704867a";
             } else {
               userObj.photoURL = user.photoURL;
             }
@@ -56,14 +56,18 @@ export default {
           userObj.uid = user.uid;
           this.setUser(userObj);
 
-          // 現在の画面がログインページならマイページへ遷移する
-          if (this.$router.currentRoute.name === "Login") this.$router.push({ name: "Mypage" });
+          // 現在の画面がログインページならホームへ遷移する
+          if (this.$router.currentRoute.name === "Login") {
+            this.$router.push({ name: "Home" });
+          }
         })
       } else {
         // signed out
 
         // 現在のページがマイページならホームへ遷移する
-        if (this.$router.currentRoute.name === "Mypage") this.$router.push({ name: "Home" });
+        if (this.$router.currentRoute.name === "Mypage") {
+          this.$router.push({ name: "Home" });
+        }
 
         // ユーザ情報をリセットする
         this.unsetUser();
