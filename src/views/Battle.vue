@@ -140,6 +140,25 @@ export default {
         select: null,
         time: null,
       },
+      oppData2: {
+        cardColor: "purple lighten-5",
+        name: null,
+        photoURL: null,
+        status: null,
+        score: 0,
+        select: null,
+        time: null,
+      },
+      oppData3: {
+        cardColor: "teal lighten-5",
+        name: null,
+        photoURL: null,
+        status: null,
+        score: 0,
+        select: null,
+        time: null,
+      },
+
       // 匿名用のランダムに表示する画像と名前
       image_random: [
         "Bear",
@@ -357,19 +376,35 @@ export default {
       this.db
         .collection("rooms")
         .add({
-          host_name: this.myData.name, // ホスト名
-          guest_name: null, // ゲスト名
-          host_photoURL: this.myData.photoURL, // サインインユーザでない場合はnull
-          guest_photoURL: null,
-          host_time: null, // ホスト回答タイム
-          guest_time: null, // ゲスト回答タイム
-          host_ans: null, // ホスト回答
-          guest_ans: null, // ゲスト回答
-          questions: this.questionRefs, // ランダムな問題の参照リスト
+          host: {
+            name: this.myData.name,
+            photoURL: this.myData.photoURL,
+            time: null,
+            ans: null,
+          },
+          guest1: {
+            name: null,
+            photoURL: null,
+            time: null,
+            ans: null,
+          },
+          guest2: {
+            name: null,
+            photoURL: null,
+            time: null,
+            ans: null,
+          },
+          guest3: {
+            name: null,
+            photoURL: null,
+            time: null,
+            ans: null,
+          },
+          questions: this.questionRefs,
         })
         .then((documentReference) => {
           this.room = documentReference;
-          this.createObserver(this.room); // リアルタイムリスナー作成 ゲストが入室まで待機
+          this.createObserver(); // リアルタイムリスナー作成 ゲストが入室まで待機
         });
     },
 
@@ -407,12 +442,13 @@ export default {
           this.oppData1.status = "error";
           this.myData.status = "error";
           this.message_num = this.messages.length - 1; // 「接続エラーが発生しました。」
+
           $("#message span").css({ opacity: 1 });
-          // 少し待つ
+
           this.timeoutId = setTimeout(() => {
             this.timeoutId = null;
             this.isShowRestart = true; // 再戦ボタンを表示
-          }, 2000);
+          }, 1500);
           return;
         }
 
@@ -421,42 +457,45 @@ export default {
         // 検索中の処理
         if (this.isSearching) {
           // 自身がホストの場合、相手の名前をローカルに保存する
-          if (this.isHost && data.guest_name != null) {
-            if (data.guest_name === "あなた") {
+          if (this.isHost && data.guest1.name != null) {
+            if (data.guest1.name === "あなた") {
               this.oppData1.name = "ゲストさん";
             } else {
-              this.oppData1.name = data.guest_name;
+              this.oppData1.name = data.guest1.name;
             }
-            this.oppData1.photoURL = data.guest_photoURL != null ? data.guest_photoURL : "/img/Squirrel.png";
+            this.oppData1.photoURL = data.guest1.photoURL !== null ? data.guest1.photoURL : "/img/no-image.png";
           }
+
           // 自身がゲストの場合、自身の名前と画像をドキュメントに反映する
-          if (!this.isHost && data.guest_name == null) {
+          if (!this.isHost && data.guest1.name === null) {
             this.room.update({
-              guest_name: this.myData.name,
-              guest_photoURL: this.myData.photoURL,
-              // guest_photoURL: null,
+              guest1: {
+                name: this.myData.name,
+                photoURL: this.myData.photoURL,
+              },
             });
             return;
           }
+
           // 両者が揃ったときに検索終了
-          if (data.host_name != null && data.guest_name != null) {
+          if (data.host.name != null && data.guest1.name != null) {
             this.searched();
             return;
           }
         }
 
         // 相手の回答をローカルに反映する
-        if (this.isHost ? data.guest_ans : data.host_ans != null && this.isHost ? data.guest_ans : data.host_ans != this.oppData1.select) {
-          this.oppData1.select = this.isHost ? data.guest_ans : data.host_ans;
-          this.oppData1.time = this.isHost ? data.guest_time : data.host_time;
-        } else if (this.isHost ? data.guest_time : data.host_time == "timeup") {
+        if (this.isHost ? data.guest1.ans : data.host.ans != null && this.isHost ? data.guest1.ans : data.host.ans != this.oppData1.select) {
+          this.oppData1.select = this.isHost ? data.guest1.ans : data.host.ans;
+          this.oppData1.time = this.isHost ? data.guest1.time : data.host.time;
+        } else if (this.isHost ? data.guest1.time : data.host.time == "timeup") {
           // 相手が時間切れの場合
           this.oppData1.status = "timeup";
         }
         // 自分の回答をローカルに反映する
-        if (this.isHost ? data.host_ans : data.guest_ans != null && this.isHost ? data.host_ans : data.guest_ans != this.myData.select) {
-          this.myData.select = this.isHost ? data.host_ans : data.guest_ans;
-          this.myData.time = this.isHost ? data.host_time : data.guest_time;
+        if (this.isHost ? data.host.ans : data.guest1.ans != null && this.isHost ? data.host.ans : data.guest1.ans != this.myData.select) {
+          this.myData.select = this.isHost ? data.host.ans : data.guest1.ans;
+          this.myData.time = this.isHost ? data.host.time : data.guest1.time;
         }
       });
     },
@@ -606,10 +645,14 @@ export default {
       // ホストであればFirebase上のデータをリセット
       if (this.isHost) {
         this.room.update({
-          host_ans: null,
-          guest_ans: null,
-          host_time: null,
-          guest_time: null,
+          host: {
+            ans: null,
+            time: null,
+          },
+          guest1: {
+            ans: null,
+            time: null,
+          },
         });
       }
     },
@@ -630,11 +673,15 @@ export default {
             // Firebaseへ反映する
             if (this.isHost) {
               this.room.update({
-                host_time: "timeup",
+                host: {
+                  time: "timeup",
+                },
               });
             } else {
               this.room.update({
-                guest_time: "timeup",
+                guest1: {
+                  time: "timeup"
+                },
               });
             }
           }
@@ -765,13 +812,17 @@ export default {
       // 自分の回答をFirebaseに反映する
       if (this.isHost) {
         this.room.update({
-          host_ans: ans,
-          host_time: this.timer_limit - this.timer_valuenow,
+          host: {
+            ans: ans,
+            time: this.timer_limit - this.timer_valuenow,
+          },
         });
       } else {
         this.room.update({
-          guest_ans: ans,
-          guest_time: this.timer_limit - this.timer_valuenow,
+          guest1: {
+            ans: ans,
+            time: this.timer_limit - this.timer_valuenow,
+          }
         });
       }
     },

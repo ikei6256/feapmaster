@@ -7,3 +7,31 @@ BATTLE_MODE4 | Boolean
 ・beforeMountでBATTLE_MODE4の判定を行う
 
 ・「oppData」を「oppData1」に変更
+
+・4人用の部屋のデータを以下のようにする
+host: {
+  nam1e
+  photoURL
+  ans: null
+  time: null
+}
+guest1: {
+  name
+  photoURL
+  time
+  ans
+}
+guest2: {
+  name
+  photoURL
+  time
+  ans
+}
+guest3: {
+  name
+  photoURL
+  time
+  ans
+}
+
+questions: 問題の参照リスト
