@@ -11,15 +11,41 @@
     </div>
 
     <!-- ここから: プレイヤー表示エリア -->
-    <div class="area-players mt-2 mt-sm-4">
+    <div v-if="!MODE_4PLAYERS" class="area-players mt-2 mt-sm-4">
       <div class="player1">
         <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
       </div>
 
       <div class="player2">
-        <transition name="fade-slow" mode="out-in">
-          <v-skeleton-loader v-if="isSearching" type="image" :height="player2_height" elevation="2"></v-skeleton-loader>
+        <transition name="fade" mode="out-in">
+          <v-skeleton-loader v-if="isSearchingOpp1" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
           <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus"></player>
+        </transition>
+      </div>
+    </div>
+
+    <!-- 4人モード -->
+    <div v-else class="area-players4 mt-2 mt-sm-4">
+      <div class="player1">
+        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus"></player>
+      </div>
+
+      <div class="player2">
+        <transition name="fade" mode="out-in">
+          <v-skeleton-loader v-if="isSearchingOpp1" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
+          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus"></player>
+        </transition>
+      </div>
+      <div class="player3">
+        <transition name="fade" mode="out-in">
+          <v-skeleton-loader v-if="isSearchingOpp2" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
+          <player v-else :playerData="oppData2" :isShowPlayerStatus="isShowPlayerStatus"></player>
+        </transition>
+      </div>
+      <div class="player4">
+        <transition name="fade" mode="out-in">
+          <v-skeleton-loader v-if="isSearchingOpp3" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
+          <player v-else :playerData="oppData3" :isShowPlayerStatus="isShowPlayerStatus"></player>
         </transition>
       </div>
     </div>
@@ -100,15 +126,20 @@ export default {
   },
   data() {
     return {
+      /**********************
+       * 共通データ 2人対戦 / 4人対戦
+       **********************/
       icons: {
         mdiAlertCircleOutline,
       },
-      player2_height: 0,
+
+      MODE_4PLAYERS: false, // true: 4人対戦
 
       SPEED_FADE: 350, // フェードイン/フェードアウトの入れ替え速度 350
       SPEED_FADE_SLOW: 700,
       NUM_QUESTION: 5, // 総問題数
-      BATTLE_MODE4: false, // true: 4人対戦
+
+      height_skeleton: 0,
 
       // TIMER_LIMIT_DEFAULT: 150, // 制限時間のデフォルト値
       TIMER_LIMIT_DEFAULT: 3, // 制限時間のデフォルト値
@@ -140,54 +171,12 @@ export default {
         select: null,
         time: null,
       },
-      oppData2: {
-        cardColor: "purple lighten-5",
-        name: null,
-        photoURL: null,
-        status: null,
-        score: 0,
-        select: null,
-        time: null,
-      },
-      oppData3: {
-        cardColor: "teal lighten-5",
-        name: null,
-        photoURL: null,
-        status: null,
-        score: 0,
-        select: null,
-        time: null,
-      },
 
       // 匿名用のランダムに表示する画像と名前
-      image_random: [
-        "Bear",
-        "Bee",
-        "Bird",
-        "Butterfly",
-        "Chameleon",
-        "Cocker-spaniel",
-        "Cow",
-        "Dolphin",
-        "Dove",
-        "Executive",
-        "Flamingo",
-        "Giraffe",
-        "Gorilla",
-        "Kangaroo",
-        "Koala",
-        "Paw",
-        "Rabbit",
-        "Sheep",
-        "Shrimp",
-        "Sloth",
-        "Snail",
-        "Squirrel",
-        "Turtle",
-      ],
+      image_random:["Bear","Bee","Bird","Butterfly","Chameleon","Cocker-spaniel","Cow", "Dolphin","Dove","Executive","Flamingo","Giraffe","Gorilla","Kangaroo","Koala","Paw","Rabbit","Sheep","Shrimp","Sloth","Snail","Squirrel","Turtle"],
 
       isHost: null, // 部屋のホストかゲストか
-      isSearching: true, // 対戦相手検索中
+      isSearchingOpp1: true, // 対戦相手検索中
 
       isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
       isShowQuestion: false, // 問題を表示するタイミングを制御する
@@ -206,7 +195,31 @@ export default {
       myAns: [], // 自分が回答したデータを保存する
       winner: null, // 勝敗 --- 0 引き分け | 1 自分 | 2 相手
       message_num: 0,
-      messages: ["待機中", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
+      messages:["待機中","対戦を開始します！","第1問","第2問","第3問","第4問","第5問","終了!","接続エラーが発生しました。"],
+
+      /*********************
+       * 4人対戦用データ
+       *********************/
+      isSearchingOpp2: true,
+      isSearchingOpp3: true,
+      oppData2: {
+        cardColor: "purple lighten-5",
+        name: null,
+        photoURL: null,
+        status: null,
+        score: 0,
+        select: null,
+        time: null,
+      },
+      oppData3: {
+        cardColor: "teal lighten-5",
+        name: null,
+        photoURL: null,
+        status: null,
+        score: 0,
+        select: null,
+        time: null,
+      },
     };
   },
   computed: {
@@ -218,23 +231,28 @@ export default {
   watch: {
     /*** ここから: 回答が選択されたときの処理 ***/
     "myData.select": function (val) {
-      if (val != null) {
+      if (val !== null) {
         this.myAns.push(val);
         this.myData.status = "waiting";
-        // 両者が回答していればタイマーを止めて勝敗判定を行う
-        if (this.oppData1.select != null) {
-          clearInterval(this.timerId);
-          this.judge();
-        }
+        this.judgeOrWait(); // 勝敗判定に移るかチェック
       }
     },
     "oppData1.select": function (val) {
-      if (val != null) {
+      if (val !== null) {
         this.oppData1.status = "waiting";
-        if (this.myData.select != null) {
-          clearInterval(this.timerId);
-          this.judge();
-        }
+        this.judgeOrWait();
+      }
+    },
+    "oppData2.select": function (val) {
+      if (val !== null) {
+        this.oppData2.status = "waiting";
+        this.judgeOrWait();
+      }
+    },
+    "oppData3.select": function (val) {
+      if (val !== null) {
+        this.oppData3.status = "waiting";
+        this.judgeOrWait();
       }
     },
     /*** ここまで: 回答が選択されたときの処理 ***/
@@ -266,7 +284,7 @@ export default {
 
     // 4人モードの判定を行う
     if (this.$router.currentRoute.name === "Battle4") {
-      this.BATTLE_MODE4 = true;
+      this.MODE_4PLAYERS = true;
     }
   },
   mounted() {
@@ -278,9 +296,9 @@ export default {
     });
 
     // プレイヤー1の高さを取得してローダーの高さと同じにする
-    this.player2_height = document.getElementsByClassName("player1")[0].clientHeight;
+    this.height_skeleton = document.getElementsByClassName("player1")[0].clientHeight;
 
-    this.search(); // 対戦相手を検索する
+    // this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
@@ -309,11 +327,11 @@ export default {
   },
   methods: {
     ...mapMutations(["stateBattleTrue", "stateBattleFalse"]),
-    /*** 対戦相手を検索する ***/
-    search() {
+    /*** 対戦に関わるデータを初期化する ***/
+    initBattleData() {
       this.message_num = 0; // 「待機中...」
       this.question_now = 0;
-      this.isSearching = true; // ステータス:検索中
+      this.isSearchingOpp1 = true; // ステータス:検索中
       this.isShowPlayerStatus = false;
       this.isShowQuestion = false;
       this.isShowJudge = false;
@@ -328,11 +346,32 @@ export default {
       this.oppData1.status = null;
       this.myData.select = null;
       this.oppData1.select = null;
-      this.winner = null;
+      this.winner = null; // ここをどうする
+
+      // 4人対戦用のデータ
+      if (this.MODE_4PLAYERS) {
+        this.isSearchingOpp2 = true;
+        this.isSearchingOpp3 = true;
+        this.oppData2.name = null;
+        this.oppData3.name = null;
+        this.oppData2.photoURL = null;
+        this.oppData3.photoURL = null;
+        this.oppData2.score = 0;
+        this.oppData3.score = 0;
+        this.oppData2.status = null;
+        this.oppData3.status = null;
+        this.oppData2.select = null;
+        this.oppData3.select = null;
+      }
+    },
+
+    /*** 対戦相手を検索する ***/
+    search() {
+      this.initBattleData(); // 対戦データを初期化する
 
       this.db
         .collection("rooms")
-        .where("guest_name", "==", null)
+        .where("guest1.name", "==", null)
         .limit(1) // 1件だけ
         .get()
         .then((querySnapshot) => {
@@ -346,13 +385,13 @@ export default {
 
             // 相手の情報をローカルに保存する
             this.room = querySnapshot.docs[0].ref;
-            if (querySnapshot.docs[0].get("host_name") === "あなた") {
+            if (querySnapshot.docs[0].get("host").name === "あなた") {
               this.oppData1.name = "ゲストさん";
             } else {
-              this.oppData1.name = querySnapshot.docs[0].get("host_name");
+              this.oppData1.name = querySnapshot.docs[0].get("host").name;
             }
-            if (querySnapshot.docs[0].get("host_photoURL") !== null) {
-              this.oppData1.photoURL = querySnapshot.docs[0].get("host_photoURL");
+            if (querySnapshot.docs[0].get("host").photoURL !== null) {
+              this.oppData1.photoURL = querySnapshot.docs[0].get("host").photoURL;
             } else {
               this.oppData1.photoURL = "/img/no-image.png";
             }
@@ -455,7 +494,7 @@ export default {
         const data = snapshot.data(); // データを保存
 
         // 検索中の処理
-        if (this.isSearching) {
+        if (this.isSearchingOpp1) {
           // 自身がホストの場合、相手の名前をローカルに保存する
           if (this.isHost && data.guest1.name != null) {
             if (data.guest1.name === "あなた") {
@@ -503,7 +542,7 @@ export default {
     /*** 対戦相手が見つかった(部屋入室後)後の処理 ***/
     searched() {
       this.stateBattleTrue(); // ステータス:対戦中
-      this.isSearching = false; // 検索を終えて対戦相手を表示する
+      this.isSearchingOpp1 = false; // 検索を終えて対戦相手を表示する
 
       // 問題の参照を用いて問題データを取得する
       for (let questionRef of this.questionRefs) {
@@ -550,7 +589,7 @@ export default {
       const message = $("#message span");
       this.message_num++; // 「対戦を開始します」
 
-     // 「選択中」の点滅を開始する
+      // 「選択中」の点滅を開始する
       this.blinkIntervalId = setInterval(() => {
         // 「選択中」を点滅させる
         $(".blink").fadeOut(450).fadeIn(450);
@@ -680,13 +719,33 @@ export default {
             } else {
               this.room.update({
                 guest1: {
-                  time: "timeup"
+                  time: "timeup",
                 },
               });
             }
           }
         }
       }, 1000);
+    },
+
+    /*** 勝敗判定に移るかのチェック ***/
+    judgeOrWait () {
+      if (!this.MODE_4PLAYERS) {
+        // 2人モードの場合
+        // 両者の回答が揃った場合に勝敗判定を行う
+        if (this.myData.select !== null && this.oppData1.select !== null) {
+          clearInterval(this.timerId);
+          this.judge();
+          return; // 以降の処理を行わない
+        }
+      } else {
+        // 4人モードの場合
+        // 4人の回答が揃った場合に勝敗判定を行う
+        if (this.myData.select !== null && this.oppData1.select !== null && this.oppData2.select !== null && this.oppData3.select !== null) {
+          clearInterval(this.timerId);
+          this.judge();
+        }
+      }
     },
 
     /*** 勝敗判定: 時間制限を過ぎた | 両者の回答が揃った ***/
@@ -822,7 +881,7 @@ export default {
           guest1: {
             ans: ans,
             time: this.timer_limit - this.timer_valuenow,
-          }
+          },
         });
       }
     },
@@ -891,6 +950,30 @@ $battle-blue: #113bad;
   }
   .player2 {
     grid-area: player2;
+  }
+}
+
+// 4人モード
+.area-players4 {
+  display: grid;
+  grid-template:
+    "... player1 ... player2 ... player3 ... player4 ..."
+    / minmax(0.1rem, auto) minmax(auto, 250px)
+    minmax(0.1rem, auto) minmax(auto, 250px)
+    minmax(0.1rem, auto) minmax(auto, 250px)
+    minmax(0.1rem, auto) minmax(auto, 250px) minmax(0.1rem, auto);
+
+  .player1 {
+    grid-area: player1;
+  }
+  .player2 {
+    grid-area: player2;
+  }
+  .player3 {
+    grid-area: player3;
+  }
+  .player4 {
+    grid-area: player4;
   }
 }
 </style>
