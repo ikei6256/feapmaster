@@ -1,5 +1,5 @@
 <template>
-  <v-card :color="playerData.cardColor">
+  <v-card :color="card_color">
     <v-card-title class="card-playerInfo">
       <v-avatar class="playerPhoto mr-1 mr-sm-2" color="#fff">
         <v-img :src="playerData.photoURL" alt="Player Photo" />
@@ -36,6 +36,7 @@ export default {
   props: {
     playerData: Object, // プレイヤーデータ
     isShowPlayerStatus: Boolean, // プレイヤーの状態を表示するタイミングを制御する
+    card_color: String,
   },
 };
 </script>
