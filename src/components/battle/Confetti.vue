@@ -104,12 +104,11 @@ export default {
 
 <style lang="scss" scoped>
 .confetti {
-  // z-index: -1;
-  pointer-events: none;
   height: 100vh;
   width: 100%;
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: none;
 }
 </style>

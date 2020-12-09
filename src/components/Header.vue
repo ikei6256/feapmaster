@@ -60,7 +60,7 @@
     </div>
 
     <!-- ログアウト用のスナックバー -->
-    <v-snackbar v-model="snackbar_logout" timeout="2800">
+    <v-snackbar v-model="snackbar_logout" timeout="5000">
       ログアウトしました。
       <template v-slot:action="{ attrs }">
         <v-btn icon v-bind="attrs" @click="snackbar_logout = false">
