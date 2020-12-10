@@ -9,7 +9,7 @@
         <transition name="fade">
           <div v-show="isShowPlayerStatus">
             <transition mode="out-in">
-              <span v-if="playerData.status === 'selecting'" class="blink" key="selecting">選択中...</span>
+              <span v-if="playerData.status === 'selecting'" class="selecting" key="selecting">選択中...</span>
               <svg v-if="playerData.status === 'waiting'" class="animated-check" viewBox="0 0 24 24" key="waiting">
                 <path d="M4.1 12.7L9 17.6 20.3 6.3" fill="none" />
               </svg>
@@ -37,6 +37,18 @@ export default {
     playerData: Object, // プレイヤーデータ
     isShowPlayerStatus: Boolean, // プレイヤーの状態を表示するタイミングを制御する
     card_color: String,
+  },
+  watch: {
+    "playerData.status": function (val) {
+      const selecting = document.getElementsByClassName("selecting")[0];
+      if (selecting) {
+        if (val === "selecting") {
+          selecting.classList.add("blink");
+        } else {
+          selecting.classList.remove("blink");
+        }
+      }
+    },
   },
 };
 </script>
@@ -86,9 +98,24 @@ export default {
   }
 }
 
-/* --------------------
- * チェックマーク
- * -------------------- */
+/*** 「選択中」の点滅 ***/
+.blink {
+  animation: blink 2s linear infinite;
+
+  @keyframes blink {
+    0%,
+    40%,
+    100% {
+      opacity: 1;
+    }
+
+    20% {
+      opacity: 0;
+    }
+  }
+}
+
+/*** チェックマーク ***/
 .animated-check {
   height: 1em;
   width: 1em;

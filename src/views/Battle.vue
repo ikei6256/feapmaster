@@ -52,7 +52,7 @@
     <!-- ここまで: プレイヤー表示エリア -->
 
     <!-- ここから: 問題表示エリア -->
-    <transition name="fade-slow">
+    <transition name="fade">
       <div v-if="isShowQuestionArea" class="my-2 my-sm-4">
         <!-- プログレスバー -->
         <div class="mt-2 mt-sm-4 px-1 px-sm-2">
@@ -115,7 +115,6 @@
 import Player from "@/components/battle/Player.vue";
 import { mapMutations, mapState } from "vuex";
 import { mdiAlertCircleOutline } from "@mdi/js";
-import $ from "jquery";
 export default {
   components: {
     player: Player,
@@ -134,10 +133,15 @@ export default {
       NUM_QUESTION: 5, // 総問題数
 
       MODE_4PLAYERS: false, // 4人対戦ならtrue
-      player_no: 0, // プレイヤー番号 | 1,2,3,4
+      player_no: 0, // プレイヤー番号: 1 | 2 | 3 | 4
+      opp1_no: null,
+      opp2_no: null,
+      opp3_no: null,
+      concurrent_sessions: 0, // 接続人数
 
       /*** 部屋データ ***
-       * プレイヤーデータ: name, photoURL, select, time
+       * プレイヤー: player1 | player2 | player3 | player4
+       * プレイヤーデータ: name | photoURL | select | time
        * questions: 問題の参照リスト
        * isFull: 満員かどうか
        ****/
@@ -159,7 +163,7 @@ export default {
         status: null,
         score: 0,
         select: null,
-        time: null
+        time: null,
       },
       myData: {},
       oppData1: {},
@@ -169,7 +173,31 @@ export default {
       card_colors: ["blue lighten-5", "red lighten-5", "purple lighten-5", "lime lighten-5"],
       height_skeleton: 0,
       // 匿名用のランダムに表示する画像
-      image_random:["Bear","Bee","Bird","Butterfly","Chameleon","Cocker-spaniel","Cow", "Dolphin","Dove","Executive","Flamingo","Giraffe","Gorilla","Kangaroo","Koala","Paw","Rabbit","Sheep","Shrimp","Sloth","Snail","Squirrel","Turtle"],
+      image_random: [
+        "Bear",
+        "Bee",
+        "Bird",
+        "Butterfly",
+        "Chameleon",
+        "Cocker-spaniel",
+        "Cow",
+        "Dolphin",
+        "Dove",
+        "Executive",
+        "Flamingo",
+        "Giraffe",
+        "Gorilla",
+        "Kangaroo",
+        "Koala",
+        "Paw",
+        "Rabbit",
+        "Sheep",
+        "Shrimp",
+        "Sloth",
+        "Snail",
+        "Squirrel",
+        "Turtle",
+      ],
 
       // 相手検索フラグ
       isSearchingOpp1: true,
@@ -182,7 +210,6 @@ export default {
       timer_valuenow: 0, // 経過時間
       timerId: null, // カウントダウンタイマーのIDを保存する
       timeoutId: null,
-      blinkIntervalId: null, // 「選択中」を点滅させるためのInterval ID
 
       // 表示制御
       isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
@@ -203,7 +230,7 @@ export default {
       winner: null, // 0 引き分け | 1 自分 | 2 相手1 | 3 相手2 | 4 相手3
 
       message_num: 0,
-      messages:["待機中","対戦を開始します！","第1問","第2問","第3問","第4問","第5問","終了!","接続エラーが発生しました。"],
+      messages: ["待機中", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
     };
   },
   computed: {
@@ -213,7 +240,7 @@ export default {
     },
   },
   watch: {
-    /*** ここから: 回答が選択されたときの処理 ***/
+    /*** 回答が選択されたときの処理 ***/
     "myData.select": function (val) {
       if (val !== null) {
         this.myAns.push(val);
@@ -239,9 +266,8 @@ export default {
         this.judgeOrWait();
       }
     },
-    /*** ここまで: 回答が選択されたときの処理 ***/
 
-    /*** ここから: ステータス変更時の処理 ***/
+    /*** ステータス変更時の処理 ***/
     "myData.status": function (val) {
       // 時間切れの場合の処理
       if (val == "timeup" && (this.oppData1.select !== null || this.oppData1.status === "timeup")) {
@@ -253,10 +279,9 @@ export default {
         this.judge(); // 自分が回答済みか時間切れの場合判定処理へ
       }
     },
-    /*** ここまで: 時間切れの場合の処理 ***/
   },
   beforeMount() {
-    this.myData = {...this.DATA_PLAYER_INIT};
+    this.myData = { ...this.DATA_PLAYER_INIT };
 
     // サインインユーザであるか確認してname、photoURLをセットする
     if (this.currentUser !== null) {
@@ -276,7 +301,7 @@ export default {
     // ブラウザを閉じるなどの場合の処理。後処理必須
     window.addEventListener("beforeunload", this.handlerLeave);
 
-    // プレイヤー1の高さを取得してローダーの高さと同じにする
+    // プレイヤー1の高さを取得してスケルトンローダーと高さを同じにする
     this.height_skeleton = document.getElementsByClassName("player1")[0].clientHeight;
 
     this.search(); // 対戦相手を検索する
@@ -294,12 +319,6 @@ export default {
     window.removeEventListener("beforeunload", this.handlerLeave);
     clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
     clearInterval(this.timerId); // タイマーを停止する
-    clearInterval(this.blinkIntervalId); // 「選択中」の点滅を停止
-
-    if (this.isPlaying) {
-      this.stateBattleFalse();
-    }
-
     this.handlerLeave();
   },
   methods: {
@@ -309,7 +328,7 @@ export default {
     initData() {
       this.player_no = 0;
       this.isSearchingOpp1 = true; // ステータス:検索中
-      this.oppData1 = {...this.DATA_PLAYER_INIT};
+      this.oppData1 = { ...this.DATA_PLAYER_INIT };
 
       this.message_num = 0; // 「待機中...」
       this.question_now = 0;
@@ -330,8 +349,8 @@ export default {
       if (this.MODE_4PLAYERS) {
         this.isSearchingOpp2 = true;
         this.isSearchingOpp3 = true;
-        this.oppData2 = {...this.DATA_PLAYER_INIT};
-        this.oppData3 = {...this.DATA_PLAYER_INIT};
+        this.oppData2 = { ...this.DATA_PLAYER_INIT };
+        this.oppData3 = { ...this.DATA_PLAYER_INIT };
       }
     },
 
@@ -362,22 +381,25 @@ export default {
               }
 
               // 自身のデータをドキュメントに保存する(席の確保)
-              this.room.update({
-                isFull: true,
-                player2_name: this.myData.name,
-                player2_photoURL: this.myData.photoURL,
-              }).then(() => {
-                this.player_no = 2;
-                this.stateBattleTrue(); // 対戦フラグON
+              this.room
+                .update({
+                  isFull: true,
+                  player2_name: this.myData.name,
+                  player2_photoURL: this.myData.photoURL,
+                })
+                .then(() => {
+                  this.player_no = 2;
+                  this.stateBattleTrue(); // 対戦フラグON
 
-                // 相手の情報をローカルに保存する
-                this.oppData1.name = data.player1_name !== "あなた" ? data.player1_name : "ゲストさん";
-                this.oppData1.photoURL = data.player1_photoURL !== null ? data.player1_photoURL : "/img/no-image.png";
+                  // 相手の情報をローカルに保存する
+                  this.oppData1.name = data.player1_name !== "あなた" ? data.player1_name : "ゲストさん";
+                  this.oppData1.photoURL = data.player1_photoURL !== null ? data.player1_photoURL : "/img/no-image.png";
 
-                this.createObserver(); // リアルタイムリスナー作成
-              }).catch(() => {
-                this.search(); // 検索やり直し
-              });
+                  this.createObserver(); // リアルタイムリスナー作成
+                })
+                .catch(() => {
+                  this.search(); // 検索やり直し
+                });
             }
           });
       } else {
@@ -403,105 +425,130 @@ export default {
               }
 
               // 人数を調べる
-              const NUM_PLAYERS = [data.player1_name, data.player2_name, data.player3_name, data.player4_name].filter(i => i !== null).length;
+              const concurrent_sessions = [data.player1_name, data.player2_name, data.player3_name, data.player4_name].filter((i) => i !== null)
+                .length;
 
-              if (NUM_PLAYERS === 3) {
+              if (concurrent_sessions === 3) {
                 // 1人しか空きが無い場合は満席ON
                 if (data.player1_name === null) {
                   // プレイヤー1の席を確保
-                  this.room.update({
-                    isFull: true,
-                    player1_name: this.myData.name,
-                    player1_photoURL: this.myData.photoURL
-                  }).then(() => {
-                    this.player_no = 1;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search(); // 検索し直す
-                  });
+                  this.room
+                    .update({
+                      isFull: true,
+                      player1_name: this.myData.name,
+                      player1_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 1;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search(); // 検索し直す
+                    });
                 } else if (data.player2_name === null) {
                   // プレイヤー2の席を確保
-                  this.room.update({
-                    isFull: true,
-                    player2_name: this.myData.name,
-                    player2_photoURL: this.myData.photoURL,
-                  }).then(() => {
-                    this.player_no = 2;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search();
-                  });
+                  this.room
+                    .update({
+                      isFull: true,
+                      player2_name: this.myData.name,
+                      player2_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 2;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search();
+                    });
                 } else if (data.player3_name === null) {
                   // プレイヤー3の席を確保
-                  this.room.update({
-                    isFull: true,
-                    player3_name: this.myData.name,
-                    player3_photoURL: this.myData.photoURL,
-                  }).then(() => {
-                    this.player_no = 3;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search();
-                  });
+                  this.room
+                    .update({
+                      isFull: true,
+                      player3_name: this.myData.name,
+                      player3_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 3;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search();
+                    });
                 } else {
                   // プレイヤー4の席を確保
-                  this.room.update({
-                    isFull: true,
-                    player4_name: this.myData.name,
-                    player4_photoURL: this.myData.photoURL,
-                  }).then(() => {
-                    this.player_no = 4;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search();
-                  })
+                  this.room
+                    .update({
+                      isFull: true,
+                      player4_name: this.myData.name,
+                      player4_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 4;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search();
+                    });
                 }
               } else {
                 // 通常通り席の確保を行う
                 if (data.player1_name === null) {
                   // プレイヤー1の席を確保
-                  this.room.update({
-                    player1_name: this.myData.name,
-                    player1_photoURL: this.myData.photoURL
-                  }).then(() => {
-                    this.player_no = 1;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search(); // 検索し直す
-                  });
+                  this.room
+                    .update({
+                      player1_name: this.myData.name,
+                      player1_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 1;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search(); // 検索し直す
+                    });
                 } else if (data.player2_name === null) {
                   // プレイヤー2の席を確保
-                  this.room.update({
-                    player2_name: this.myData.name,
-                    player2_photoURL: this.myData.photoURL,
-                  }).then(() => {
-                    this.player_no = 2;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search();
-                  });
+                  this.room
+                    .update({
+                      player2_name: this.myData.name,
+                      player2_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 2;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search();
+                    });
                 } else if (data.player3_name === null) {
                   // プレイヤー3の席を確保
-                  this.room.update({
-                    player3_name: this.myData.name,
-                    player3_photoURL: this.myData.photoURL,
-                  }).then(() => {
-                    this.player_no = 3;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search();
-                  });
+                  this.room
+                    .update({
+                      player3_name: this.myData.name,
+                      player3_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 3;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search();
+                    });
                 } else {
                   // プレイヤー4の席を確保
-                  this.room.update({
-                    player4_name: this.myData.name,
-                    player4_photoURL: this.myData.photoURL,
-                  }).then(() => {
-                    this.player_no = 4;
-                    this.createObserver();
-                  }).catch(() => {
-                    this.search();
-                  })
+                  this.room
+                    .update({
+                      player4_name: this.myData.name,
+                      player4_photoURL: this.myData.photoURL,
+                    })
+                    .then(() => {
+                      this.player_no = 4;
+                      this.createObserver();
+                    })
+                    .catch(() => {
+                      this.search();
+                    });
                 }
               }
             }
@@ -554,18 +601,18 @@ export default {
             player1_time: null,
             player1_ans: null,
 
-            player2_name: this.myData.name,
-            player2_photoURL: this.myData.photoURL,
+            player2_name: null,
+            player2_photoURL: null,
             player2_time: null,
             player2_ans: null,
 
-            player3_name: this.myData.name,
-            player3_photoURL: this.myData.photoURL,
+            player3_name: null,
+            player3_photoURL: null,
             player3_time: null,
             player3_ans: null,
 
-            player4_name: this.myData.name,
-            player4_photoURL: this.myData.photoURL,
+            player4_name: null,
+            player4_photoURL: null,
             player4_time: null,
             player4_ans: null,
           })
@@ -602,79 +649,228 @@ export default {
 
     /*** 部屋ドキュメントのリアルタイムリスナーを作成する ***/
     createObserver() {
-      this.unsubscribe = this.room.onSnapshot((snapshot) => {
-        // 接続エラー時の処理
-        if (!snapshot.exists) {
-          this.unsubscribe(); // リアルタイムリスナーを破棄する
-          this.connectionError();
-          return;
-        }
+      this.unsubscribe = this.room.onSnapshot(
+        (snapshot) => {
+          // 接続エラー時の処理
+          if (!snapshot.exists) {
+            this.unsubscribe(); // リアルタイムリスナーを破棄する
+            this.unsubscribe = null;
+            this.room = null;
+            this.connectionError();
+            return;
+          }
 
-        const data = snapshot.data(); // ドキュメントのデータ
+          const data = snapshot.data(); // ドキュメントのデータ
 
-        if (!this.MODE_4PLAYERS) {
-          /***** 2人対戦時の処理 *****/
+          if (!this.MODE_4PLAYERS) {
+            /***** 2人対戦時の処理 *****/
 
-          // 検索中の処理
-          if (this.isSearchingOpp1) {
-            if (this.player_no === 2) {
-              // プレイヤー2であれば検索を終了する
-              this.isSearchingOpp1 = false; // 相手表示
-              this.searched(); // 検索終了
-              return;
-            } else if (data.player2_name !== null) {
-              // プレイヤー1かつ相手が見つかった場合、相手のデータをローカルに保存する
-              this.oppData1.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
-              this.oppData1.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
+            // 検索中の処理
+            if (this.isSearchingOpp1) {
+              if (this.player_no === 2) {
+                // プレイヤー2であれば検索を終了する
+                this.isSearchingOpp1 = false; // 相手表示
+                this.searched(); // 検索終了
+                return;
+              } else if (data.player2_name !== null) {
+                // プレイヤー1かつ相手が見つかった場合、相手のデータをローカルに保存する
+                this.oppData1.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
+                this.oppData1.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
 
-              this.isSearchingOpp1 = false; // 相手表示
-              this.searched(); // 検索終了
-              return;
+                this.isSearchingOpp1 = false; // 相手表示
+                this.searched(); // 検索終了
+                return;
+              }
+            }
+
+            // 相手の回答をローカルに反映する
+            if (
+              this.player_no === 1
+                ? data.player2_ans
+                : data.player1_ans !== null && this.player_no === 1
+                ? data.player2_ans
+                : data.player1_ans !== this.oppData1.select
+            ) {
+              // 自身がプレイヤー1ならプレイヤー2の回答をローカルに反映する
+              // 自身がプレイヤー2ならプレイヤー1の回答をローカルに反映する
+              this.oppData1.select = this.player_no === 1 ? data.player2_ans : data.player1_ans;
+              this.oppData1.time = this.player_no === 1 ? data.player2_time : data.player1_time;
+            } else if (this.player_no === 1 ? data.player2_time : data.player1_time === "timeup") {
+              // 相手が時間切れの場合
+              this.oppData1.status = "timeup";
+            }
+
+            // 自分の回答をローカルに反映する
+            if (
+              this.player_no === 1
+                ? data.player1_ans
+                : data.player2_ans != null && this.player_no === 1
+                ? data.player1_ans
+                : data.player2_ans !== this.myData.select
+            ) {
+              this.myData.select = this.player_no === 1 ? data.player1_ans : data.player2_ans;
+              this.myData.time = this.player_no === 1 ? data.player1_time : data.player2_time;
+            }
+          } else {
+            /***** 4人対戦時の処理 *****/
+
+            // 現在の人数を把握する
+            this.concurrent_sessions = [data.player1_name, data.player2_name, data.player3_name, data.player4_name].filter((i) => i !== null).length;
+
+            if (!this.isPlaying) {
+              /*** 検索中の処理 ***/
+              // 相手1が見つかった
+              if (this.isSearchingOpp1) {
+                if (data.player1_name !== null && this.player_no !== 1) {
+                  this.oppData1.name = data.player1_name !== "あなた" ? data.player1_name : "ゲストさん";
+                  this.oppData1.photoURL = data.player1_photoURL !== null ? data.player1_photoURL : "/img/no-image.png";
+                  this.opp1_no = 1;
+                  this.isSearchingOpp1 = false;
+                } else if (data.player2_name !== null && this.player_no !== 2 && this.opp2_no !== 2) {
+                  this.oppData1.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
+                  this.oppData1.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
+                  this.opp1_no = 2;
+                  this.isSearchingOpp1 = false;
+                }
+              }
+
+              // 相手2が見つかった
+              if (this.isSearchingOpp2) {
+                if (data.player2_name !== null && this.player_no !== 2 && this.opp1_no !== 2) {
+                  this.oppData2.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
+                  this.oppData2.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
+                  this.opp2_no = 2;
+                  this.isSearchingOpp2 = false;
+                } else if (data.player3_name !== null && this.player_no !== 3 && this.opp3_no !== 3) {
+                  this.oppData2.name = data.player3_name !== "あなた" ? data.player3_name : "ゲストさん";
+                  this.oppData2.photoURL = data.player3_photoURL !== null ? data.player3_photoURL : "/img/no-image.png";
+                  this.opp2_no = 3;
+                  this.isSearchingOpp2 = false;
+                }
+              }
+
+              // 相手3が見つかった
+              if (this.isSearchingOpp3) {
+                if (data.player3_name !== null && this.player_no !== 3 && this.opp2_no !== 3) {
+                  this.oppData3.name = data.player3_name !== "あなた" ? data.player3_name : "ゲストさん";
+                  this.oppData3.photoURL = data.player3_photoURL !== null ? data.player3_photoURL : "/img/no-image.png";
+                  this.opp3_no = 3;
+                  this.isSearchingOpp3 = false;
+                } else if (data.player4_name !== null && this.player_no !== 4) {
+                  this.oppData3.name = data.player4_name !== "あなた" ? data.player4_name : "ゲストさん";
+                  this.oppData3.photoURL = data.player4_photoURL !== null ? data.player4_photoURL : "/img/no-image.png";
+                  this.opp3_no = 4;
+                  this.isSearchingOpp3 = false;
+                }
+              }
+
+              /*** 検索中にプレイヤーが抜けた場合の処理 ***/
+              // 相手1が抜けた
+              if (
+                !this.isSearchingOpp1 &&
+                ((data.player1_name === null && this.opp1_no === 1) || (data.player2_name === null && this.opp1_no === 2))
+              ) {
+                this.isSearchingOpp1 = true;
+                this.oppData1.name = null;
+                this.oppData1.photoURL = null;
+                this.opp1_no = null;
+              }
+
+              // 相手2が抜けた
+              if (
+                !this.isSearchingOpp2 &&
+                ((data.player2_name === null && this.opp2_no === 2) || (data.player3_name === null && this.opp2_no === 3))
+              ) {
+                this.isSearchingOpp2 = true;
+                this.oppData2.name = null;
+                this.oppData2.photoURL = null;
+                this.opp2_no = null;
+              }
+
+              // 相手3が抜けた
+              if (
+                !this.isSearchingOpp3 &&
+                ((data.player3_name === null && this.opp3_no === 3) || (data.player4_name === null && this.opp3_no === 4))
+              ) {
+                this.isSearchingOpp3 = true;
+                this.oppData3.name = null;
+                this.oppData3.photoURL = null;
+                this.opp3_no = null;
+              }
+
+              // 4人揃っていた場合検索終了
+              if (this.concurrent_sessions === 4) {
+                this.searched();
+              }
+            } else {
+              /*** 対戦中の処理 ***/
+
+              /*** 対戦中に相手が抜けた時の処理 ***/
+              // 相手1が抜けた
+              if (data.player1_name === null && this.opp1_no === 1 || data.player2_name === null && this.opp1_no === 2) {
+                this.oppData1.status = "error";
+                this.opp1_no = null;
+              }
+
+              // 相手2が抜けた
+              if (data.player2_name === null && this.opp2_no === 2 || data.player3_name === null && this.opp2_no === 3) {
+                this.oppData2.status = "error";
+                this.opp2_no = null;
+              }
+
+              // 相手3が抜けた
+              if (data.player3_name === null && this.opp3_no === 3 || data.player4_name === null && this.opp3_no === 4) {
+                this.oppData3.status = "error";
+                this.opp3_no = null;
+              }
+
+              /*** 相手が回答した時の処理 ***/
+              // 相手1が回答した
+              if (data.player1_ans !== null && this.opp1_no === 1 && data.player1_ans !== this.oppData1.select) {
+                this.oppData1.select = data.player1_ans;
+                this.oppData1.time = data.player1_time;
+              } else if (data.player2_ans !== null && this.opp1_no === 2 && data.player2_ans !== this.oppData1.select) {
+                this.oppData1.select = data.player2_ans;
+                this.oppData1.time = data.player2_time;
+              }
+
+              // 相手2が回答した
+
             }
           }
-
-          if (this.player_no === 1 ? data.player2_ans : data.player1_ans !== null && this.player_no === 1 ? data.player2_ans : data.player1_ans !== this.oppData1.select) {
-            // 自身がプレイヤー1ならプレイヤー2の回答をローカルに反映する
-            // 自身がプレイヤー2ならプレイヤー1の回答をローカルに反映する
-            this.oppData1.select = this.player_no === 1 ? data.player2_ans : data.player1_ans;
-            this.oppData1.time = this.player_no === 1 ? data.player2_time : data.player1_time;
-          } else if (this.player_no === 1 ? data.player2_time : data.player1_time === "timeup") {
-            // 相手が時間切れの場合
-            this.oppData1.status = "timeup";
-          }
-
-          // 自分の回答をローカルに反映する
-          if (this.player_no === 1 ? data.player1_ans : data.player2_ans != null && this.player_no === 1 ? data.player1_ans : data.player2_ans !== this.myData.select) {
-            this.myData.select = this.player_no === 1 ? data.player1_ans : data.player2_ans;
-            this.myData.time = this.player_no === 1 ? data.player1_time : data.player2_time;
-          }
-        } else {
-          /***** 4人対戦時の処理 *****/
-
-          // if (this.isSearchingOpp1 || this.isSearchingOpp2 || this.isSearchingOpp3) {
-          //   // 検索中
-          //   console.log("検索中");
-
-
-          // }
+        },
+        () => {
+          this.connectionError();
         }
-      }, () => {
-        this.connectionError();
-      });
+      );
     },
 
     /*** 接続エラー時の処理 ***/
     connectionError() {
       clearTimeout(this.timeoutId); // 何かしらの処理をストップ
       clearInterval(this.timerId); // タイマーストップ
-      clearInterval(this.blinkIntervalId);
       this.stateBattleFalse(); // 対戦フラグOFF
       this.message_num = this.messages.length - 1; // 「接続エラーが発生しました。」
-      this.oppData1.status = "error";
-      this.isShowPlayerStatus = true;
       this.isShowQuestionArea = false; // 問題エリアを非表示
 
-      document.getElementById("message").firstElementChild.style.opacity = 1;
+      if (!this.MODE_4PLAYERS) {
+        this.oppData1.status = "error";
+      }
+
+      this.isShowPlayerStatus = true; // ステータスを表示
+
+      const message = document.getElementById("message").firstElementChild;
+      if (message) {
+        message.style.opacity = 1;
+      }
+
+      if (this.room !== null) {
+        this.room.delete().then(() => {
+          this.room = null;
+        }).catch(() => {
+          this.room = null;
+        });
+      }
 
       this.timeoutId = setTimeout(() => {
         this.timeoutId = null;
@@ -684,6 +880,8 @@ export default {
 
     /*** 対戦相手が見つかった後の処理 ***/
     searched() {
+      const message = document.getElementById("message").firstElementChild;
+
       this.stateBattleTrue(); // ステータス:対戦中
 
       // 問題の参照を用いて問題データを取得する
@@ -708,34 +906,31 @@ export default {
             answerAllImageUrl: data.answerAllImageUrl,
             answerImageUrls: [data.answerImageUrl1, data.answerImageUrl2, data.answerImageUrl3, data.answerImageUrl4],
           });
-
-          // 問題の取得が終わったら処理を進める
-          if (this.questions.length === this.NUM_QUESTION) {
-            // メッセージをフェードアウト(animateでopacityを変更して高さを確保)
-            $("#message span").animate(
-              {
-                opacity: 0,
-              },
-              this.SPEED_FADE,
-              () => {
-                this.startBattle(); // 対戦開始
-              }
-            );
-          }
         });
       }
+
+      // メッセージをフェードアウト
+      message.animate(
+        {
+          opacity: [1, 0],
+        },
+        {
+          duration: this.SPEED_FADE,
+          fill: "forwards",
+        }
+      );
+
+      this.timeoutId = setTimeout(() => {
+        this.timeoutId = null;
+        this.startBattle(); // 対戦開始
+      }, this.SPEED_FADE);
     },
 
     /*** 対戦を開始する ***/
     startBattle() {
-      const message = $("#message span");
-      this.message_num++; // 「対戦を開始します」
+      const message = document.getElementById("message").firstElementChild;
 
-      // 「選択中」の点滅を開始する
-      this.blinkIntervalId = setInterval(() => {
-        // 「選択中」を点滅させる
-        $(".blink").fadeOut(450).fadeIn(450);
-      }, 2000);
+      this.message_num++; // 「対戦を開始します」
 
       // 少し待ってから実行
       this.timeoutId = setTimeout(() => {
@@ -745,21 +940,23 @@ export default {
         // 少し待ってから実行
         this.timeoutId = setTimeout(() => {
           this.timeoutId = null;
+
           // メッセージ「対戦を開始します」をフェードイン
           message.animate(
             {
-              opacity: 1,
+              opacity: [0, 1],
             },
-            this.SPEED_FADE,
-            () => {
-              // 少し待ってから実行
-              this.timeoutId = setTimeout(() => {
-                this.timeoutId = null;
-                this.resetPlayerStatus(); // プレイヤーの状態をリセットする
-                this.nextQuestion(); // 出題開始
-              }, 2000);
+            {
+              duration: this.SPEED_FADE,
+              fill: "forwards",
             }
           );
+
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
+            this.resetPlayerStatus(); // プレイヤーの状態をリセットする
+            this.nextQuestion(); // 出題開始
+          }, 2000);
         }, 1500);
       }, 1500);
     }, // End: afterEnterShowOpp
@@ -774,46 +971,50 @@ export default {
         return;
       }
 
-      const message = $("#message span");
+      const message = document.getElementById("message").firstElementChild;
 
       this.isShowJudge = false; // 判定結果を非表示
       this.isShowQuestion = false; // 問題を非表示
       this.winner = null; // 勝敗結果をリセット
 
-      // メッセージを切り替える
+      // メッセージをフェードアウト
       message.animate(
         {
-          opacity: 0,
+          opacity: [1, 0],
         },
-        this.SPEED_FADE,
-        () => {
-          // フェードアウトしたあとにメッセージを切り替えておく
-          this.message_num++; // 「第〇問」
-          // 少し待ってから処理
-          this.timeoutId = setTimeout(() => {
-            this.timeoutId = null;
-            message.animate(
-              {
-                opacity: 1,
-              },
-              this.SPEED_FADE,
-              () => {
-                // 「第〇問」をフェードインした後の処理
-                // 少し待ってから次の問題へ進む
-                this.timeoutId = setTimeout(() => {
-                  this.timeoutId = null;
-                  this.timer_limit = this.TIMER_LIMIT_DEFAULT; // 制限時間を設定する
-                  this.timer_valuenow = this.timer_limit;
-                  this.resetPlayerStatus(); // プレイヤーの状態をリセットする
-                  this.isShowPlayerStatus = true; // プレイヤーステータスを表示する
-                  this.isShowQuestion = true; // 問題を表示する
-                  this.startTimer(); // 回答タイマースタート
-                }, 1200);
-              }
-            );
-          }, 800);
+        {
+          duration: this.SPEED_FADE,
+          fill: "forwards",
         }
       );
+
+      this.timeoutId = setTimeout(() => {
+        this.timeoutId = null;
+
+        this.message_num++; // 「第〇問」
+
+        // メッセージをフェードイン
+        message.animate(
+          {
+            opacity: [0, 1],
+          },
+          {
+            duration: this.SPEED_FADE,
+            fill: "forwards",
+          }
+        );
+
+        this.timeoutId = setTimeout(() => {
+          this.timeoutId = null;
+
+          this.timer_limit = this.TIMER_LIMIT_DEFAULT; // 制限時間を設定する
+          this.timer_valuenow = this.timer_limit;
+          this.resetPlayerStatus(); // プレイヤーの状態をリセットする
+          this.isShowPlayerStatus = true; // プレイヤーステータスを表示する
+          this.isShowQuestion = true; // 問題を表示する
+          this.startTimer(); // 回答タイマースタート
+        }, this.SPEED_FADE + 1200);
+      }, this.SPEED_FADE + 800);
     },
 
     /*** プレイヤーの状態をリセットする ***/
@@ -825,14 +1026,16 @@ export default {
 
       // プレイヤー1であればFirebase上のデータをリセット
       if (this.player_no === 1) {
-        this.room.update({
-          player1_ans: null,
-          player1_time: null,
-          player2_ans: null,
-          player2_time: null,
-        }).catch(() => {
-          this.connectionError();
-        });
+        this.room
+          .update({
+            player1_ans: null,
+            player1_time: null,
+            player2_ans: null,
+            player2_time: null,
+          })
+          .catch(() => {
+            this.connectionError();
+          });
       }
     },
 
@@ -853,17 +1056,21 @@ export default {
 
             // Firebaseへ反映する
             if (this.player_no === 1) {
-              this.room.update({
-                player1_time: "timeup",
-              }).catch(() => {
-                this.connectionError();
-              });
+              this.room
+                .update({
+                  player1_time: "timeup",
+                })
+                .catch(() => {
+                  this.connectionError();
+                });
             } else {
-              this.room.update({
-                player1_time: "timeup",
-              }).catch(() => {
-                this.connectionError();
-              });
+              this.room
+                .update({
+                  player1_time: "timeup",
+                })
+                .catch(() => {
+                  this.connectionError();
+                });
             }
           }
         }
@@ -871,7 +1078,7 @@ export default {
     },
 
     /*** 勝敗判定に移るかのチェック ***/
-    judgeOrWait () {
+    judgeOrWait() {
       if (!this.MODE_4PLAYERS) {
         // 2人モードの場合
         // 両者の回答が揃った場合に勝敗判定を行う
@@ -946,49 +1153,70 @@ export default {
 
     /*** 全問題が終了後 ***/
     endBattle() {
-      const message = $("#message span");
+      const message = document.getElementById("message").firstElementChild;
+
       this.stateBattleFalse(); // ステータス: 対戦終了
-      clearInterval(this.blinkIntervalId);
+      this.room = false;
 
-      // メッセージをフェードアウトする
-      message.fadeOut(this.SPEED_FADE, () => {
-        // フェードアウト後の処理
-        this.message_num++; // 「終了！」
-        message.fadeIn(this.SPEED_FADE, () => {
-          // 「終了！」フェードイン後の処理
-          // 少し待ってから実行する
-          this.timeoutId = setTimeout(() => {
-            this.timeoutId = null;
-            this.isShowQuestionArea = false; // 問題非表示
+      // メッセージをフェードアウト
+      message.animate(
+        {
+          opacity: [1, 0],
+        },
+        {
+          duration: this.SPEED_FADE,
+          fill: "forwards",
+        }
+      );
 
-            // 勝敗結果を反映する
-            if (this.myData.score > this.oppData1.score) {
-              this.myData.status = "win";
-              this.oppData1.status = "lose";
+      this.timeoutId = setTimeout(() => {
+        this.timeoutId = null;
 
-              // 少しの間紙吹雪を出現させる
-              this.isShowConfetti = true;
-              this.timeoutId = setTimeout(() => {
-                this.timeoutId = null;
-                this.isShowConfetti = false; // 紙吹雪非表示
-              }, 12000);
-            } else if (this.myData.score < this.oppData1.score) {
-              this.myData.status = "lose";
-              this.oppData1.status = "win";
-            } else {
-              this.myData.status = "draw";
-              this.oppData1.status = "draw";
-            }
+        this.message_num++; // 「終了!」
 
+        // メッセージをフェードイン
+        message.animate(
+          {
+            opacity: [0, 1],
+          },
+          {
+            duration: this.SPEED_FADE,
+            fill: "forwards",
+          }
+        );
+
+        this.timeoutId = setTimeout(() => {
+          this.timeoutId = null;
+
+          this.isShowQuestionArea = false; // 問題非表示
+
+          // 勝敗結果を反映する
+          if (this.myData.score > this.oppData1.score) {
+            this.myData.status = "win";
+            this.oppData1.status = "lose";
+
+            // 少しの間紙吹雪を出現させる
+            this.isShowConfetti = true;
             this.timeoutId = setTimeout(() => {
               this.timeoutId = null;
+              this.isShowConfetti = false; // 紙吹雪非表示
+            }, 12000);
+          } else if (this.myData.score < this.oppData1.score) {
+            this.myData.status = "lose";
+            this.oppData1.status = "win";
+          } else {
+            this.myData.status = "draw";
+            this.oppData1.status = "draw";
+          }
 
-              this.isShowRestart = true; // 再戦ボタン出現
-              this.isShowReview = true; // 振り返り出現
-            }, 2000);
-          }, 1000);
-        });
-      });
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
+
+            this.isShowRestart = true; // 再戦ボタン出現
+            this.isShowReview = true; // 振り返り出現
+          }, 2000);
+        }, this.SPEED_FADE + 1000);
+      }, this.SPEED_FADE);
     },
 
     /*** もう一度対戦を行う ***/
@@ -1003,20 +1231,67 @@ export default {
     /*** QuestionComponent - 回答時の処理 ***/
     selected(ans) {
       // 自分の回答をFirebaseに反映する
+      switch (this.player_no) {
+        case 1:
+          this.room
+            .update({
+              player1_ans: ans,
+              player1_time: this.timer_limit - this.timer_valuenow,
+            })
+            .catch(() => {
+              this.connectionError();
+            });
+          break;
+        case 2:
+          this.room
+            .update({
+              player2_ans: ans,
+              player2_time: this.timer_limit - this.timer_valuenow,
+            })
+            .catch(() => {
+              this.connectionError();
+            });
+          break;
+        case 3:
+          this.room
+            .update({
+              player3_ans: ans,
+              player3_time: this.timer_limit - this.timer_valuenow,
+            })
+            .catch(() => {
+              this.connectionError();
+            });
+          break;
+        case 4:
+          this.room
+            .update({
+              player4_ans: ans,
+              player4_time: this.timer_limit - this.timer_valuenow,
+            })
+            .catch(() => {
+              this.connectionError();
+            });
+          break;
+      }
+
       if (this.player_no === 1) {
-        this.room.update({
-          player1_ans: ans,
-          player1_time: this.timer_limit - this.timer_valuenow,
-        }).catch(() => {
-          this.connectionError();
-        });
+        this.room
+          .update({
+            player1_ans: ans,
+            player1_time: this.timer_limit - this.timer_valuenow,
+          })
+          .catch(() => {
+            this.connectionError();
+          });
       } else {
-        this.room.update({
-          player2_ans: ans,
-          player2_time: this.timer_limit - this.timer_valuenow,
-        }).catch(() => {
-          this.connectionError();
-        });
+        this.room
+          .update({
+            player2_ans: ans,
+            player2_time: this.timer_limit - this.timer_valuenow,
+          })
+          .catch(() => {
+            this.connectionError();
+          });
       }
     },
 
@@ -1026,43 +1301,66 @@ export default {
         if (this.unsubscribe !== null) {
           this.unsubscribe(); // リアルタイムリスナーを破棄する
         }
+
         if (!this.MODE_4PLAYERS) {
-          // 2人モード時の処理
+          /***** 2人モード時の処理 *****/
           this.room.delete(); // 部屋を削除する
         } else {
-          // 4人モード時の処理
-          this.leave4();
+          /***** 4人モード時の処理 *****/
+
+          if (!this.isPlaying) {
+            /*** 検索中の処理 ***/
+            // 人数が1人なら部屋を削除する
+            if (this.concurrent_sessions === 1) {
+              this.room.delete();
+            } else {
+              leaveRoom(this.room, this.player_no); // 部屋を削除せず退出する
+            }
+          } else {
+            /*** 対戦中の処理 ***/
+            // 人数が2人以下なら部屋を削除する
+            if (this.concurrent_sessions <= 2) {
+              this.room.delete();
+            } else {
+              leaveRoom(this.room, this.player_no); // 部屋を削除せず退出する
+            }
+          }
+        }
+      }
+
+      this.stateBattleFalse();
+
+      function leaveRoom(room, player_no) {
+        switch (player_no) {
+          case 1:
+            room.update({
+              player1_name: null,
+              player1_photoURL: null,
+            });
+            break;
+          case 2:
+            room.update({
+              player2_name: null,
+              player2_photoURL: null,
+            });
+            break;
+          case 3:
+            room.update({
+              player3_name: null,
+              player3_photoURL: null,
+            });
+            break;
+          case 4:
+            room.update({
+              player4_name: null,
+              player4_photoURL: null,
+            });
+            break;
         }
       }
     },
-
-    /*** 4人部屋を離席する ***/
-    leave4() {
-      switch (this.player_no) {
-        case 1:
-          this.room.update({
-            player1_name: null,
-          });
-          break;
-        case 2:
-          this.room.update({
-            player2_name: null
-          });
-          break;
-        case 3:
-          this.room.update({
-            player3_name: null
-          });
-          break;
-        case 4:
-          this.room.update({
-            player4_name: null
-          })
-          break;
-      }
-    }
   }, // End: methods
-}
+};
 </script>
 
 <style lang="scss">
