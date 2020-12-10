@@ -228,6 +228,7 @@ export default {
 
       myAns: [], // 自分が回答したデータを保存する
       winner: null, // 0 引き分け | 1 自分 | 2 相手1 | 3 相手2 | 4 相手3
+      rankings: [], // [{"1位": "aaa"}, {"1位": "bbb"}, {"3位": "ccc"}, {_:"ddd"}]
 
       message_num: 0,
       messages: ["待機中", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
@@ -237,47 +238,6 @@ export default {
     ...mapState(["auth", "currentUser", "db", "isPlaying"]),
     message() {
       return this.messages[this.message_num];
-    },
-  },
-  watch: {
-    /*** 回答が選択されたときの処理 ***/
-    "myData.select": function (val) {
-      if (val !== null) {
-        this.myAns.push(val);
-        this.myData.status = "waiting";
-        this.judgeOrWait(); // 勝敗判定に移るかチェック
-      }
-    },
-    "oppData1.select": function (val) {
-      if (val !== null) {
-        this.oppData1.status = "waiting";
-        this.judgeOrWait();
-      }
-    },
-    "oppData2.select": function (val) {
-      if (val !== null) {
-        this.oppData2.status = "waiting";
-        this.judgeOrWait();
-      }
-    },
-    "oppData3.select": function (val) {
-      if (val !== null) {
-        this.oppData3.status = "waiting";
-        this.judgeOrWait();
-      }
-    },
-
-    /*** ステータス変更時の処理 ***/
-    "myData.status": function (val) {
-      // 時間切れの場合の処理
-      if (val == "timeup" && (this.oppData1.select !== null || this.oppData1.status === "timeup")) {
-        this.judge(); // 相手が回答済みか時間切れの場合判定処理へ
-      }
-    },
-    "oppData1.status": function (val) {
-      if (val == "timeup" && (this.myData.select !== null || this.myData.status === "timeup")) {
-        this.judge(); // 自分が回答済みか時間切れの場合判定処理へ
-      }
     },
   },
   beforeMount() {
@@ -683,7 +643,7 @@ export default {
               }
             }
 
-            // 相手の回答をローカルに反映する
+            // 相手の回答をローカルに保存する
             if (
               this.player_no === 1
                 ? data.player2_ans
@@ -691,25 +651,14 @@ export default {
                 ? data.player2_ans
                 : data.player1_ans !== this.oppData1.select
             ) {
-              // 自身がプレイヤー1ならプレイヤー2の回答をローカルに反映する
-              // 自身がプレイヤー2ならプレイヤー1の回答をローカルに反映する
               this.oppData1.select = this.player_no === 1 ? data.player2_ans : data.player1_ans;
               this.oppData1.time = this.player_no === 1 ? data.player2_time : data.player1_time;
+              this.oppData1.status = "waiting";
+              this.judgeOrWait();
             } else if (this.player_no === 1 ? data.player2_time : data.player1_time === "timeup") {
               // 相手が時間切れの場合
               this.oppData1.status = "timeup";
-            }
-
-            // 自分の回答をローカルに反映する
-            if (
-              this.player_no === 1
-                ? data.player1_ans
-                : data.player2_ans != null && this.player_no === 1
-                ? data.player1_ans
-                : data.player2_ans !== this.myData.select
-            ) {
-              this.myData.select = this.player_no === 1 ? data.player1_ans : data.player2_ans;
-              this.myData.time = this.player_no === 1 ? data.player1_time : data.player2_time;
+              this.judgeOrWait();
             }
           } else {
             /***** 4人対戦時の処理 *****/
@@ -807,35 +756,90 @@ export default {
 
               /*** 対戦中に相手が抜けた時の処理 ***/
               // 相手1が抜けた
-              if (data.player1_name === null && this.opp1_no === 1 || data.player2_name === null && this.opp1_no === 2) {
+              if ((data.player1_name === null && this.opp1_no === 1) || (data.player2_name === null && this.opp1_no === 2)) {
                 this.oppData1.status = "error";
                 this.opp1_no = null;
               }
 
               // 相手2が抜けた
-              if (data.player2_name === null && this.opp2_no === 2 || data.player3_name === null && this.opp2_no === 3) {
+              if ((data.player2_name === null && this.opp2_no === 2) || (data.player3_name === null && this.opp2_no === 3)) {
                 this.oppData2.status = "error";
                 this.opp2_no = null;
               }
 
               // 相手3が抜けた
-              if (data.player3_name === null && this.opp3_no === 3 || data.player4_name === null && this.opp3_no === 4) {
+              if ((data.player3_name === null && this.opp3_no === 3) || (data.player4_name === null && this.opp3_no === 4)) {
                 this.oppData3.status = "error";
                 this.opp3_no = null;
               }
 
               /*** 相手が回答した時の処理 ***/
-              // 相手1が回答した
+              // プレイヤー1が回答した
               if (data.player1_ans !== null && this.opp1_no === 1 && data.player1_ans !== this.oppData1.select) {
                 this.oppData1.select = data.player1_ans;
                 this.oppData1.time = data.player1_time;
+                this.oppData1.status = "waiting";
+                this.judgeOrWait();
               } else if (data.player2_ans !== null && this.opp1_no === 2 && data.player2_ans !== this.oppData1.select) {
                 this.oppData1.select = data.player2_ans;
                 this.oppData1.time = data.player2_time;
+                this.oppData1.status = "waiting";
+                this.judgeOrWait();
               }
 
               // 相手2が回答した
+              if (data.player2_ans !== null && this.opp2_no === 2 && data.player2_ans !== this.oppData2.select) {
+                this.oppData2.select = data.player2_ans;
+                this.oppData2.time = data.player2_time;
+                this.oppData2.status = "waiting";
+                this.judgeOrWait();
+              } else if (data.player3_ans !== null && this.opp2_no === 3 && data.player3_ans !== this.oppData3.select) {
+                this.oppData2.select = data.player3_ans;
+                this.oppData2.time = data.player3_time;
+                this.oppData2.status = "waiting";
+                this.judgeOrWait();
+              }
 
+              // 相手3が回答した
+              if (data.player3_ans !== null && this.opp3_no === 3 && data.player3_ans !== this.oppData3.select) {
+                this.oppData3.select = data.player3_ans;
+                this.oppData3.time = data.player3_time;
+                this.oppData3.status = "waiting";
+                this.judgeOrWait();
+              } else if (data.player4_ans !== null && this.opp3_no === 4 && data.player4_ans !== this.oppData3.select) {
+                this.oppData3.select = data.player4_ans;
+                this.oppData3.time = data.player4_time;
+                this.oppData3.status = "waiting";
+                this.judgeOrWait();
+              }
+
+              /*** 相手が時間切れの時の処理 ***/
+              // 相手1が時間切れ
+              if (
+                this.oppData1.status !== "timeup" &&
+                ((data.player1_time === "timeup" && this.opp1_no === 1) || (data.player2_time === "timeup" && this.opp1_no === 2))
+              ) {
+                this.oppData1.status = "timeup";
+                this.judgeOrWait();
+              }
+
+              // 相手2が時間切れ
+              if (
+                this.oppData2.status !== "timeup" &&
+                ((data.player2_time === "timeup" && this.opp2_no === 2) || (data.player3_time === "timeup" && this.opp2_no === 3))
+              ) {
+                this.oppData2.status = "timeup";
+                this.judgeOrWait();
+              }
+
+              // 相手3が時間切れ
+              if (
+                this.oppData3.status !== "timeup" &&
+                ((data.player3_time === "timeup" && this.opp3_no === 3) || (data.player4_time === "timeup" && this.opp3_no === 4))
+              ) {
+                this.oppData3.status = "timeup";
+                this.judgeOrWait();
+              }
             }
           }
         },
@@ -857,7 +861,7 @@ export default {
         this.oppData1.status = "error";
       }
 
-      this.isShowPlayerStatus = true; // ステータスを表示
+      this.isShowPlayerStatus = true; // ステータスを表示 (接続エラー寺に非表示の可能性があるため)
 
       const message = document.getElementById("message").firstElementChild;
       if (message) {
@@ -865,11 +869,14 @@ export default {
       }
 
       if (this.room !== null) {
-        this.room.delete().then(() => {
-          this.room = null;
-        }).catch(() => {
-          this.room = null;
-        });
+        this.room
+          .delete()
+          .then(() => {
+            this.room = null;
+          })
+          .catch(() => {
+            this.room = null;
+          });
       }
 
       this.timeoutId = setTimeout(() => {
@@ -964,9 +971,8 @@ export default {
     /*** 次の問題へ進む ***/
     nextQuestion() {
       if (this.question_now < this.NUM_QUESTION) {
-        this.question_now++; // 次の問題へ
+        this.question_now++; // 次の問題
       } else {
-        this.unsubscribe(); // リアルタイムリスナーを破棄
         this.endBattle(); // 全問題を終えていたら終了処理へ
         return;
       }
@@ -1020,22 +1026,72 @@ export default {
     /*** プレイヤーの状態をリセットする ***/
     resetPlayerStatus() {
       this.myData.status = "selecting";
-      this.oppData1.status = "selecting";
       this.myData.select = null;
-      this.oppData1.select = null;
 
-      // プレイヤー1であればFirebase上のデータをリセット
-      if (this.player_no === 1) {
-        this.room
-          .update({
-            player1_ans: null,
-            player1_time: null,
-            player2_ans: null,
-            player2_time: null,
-          })
-          .catch(() => {
-            this.connectionError();
-          });
+      if (!this.MODE_4PLAYERS) {
+        /*** 2人対戦 ***/
+
+        this.oppData1.status = "selecting";
+        this.oppData1.select = null;
+
+        // プレイヤー1であればFirebase上のデータをリセット
+        if (this.player_no === 1) {
+          this.room
+            .update({
+              player1_ans: null,
+              player1_time: null,
+              player2_ans: null,
+              player2_time: null,
+            })
+            .catch(() => {
+              this.connectionError();
+            });
+        }
+      } else {
+        /*** 4人対戦 ***/
+
+        // 相手1をリセット
+        if (this.oppData1.status !== "error") {
+          this.oppData1.status = "selecting";
+          this.oppData1.select = null;
+        }
+
+        // 相手2をリセット
+        if (this.oppData2.status !== "error") {
+          this.oppData2.status = "selecting";
+          this.oppData2.select = null;
+        }
+
+        // 相手3をリセット
+        if (this.oppData3.status !== "error") {
+          this.oppData3.status = "selecting";
+          this.oppData3.select = null;
+        }
+
+        // Firebase上のデータをリセットする
+        // 自身がプレイヤー1である
+        // 自身がプレイヤー2かつプレイヤー1が接続エラー
+        // 自身がプレイヤー3かつプレイヤー1と2が接続エラー
+        if (
+          this.player_no === 1 ||
+          (this.oppData1.status === "error" && this.player_no === 2) ||
+          (this.oppData1.status === "error" && this.oppData2.status === "error" && this.player_no === 3)
+        ) {
+          this.room
+            .update({
+              player1_ans: null,
+              player1_time: null,
+              player2_ans: null,
+              player2_time: null,
+              player3_ans: null,
+              player3_time: null,
+              player4_ans: null,
+              player4_time: null,
+            })
+            .catch(() => {
+              this.connectionError();
+            });
+        }
       }
     },
 
@@ -1049,29 +1105,10 @@ export default {
           clearInterval(this.timerId);
           this.timerId = null;
 
-          // 状態:timeup にするかを判定する
-          if (this.myData.status == "selecting") {
-            this.myData.status = "timeup";
+          // 自身の状態をtimeupにする
+          if (this.myData.status === "selecting") {
             this.myAns.push(null); // 時間切れ
-
-            // Firebaseへ反映する
-            if (this.player_no === 1) {
-              this.room
-                .update({
-                  player1_time: "timeup",
-                })
-                .catch(() => {
-                  this.connectionError();
-                });
-            } else {
-              this.room
-                .update({
-                  player1_time: "timeup",
-                })
-                .catch(() => {
-                  this.connectionError();
-                });
-            }
+            this.myData.status = "timeup"; // ->watch
           }
         }
       }, 1000);
@@ -1080,16 +1117,28 @@ export default {
     /*** 勝敗判定に移るかのチェック ***/
     judgeOrWait() {
       if (!this.MODE_4PLAYERS) {
-        // 2人モードの場合
+        /*** 2人対戦 ***/
+
         // 両者の回答が揃った場合に勝敗判定を行う
-        if (this.myData.select !== null && this.oppData1.select !== null) {
+        if (
+          (this.myData.select !== null || this.myData.status === "timeup") &&
+          (this.oppData1.select !== null || this.oppData1.status === "timeup")
+        ) {
           clearInterval(this.timerId);
           this.judge();
         }
       } else {
-        // 4人モードの場合
+        /*** 4人対戦 ***/
+
         // 4人の回答が揃った場合に勝敗判定を行う
-        if (this.myData.select !== null && this.oppData1.select !== null && this.oppData2.select !== null && this.oppData3.select !== null) {
+        // ここを直す
+        // 時間切れ、接続エラーの場合がある
+        if (
+          (this.myData.select !== null || this.myData.status === "timeup" || this.myData.status === "error") &&
+          (this.oppData1.select !== null || this.oppData1.status === "timeup" || this.oppData1.status === "error") &&
+          (this.oppData2.select !== null || this.oppData2.status === "timeup" || this.oppData2.status === "error") &&
+          (this.oppData3.select !== null || this.oppData3.status === "timeup" || this.oppData3.status === "error")
+        ) {
           clearInterval(this.timerId);
           this.judge();
         }
@@ -1115,48 +1164,144 @@ export default {
       this.timeoutId = setTimeout(() => {
         this.timeoutId = null;
 
-        // 判定を行う
-        const mySelect = this.myData.select; // 自分の回答
-        const oppSelect = this.oppData1.select; // 相手の回答
-        const myTime = this.myData.time; // 自分の回答タイム
-        const oppTime = this.oppData1.time; // 相手の回答タイム
-        const correctAns = this.questions[this.question_now - 1].correctAns; // 正答
-        if ((mySelect == correctAns && oppSelect != correctAns) || (mySelect == correctAns && oppSelect == correctAns && myTime < oppTime)) {
-          this.winner = 1; // 自分の勝ち
-        } else if ((oppSelect == correctAns && mySelect != correctAns) || (oppSelect == correctAns && mySelect == correctAns && oppTime < myTime)) {
-          this.winner = 2; // 相手の勝ち
-        } else {
-          this.winner = 0; // 引き分け
-        }
+        const correctAns = this.questions[this.question_now - 1].correctAns; // 正答番号
 
-        this.isShowJudge = true; // 回答結果を表示する
+        if (this.MODE_4PLAYERS) {
+          /*** 2人対戦 ***/
+          const mySelect = this.myData.select; // 自分の回答
+          const oppSelect = this.oppData1.select; // 相手の回答
+          const myTime = this.myData.time; // 自分の回答タイム
+          const oppTime = this.oppData1.time; // 相手の回答タイム
 
-        // 少し待ってから処理を行う
-        this.timeoutId = setTimeout(() => {
-          this.timeoutId = null;
-
-          // 得点に反映する
-          if (this.winner === 1) {
-            this.myData.score++;
-          } else if (this.winner === 2) {
-            this.oppData1.score++;
+          if ((mySelect == correctAns && oppSelect != correctAns) || (mySelect == correctAns && oppSelect == correctAns && myTime < oppTime)) {
+            this.winner = 1; // 自分の勝ち
+          } else if ((oppSelect == correctAns && mySelect != correctAns) || (oppSelect == correctAns && mySelect == correctAns && oppTime < myTime)) {
+            this.winner = 2; // 相手の勝ち
+          } else {
+            this.winner = 0; // 引き分け
           }
 
-          // 少し待ってから次の問題へ
+          this.isShowJudge = true; // 回答結果を表示する
+
           this.timeoutId = setTimeout(() => {
             this.timeoutId = null;
-            this.nextQuestion();
-          }, 4000);
-        }, 1500);
+
+            // 得点に反映する
+            if (this.winner === 1) {
+              this.myData.score++;
+            } else if (this.winner === 2) {
+              this.oppData1.score++;
+            }
+
+            // 少し待ってから次の問題へ
+            this.timeoutId = setTimeout(() => {
+              this.timeoutId = null;
+              this.nextQuestion();
+            }, 4000);
+          }, 1500);
+        } else {
+          /*** 4人対戦 ***/
+
+          let players = [this.myData, this.oppData1, this.oppData2, this.oppData3];
+
+          // 正解の人かつタイムの早い順
+          let players_sorted = players.filter((p) => p.ans === correctAns).sort((a, b) => a.time - b.time);
+
+          // 不正解の人
+          let players_mistake = players.filter((p) => p.ans !== correctAns);
+
+          let rankings_tmp = {}; // {'1': ["aaa", "bbb"], '3': ["ccc"]} のようなオブジェクト
+          let now_add = 1; // 追加する順位
+          let now_time = null; // 比較するタイム
+
+          players_sorted.forEach((player,index) => {
+            if (now_time !== null) {
+              if (player.time === now_time) {
+                // タイムが同じ
+                let key = "" + now_add + "位"; // 「○位」をキーにする
+                this.rankings.push({key: player.name});
+              } else {
+                // タイムが異なる: 下位に追加
+                now_time = player.time;
+                now_add = index + 1; // 現在の人数が順位となる
+                let key = "" + now_add + "位";
+                this.rankings.push({key: player.name});
+              }
+            } else {
+              // 最初のデータを追加する
+              now_time = player.time;
+              this.rankings.push({"1位": player.name});
+            }
+          })
+
+          // players_sorted.forEach((player, index) => {
+          //   if (now_time !== null) {
+          //     if (player.time === now_time) {
+          //       // タイムが同じ
+          //       rankings_tmp[now_add].push(player.name); // 同順位に追加
+          //     } else {
+          //       // タイムが異なる: 下位に追加
+          //       now_time = player.time;
+          //       now_add = index + 1; // 現在の人数が順位となる
+          //       rankings_tmp[now_add] = [player.name]; // 配列追加
+          //     }
+          //   } else {
+          //     // 最初のデータを追加する
+          //     now_time = player.time;
+          //     rankings_tmp[1] = [player.name]; // 1位に配列追加
+          //   }
+          // });
+
+          // // 順位のデータを保存
+          // for (const [key, value] of Object.entries(rankings_tmp)) {
+          //   key = "" + key + "位"; // 「1位」のようなキー名にする
+
+          //   for (const name of value) {
+          //     this.rankings.push({ key: name });
+          //   }
+          // }
+
+          // 順位のデータに不正解の人を追加
+          players_mistake.forEach((player) => {
+            this.rankings.push({ _: player.name });
+          });
+
+          this.isShowJudge = true; // 回答結果を表示する
+
+          this.timeoutId = setTimeout(() => {
+            this.timeoutId = null;
+
+            // 得点に反映する
+            if (this.winner === 1) {
+              this.myData.score++;
+            } else if (this.winner === 2) {
+              this.oppData1.score++;
+            }
+
+            // 少し待ってから次の問題へ
+            this.timeoutId = setTimeout(() => {
+              this.timeoutId = null;
+              this.nextQuestion();
+            }, 4000);
+          }, 1500);
+        }
       }, 1000);
     },
 
     /*** 全問題が終了後 ***/
     endBattle() {
-      const message = document.getElementById("message").firstElementChild;
-
       this.stateBattleFalse(); // ステータス: 対戦終了
-      this.room = false;
+      this.unsubscribe(); // リアルタイムリスナーを破棄
+      this.unsubscribe = null;
+
+      // 部屋削除
+      this.room.get().then((snapshot) => {
+        if (snapshot.exists) {
+          this.room.delete();
+        }
+      });
+
+      const message = document.getElementById("message").firstElementChild;
 
       // メッセージをフェードアウト
       message.animate(
@@ -1230,13 +1375,24 @@ export default {
 
     /*** QuestionComponent - 回答時の処理 ***/
     selected(ans) {
+      const ansTime = this.timer_limit - this.timer_valuenow;
+
+      // 自分の回答をローカルに保存する
+      this.myData.select = ans;
+      this.myAns.push(ans);
+      this.myData.time = ansTime;
+      this.myData.status = "waiting";
+
       // 自分の回答をFirebaseに反映する
       switch (this.player_no) {
         case 1:
           this.room
             .update({
               player1_ans: ans,
-              player1_time: this.timer_limit - this.timer_valuenow,
+              player1_time: ansTime,
+            })
+            .then(() => {
+              this.judgeOrWait();
             })
             .catch(() => {
               this.connectionError();
@@ -1246,7 +1402,10 @@ export default {
           this.room
             .update({
               player2_ans: ans,
-              player2_time: this.timer_limit - this.timer_valuenow,
+              player2_time: ansTime,
+            })
+            .then(() => {
+              this.judgeOrWait();
             })
             .catch(() => {
               this.connectionError();
@@ -1256,7 +1415,10 @@ export default {
           this.room
             .update({
               player3_ans: ans,
-              player3_time: this.timer_limit - this.timer_valuenow,
+              player3_time: ansTime,
+            })
+            .then(() => {
+              this.judgeOrWait();
             })
             .catch(() => {
               this.connectionError();
@@ -1266,32 +1428,15 @@ export default {
           this.room
             .update({
               player4_ans: ans,
-              player4_time: this.timer_limit - this.timer_valuenow,
+              player4_time: ansTime,
+            })
+            .then(() => {
+              this.judgeOrWait();
             })
             .catch(() => {
               this.connectionError();
             });
           break;
-      }
-
-      if (this.player_no === 1) {
-        this.room
-          .update({
-            player1_ans: ans,
-            player1_time: this.timer_limit - this.timer_valuenow,
-          })
-          .catch(() => {
-            this.connectionError();
-          });
-      } else {
-        this.room
-          .update({
-            player2_ans: ans,
-            player2_time: this.timer_limit - this.timer_valuenow,
-          })
-          .catch(() => {
-            this.connectionError();
-          });
       }
     },
 
