@@ -41,18 +41,27 @@
     <!--- ここまで: 問題表示エリア --->
 
     <!--- ここから: 結果表示モーダル --->
-    <div v-if="isShowQuestion">
-      <v-dialog :value="isShowJudge" content-class="mx-1" width="500" transition="scroll-y-transition" hide-overlay persistent no-click-animation>
+    <div v-if="isRenderJudge">
+      <v-dialog
+        v-if="!MODE_4PLAYERS"
+        :value="isShowJudge"
+        content-class="mx-1"
+        width="500"
+        transition="scroll-y-transition"
+        hide-overlay
+        persistent
+        no-click-animation
+      >
         <v-card color="grey lighten-5">
           <div class="wrap-result text-center">
-            <div class="result-header berlin-sans py-2">
-              <span class="judge_title">JUDGE</span>
+            <div class="result-header py-2">
+              <span class="judge_title berlin-sans">JUDGE</span>
               <v-btn class="judge_close" icon x-small @click.stop="closeDialogResult"
                 ><v-icon>{{ icons.mdiClose }}</v-icon></v-btn
               >
-              <span v-if="winner === 1" class="judge red--text">WIN</span>
-              <span v-else-if="winner === 2" class="judge blue--text">LOSE</span>
-              <span v-else class="judge green--text">DRAW</span>
+              <span v-if="winner === 1" class="judge berlin-sans red--text">WIN</span>
+              <span v-else-if="winner === 2" class="judge berlin-sans blue--text">LOSE</span>
+              <span v-else class="judge berlin-sans green--text">DRAW</span>
             </div>
             <div class="result-body py-3">
               <div class="name pb-3">
@@ -91,6 +100,55 @@
           </div>
         </v-card>
       </v-dialog>
+
+      <v-dialog
+        v-else
+        :value="isShowJudge"
+        content-class="mx-1"
+        width="500"
+        transition="scroll-y-transition"
+        hide-overlay
+        persistent
+        no-click-animation
+      >
+        <v-card color="grey lighten-5">
+          <div class="wrap-result4 text-center">
+            <div class="result-header py-2">
+              <span class="judge_title berlin-sans">JUDGE</span>
+              <v-btn class="judge_close" icon x-small @click.stop="closeDialogResult"
+                ><v-icon>{{ icons.mdiClose }}</v-icon></v-btn
+              >
+              <span class="judge red--text text--lighten-2">1位</span><span class="judge-point ml-1 grey--text text--darken-1">[+3]</span>
+            </div>
+            <div class="result-body">
+              <table class="result-table">
+                <thead>
+                  <tr>
+                    <td class="pink lighten-2">順位</td>
+                    <td>名前</td>
+                    <td>回答</td>
+                    <td>タイム</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="n in 4" :key="n">
+                    <td class="pink lighten-2">{{ n }}位</td>
+                    <td>name</td>
+                    <td>ans</td>
+                    <td>time</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="result-footer py-4">
+              <div class="left text-left pl-1 pl-sm-2">
+                正答:<span class="correctAns pl-1">{{ Object.keys(question.options)[question.correctAns - 1] }}</span>
+              </div>
+              <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます</div>
+            </div>
+          </div>
+        </v-card>
+      </v-dialog>
     </div>
     <!-- ここまで: 結果表示モーダル -->
   </div>
@@ -100,12 +158,23 @@
 import { mdiCircleOutline, mdiCloseThick, mdiClose } from "@mdi/js";
 export default {
   props: {
-    isShowQuestion: Boolean,
-    isShowJudge: Boolean,
-    myData: Object,
-    oppData1: Object,
-    question: Object,
+    // isShowQuestion: Boolean,
+    // isShowJudge: Boolean,
+    // myData: Object,
+    // oppData1: Object,
+    // oppData2: Object,
+    // oppData3: Object,
+    // question: Object,
     winner: Number,
+    // MODE_4PLAYERS: Boolean,
+    rankings: Array,
+  },
+  watch: {
+    question: function (question) {
+      if (question) {
+        this.isRenderJudge = true;
+      }
+    },
   },
   data() {
     return {
@@ -114,35 +183,45 @@ export default {
         mdiCloseThick,
         mdiClose,
       },
+      // isRenderJudge: false,
 
       /* テスト用 */
-      // question: {
-      //   body: "問題文",
-      //   questionImageUrl: null,
-      //   answerAllImageUrl: null,
-      //   answerImageUrls: [null, null, null, null],
-      //   options: { ア: "かいとう1", イ: "回答2", ウ: "回答3", エ: "回答4" },
-      //   correctAns: 1,
-      // },
-      // myData: {
-      //   name: "あなた",
-      //   photoURL: null,
-      //   status: null, // selecting | waiting | timeup | win | lose | draw | error
-      //   score: 0, // 得点
-      //   select: 1, // 回答番号
-      //   time: 30, // 回答タイム(秒)
-      // },
-      // oppData1: {
-      //   name: "あいて",
-      //   photoURL: null,
-      //   status: null,
-      //   score: 0,
-      //   select: 2,
-      //   time: 180,
-      // },
-      // isShowQuestion: true,
-      // isShowJudge: true,
-      // winner: 1,
+      question: {
+        body: "問題文",
+        questionImageUrl: null,
+        answerAllImageUrl: null,
+        answerImageUrls: [null, null, null, null],
+        options: { ア: "かいとう1", イ: "回答2", ウ: "回答3", エ: "回答4" },
+        correctAns: 1,
+      },
+      myData: {
+        name: "あなた",
+        photoURL: null,
+        status: null, // selecting | waiting | timeup | win | lose | draw | error
+        score: 0, // 得点
+        select: 1, // 回答番号
+        time: 30, // 回答タイム(秒)
+      },
+      oppData1: {
+        name: "あいて",
+        photoURL: null,
+        status: null,
+        score: 0,
+        select: 2,
+        time: 180,
+      },
+      oppData2: {
+        name: "あいて2",
+        photoURL: null,
+        status: null,
+        score: 0,
+        select: 2,
+        time: 150,
+      },
+      MODE_4PLAYERS: true,
+      isShowQuestion: true,
+      isShowJudge: true,
+      isRenderJudge: true,
     };
   },
   filters: {
@@ -295,6 +374,62 @@ $battle-blue: #113bad;
       .right {
         grid-area: right;
       }
+    }
+  }
+
+  .result-footer {
+    display: grid;
+    grid-template:
+      "left right"
+      / 1fr 1fr;
+    font-size: 0.875rem;
+
+    .left {
+      grid-area: left;
+
+      .correctAns {
+        font-weight: bold;
+      }
+    }
+    .right {
+      grid-area: right;
+    }
+  }
+}
+
+.wrap-result4 {
+  .result-header {
+    position: relative;
+
+    .judge_title {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      font-size: 0.8rem;
+      color: #9e9e9e;
+    }
+    .judge_close {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+    .judge {
+      font-family: NotoSansJP;
+      font-weight: 900;
+      font-size: 2rem;
+      text-shadow: 1px 1px 0 rgba(68, 68, 68, 0.5);
+    }
+    .judge-point {
+      font-family: NotoSansJP;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+  }
+
+  .result-body {
+    .result-table {
+      width: 100%;
+      font-family: NotoSansJP;
     }
   }
 

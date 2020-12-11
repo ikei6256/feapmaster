@@ -20,10 +20,17 @@
           </router-link>
         </p>
       </div>
-      <div class="feedback mt-2">
-        <v-btn class="feedback-btn" color="primary" href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank" text
-          >ご意見・ご要望<v-icon class="icon-external ml-1">{{ icons.mdiOpenInNew }}</v-icon></v-btn
+      <div class="externalLink mt-2">
+         <p>
+          <v-btn class="external-btn" color="primary" href="https://feapmaster-mobile.web.app" target="_blank" text>
+            Flutter for Web お試し版<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon>
+          </v-btn>
+        </p>
+        <p>
+        <v-btn class="external-btn" color="primary" href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank" text
+          >ご意見・ご要望<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon></v-btn
         >
+        </p>
       </div>
     </div>
 
@@ -97,12 +104,15 @@ export default {
     }
   }
 
-  .feedback {
-    .feedback-btn,
-    .icon-external {
+  .externalLink {
+    .v-btn {
+      text-transform: none;
+    }
+    .external-btn,
+    .external-icon {
       font-size: 0.9rem;
     }
-    .icon-external {
+    .external-icon {
       height: 0.9rem;
       width: 0.9rem;
     }

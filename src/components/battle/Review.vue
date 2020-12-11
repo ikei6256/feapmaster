@@ -4,7 +4,7 @@
       <v-expansion-panel-header color="grey lighten-4" disable-icon-rotate>
         <span class="question-body">{{ question.body }}</span>
         <template v-if="question.correctAns === myAns[i]" v-slot:actions>
-          <v-icon color="green" size="1.2rem">{{ icons.mdiCheck }}</v-icon>
+          <v-icon color="green" size="1.2rem">{{ icons.mdiCheckboxMarkedCircle }}</v-icon>
         </template>
       </v-expansion-panel-header>
       <v-expansion-panel-content>
@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { mdiCircleOutline, mdiCloseThick, mdiCheck } from "@mdi/js";
+import { mdiCircleOutline, mdiCloseThick, mdiCheckboxMarkedCircle } from "@mdi/js";
 export default {
   props: {
     questions: Array,
@@ -61,7 +61,7 @@ export default {
       icons: {
         mdiCircleOutline,
         mdiCloseThick,
-        mdiCheck,
+        mdiCheckboxMarkedCircle,
       },
       panel: [],
 
