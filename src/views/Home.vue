@@ -3,33 +3,52 @@
     <div class="logo px-1 px-md-0">
       <img src="/img/logo/logo.png" alt="FE AP Master" />
     </div>
-    <div class="select text-center">
-      <div class="links">
-        <p>
-          <router-link :to="{ name: 'Battle' }">
-            <v-btn text color="primary">
-              <span class="link-text berlin-sans">Battle</span>
-            </v-btn>
-          </router-link>
-        </p>
-        <p>
-          <router-link :to="{ name: 'Battle4' }">
-            <v-btn text color="primary">
-              <span class="link-text berlin-sans">Battle<span class="detail ml-1">[4Players]</span></span>
-            </v-btn>
-          </router-link>
-        </p>
+    <div class="select">
+      <div class="links-battle">
+        <div class="wrap-battle2">
+          <div class="battle2">
+            <router-link :to="{ name: 'Battle' }">
+              <v-btn text color="primary">
+                <span class="link-text berlin-sans">Battle<span class="detail ml-1">[2人]</span></span>
+              </v-btn>
+            </router-link>
+          </div>
+          <div class="battle2_input">
+            <router-link :to="{ name: 'Battle' }">
+              <v-btn text color="primary">
+                <span class="input_room">ルーム入力</span>
+              </v-btn>
+            </router-link>
+          </div>
+        </div>
+        <div class="wrap-battle4">
+          <div class="battle4">
+            <router-link :to="{ name: 'Battle4' }">
+              <v-btn text color="primary">
+                <span class="link-text berlin-sans">Battle<span class="detail ml-1">[4人]</span></span>
+              </v-btn>
+            </router-link>
+          </div>
+          <div class="battle4_input">
+            <router-link :to="{ name: 'Battle4' }">
+              <v-btn text color="primary">
+                <span class="input_room">ルーム入力</span>
+              </v-btn>
+            </router-link>
+          </div>
+        </div>
       </div>
-      <div class="externalLink mt-2">
-         <p>
+
+      <div class="links-ext mt-8 text-center">
+        <p>
           <v-btn class="external-btn" color="primary" href="https://feapmaster-mobile.web.app" target="_blank" text>
             Flutter for Web お試し版<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon>
           </v-btn>
         </p>
         <p>
-        <v-btn class="external-btn" color="primary" href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank" text
-          >ご意見・ご要望<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon></v-btn
-        >
+          <v-btn class="external-btn" color="primary" href="https://forms.gle/PLe5syon4VmYAZ7G8" target="_blank" text
+            >ご意見・ご要望<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon></v-btn
+          >
         </p>
       </div>
     </div>
@@ -90,21 +109,61 @@ export default {
 .select {
   grid-area: nav;
 
-  .links {
+  .links-battle {
     .v-btn {
-      height: 3rem;
+      height: 2.5rem;
       text-transform: none;
     }
     .link-text {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
 
       .detail {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+    }
+
+    .wrap-battle2, .wrap-battle4 {
+      display: flex;
+      justify-content: center;
+    }
+    .wrap-battle4 {
+      margin-top: 1.5rem;
+    }
+
+    @media screen and (min-width: 600px) {
+      display: grid;
+      grid-template:
+        "battle2 ... battle4"
+        / auto 5rem auto;
+
+      .wrap-battle2, .wrap-battle4 {
+        // リセット
+        display: block;
+        justify-content: normal;
+      }
+      .wrap-battle2 {
+        grid-area: battle2;
+        justify-self: right;
+        text-align: center;
+      }
+      .wrap-battle4 {
+        // リセット
+        margin: 0;
+
+        // ここから
+        grid-area: battle4;
+        justify-self: left;
+        text-align: center;
+      }
+      .wrap-battle2 .battle2,
+      .wrap-battle4 .battle4 {
+        margin-bottom: 0.5rem;
       }
     }
   }
 
-  .externalLink {
+  .links-ext {
     .v-btn {
       text-transform: none;
     }
@@ -118,6 +177,8 @@ export default {
     }
   }
 }
+
+
 
 // Footer
 $footer-height: 3rem;
