@@ -13,13 +13,13 @@
     <!-- ここから: プレイヤー表示エリア -->
     <div v-if="!MODE_4PLAYERS" class="area-players mt-2 mt-sm-4">
       <div class="player1">
-        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[0]"></player>
+        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[0]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
       </div>
 
       <div class="player2">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp1" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[1]"></player>
+          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[1]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
         </transition>
       </div>
     </div>
@@ -27,25 +27,25 @@
     <!-- 4人モード -->
     <div v-else class="area-players4 mt-2 mt-sm-4">
       <div class="player1">
-        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[0]"></player>
+        <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[0]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
       </div>
 
       <div class="player2">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp1" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[1]"></player>
+          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[1]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
         </transition>
       </div>
       <div class="player3">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp2" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData2" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[2]"></player>
+          <player v-else :playerData="oppData2" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[2]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
         </transition>
       </div>
       <div class="player4">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp3" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData3" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[3]"></player>
+          <player v-else :playerData="oppData3" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[3]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
         </transition>
       </div>
     </div>
@@ -69,7 +69,8 @@
           :oppData1="oppData1"
           :oppData2="oppData2"
           :oppData3="oppData3"
-          :question="questions[question_now - 1]"
+          :questions="questions"
+          :question_now="question_now"
           :winner="winner"
           :MODE_4PLAYERS="MODE_4PLAYERS"
           :rankings="rankings"
@@ -137,7 +138,7 @@ export default {
       NUM_QUESTION: 5, // 総問題数
 
       MODE_4PLAYERS: false, // 4人対戦ならtrue
-      player_no: 0, // プレイヤー番号: 1 | 2 | 3 | 4
+      player_no: null, // プレイヤー番号: 1 | 2 | 3 | 4
       opp1_no: null,
       opp2_no: null,
       opp3_no: null,
@@ -156,11 +157,19 @@ export default {
       /*** プレイヤーデータ ***
        * name ... 名前
        * photoURL ... 画像
-       * status ... プレイヤーの状態 selecting | waiting | timeup | win | lose | draw | error
+       * status ... プレイヤーの状態
+       *   selecting | waiting | timeup |
+       *   win | lose | draw | error
+       *   showRank
        * score ... 得点
        * select ... 回答
        * time ... 回答タイム
        * 初期化は this.myData = {...this.DATA_PLAYER_INIT} のようにする
+       *
+       * 他
+       * add_score_tmp ... 1問毎の得点
+       * rank_tmp ... 1問毎の順位
+       * rank_final ... 最終結果
        *********************/
       DATA_PLAYER_INIT: {
         name: null,
@@ -169,6 +178,9 @@ export default {
         score: 0,
         select: null,
         time: null,
+        add_score_tmp: 0,
+        rank_tmp: null, // 1問毎の順位
+        rank_final: null, // 順位の最終結果
       },
       myData: {},
       oppData1: {},
@@ -213,14 +225,13 @@ export default {
       isJudging: false,
 
       TIMER_LIMIT_DEFAULT: 150, // 制限時間のデフォルト値
-      // TIMER_LIMIT_DEFAULT: 3, // テスト用
       timer_limit: 0, // 制限時間
       timer_valuenow: 0, // 経過時間
       timerId: null, // カウントダウンタイマーのIDを保存する
       timeoutId: null,
 
       // 表示制御
-      // isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
+      isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
       isShowQuestion: false, // 問題を表示するタイミングを制御する
       isShowJudge: false, // 結果を表示するタイミングを制御する
       isShowPlayerStatus: false, // プレイヤーの状態を表示するタイミングを制御する
@@ -236,13 +247,24 @@ export default {
 
       myAns: [], // 自分が回答したデータを保存する
       winner: null, // 0 引き分け | 1 自分 | 2 相手1 | 3 相手2 | 4 相手3
-      rankings: [], // [{"1": "aaa"}, {"1": "bbb"}, {"3": "ccc"}, {"-":"ddd"}]
+
+      /* 判定結果の順位データ
+       * 例
+       * [
+       *  { "1": {name: "あああ", select: 1, time: 150} },
+       *  { "1": {name: "いいい", select: 1, time: 150} },
+       *  { "3": {name: "ううう", select: 1, time: 180} },
+       *  { "-": {name: "えええ", select: 2, time: 100} }
+       * ]
+       */
+      rankings: [],
+      SCORES: [3,2,1,0], // 4人対戦での得点 1位なら this.SCORES[0]
 
       message_num: 0,
       messages: ["待機中", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
 
       /*** テスト用 ***/
-      isShowQuestionArea: true,
+      // isShowQuestionArea: true,
     };
   },
   computed: {
@@ -275,7 +297,7 @@ export default {
     // プレイヤー1の高さを取得してスケルトンローダーと高さを同じにする
     this.height_skeleton = document.getElementsByClassName("player1")[0].clientHeight;
 
-    // this.search(); // 対戦相手を検索する
+    this.search(); // 対戦相手を検索する
   },
   beforeRouteLeave(to, from, next) {
     // 対戦画面から離れる時対戦中なら確認メッセージを表示する
@@ -288,8 +310,6 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("beforeunload", this.handlerLeave);
-    clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
-    clearInterval(this.timerId); // タイマーを停止する
     this.handlerLeave();
   },
   methods: {
@@ -297,7 +317,7 @@ export default {
 
     /*** 対戦に関わるデータを初期化する ***/
     initData() {
-      this.player_no = 0;
+      this.player_no = null;
       this.isSearchingOpp1 = true; // ステータス:検索中
       this.isJuding = false;
       this.oppData1 = { ...this.DATA_PLAYER_INIT };
@@ -323,6 +343,7 @@ export default {
         this.isSearchingOpp3 = true;
         this.oppData2 = { ...this.DATA_PLAYER_INIT };
         this.oppData3 = { ...this.DATA_PLAYER_INIT };
+        this.rankings = [];
       }
     },
 
@@ -343,25 +364,33 @@ export default {
               // 空き部屋が無い場合
               this.createRoom(); // 部屋を作成する
             } else {
-              // 空き部屋がある場合
-              const data = querySnapshot.docs[0].data();
+              // 空き部屋がある場合入室処理(トランザクション)
+              let data;
               this.room = querySnapshot.docs[0].ref;
 
-              // 問題の参照型をDocumentReferenceに変換してローカルに保存する
-              for (let ref of data.questions) {
-                this.questionRefs.push(this.db.doc(ref.path));
-              }
+              return this.db
+                .runTransaction((transaction) => {
+                  return transaction.get(this.room).then((snapshot) => {
+                    data = snapshot.data();
+                    if (!snapshot.exists || data.isFull) {
+                      throw Error();
+                    }
 
-              // 自身のデータをドキュメントに保存する(席の確保)
-              this.room
-                .update({
-                  isFull: true,
-                  player2_name: this.myData.name,
-                  player2_photoURL: this.myData.photoURL,
+                    transaction.update(this.room, {
+                      isFull: true,
+                      player2_name: this.myData.name,
+                      player2_photoURL: this.myData.photoURL,
+                    });
+                  });
                 })
                 .then(() => {
-                  this.player_no = 2;
                   this.stateBattleTrue(); // 対戦フラグON
+                  this.player_no = 2;
+
+                  // 問題の参照型をDocumentReferenceに変換してローカルに保存する
+                  for (let ref of data.questions) {
+                    this.questionRefs.push(this.db.doc(ref.path));
+                  }
 
                   // 相手の情報をローカルに保存する
                   this.oppData1.name = data.player1_name !== "あなた" ? data.player1_name : "ゲストさん";
@@ -370,7 +399,7 @@ export default {
                   this.createObserver(); // リアルタイムリスナー作成
                 })
                 .catch(() => {
-                  this.search(); // 検索やり直し
+                  this.search(); // 検索し直す
                 });
             }
           });
@@ -387,142 +416,60 @@ export default {
               // 空き部屋が無い場合
               this.createRoom(); // 部屋を作成する
             } else {
-              // 空き部屋がある場合
-              const data = querySnapshot.docs[0].data();
+              // 空き部屋がある場合入室処理(トランザクション)
+              let data; // ドキュメントのデータ
+              let emptySpace; // 部屋の空き人数
               this.room = querySnapshot.docs[0].ref;
 
-              // 問題の参照型をDocumentReferenceに変換して保存する
-              for (let ref of data.questions) {
-                this.questionRefs.push(this.db.doc(ref.path));
-              }
+              return this.db
+                .runTransaction((transaction) => {
+                  return transaction.get(this.room).then((snapshot) => {
+                    data = snapshot.data();
+                    if (!snapshot.exists || data.isFull) {
+                      throw Error();
+                    }
+                    // ここからは部屋の人数が3人以下の場合の処理
 
-              // 人数を調べる
-              const concurrent_sessions = [data.player1_name, data.player2_name, data.player3_name, data.player4_name].filter((i) => i !== null)
-                .length;
+                    let obj = {}; // アップデートに使うオブジェクト
 
-              if (concurrent_sessions === 3) {
-                // 1人しか空きが無い場合は満席ON
-                if (data.player1_name === null) {
-                  // プレイヤー1の席を確保
-                  this.room
-                    .update({
-                      isFull: true,
-                      player1_name: this.myData.name,
-                      player1_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 1;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search(); // 検索し直す
-                    });
-                } else if (data.player2_name === null) {
-                  // プレイヤー2の席を確保
-                  this.room
-                    .update({
-                      isFull: true,
-                      player2_name: this.myData.name,
-                      player2_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 2;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search();
-                    });
-                } else if (data.player3_name === null) {
-                  // プレイヤー3の席を確保
-                  this.room
-                    .update({
-                      isFull: true,
-                      player3_name: this.myData.name,
-                      player3_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 3;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search();
-                    });
-                } else {
-                  // プレイヤー4の席を確保
-                  this.room
-                    .update({
-                      isFull: true,
-                      player4_name: this.myData.name,
-                      player4_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 4;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search();
-                    });
-                }
-              } else {
-                // 通常通り席の確保を行う
-                if (data.player1_name === null) {
-                  // プレイヤー1の席を確保
-                  this.room
-                    .update({
-                      player1_name: this.myData.name,
-                      player1_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 1;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search(); // 検索し直す
-                    });
-                } else if (data.player2_name === null) {
-                  // プレイヤー2の席を確保
-                  this.room
-                    .update({
-                      player2_name: this.myData.name,
-                      player2_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 2;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search();
-                    });
-                } else if (data.player3_name === null) {
-                  // プレイヤー3の席を確保
-                  this.room
-                    .update({
-                      player3_name: this.myData.name,
-                      player3_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 3;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search();
-                    });
-                } else {
-                  // プレイヤー4の席を確保
-                  this.room
-                    .update({
-                      player4_name: this.myData.name,
-                      player4_photoURL: this.myData.photoURL,
-                    })
-                    .then(() => {
-                      this.player_no = 4;
-                      this.createObserver();
-                    })
-                    .catch(() => {
-                      this.search();
-                    });
-                }
-              }
+                    // 空き人数を調べる
+                    emptySpace =
+                      [data.player1_name, data.player2_name, data.player3_name, data.player4_name]
+                        .filter((i) => i === null)
+                        .length;
+
+                    // 空き人数が1人なら満室フラグON
+                    if (emptySpace === 1) {
+                      obj.isFull = true;
+                    }
+
+                    // 空いているプレイヤー番号を1から4の順に調べる
+                    for (let i = 1; i <= 4; i++) {
+                      if (data["player" + i + "_name"] === null) {
+                        this.player_no = i;
+                        break;
+                      }
+                    }
+
+                    // アップデートするデータに名前と画像URLを追加
+                    obj["player" + this.player_no + "_name"] = this.myData.name;
+                    obj["player" + this.player_no + "_photoURL"] = this.myData.photoURL;
+
+                    // トランザクション実行
+                    transaction.update(this.room, obj);
+                  });
+                })
+                .then(() => {
+                  // 問題の参照型をDocumentReferenceに変換してローカルに保存する
+                  for (let ref of data.questions) {
+                    this.questionRefs.push(this.db.doc(ref.path));
+                  }
+
+                  this.createObserver(); // リアルタイムリスナー作成
+                })
+                .catch(() => {
+                  this.search(); // 検索し直す
+                });
             }
           });
       }
@@ -557,7 +504,7 @@ export default {
             this.createObserver(); // リアルタイムリスナー作成 ゲストが入室まで待機
           })
           .catch(() => {
-            this.connectionError();
+            this.search(); // 検索しなおす
           });
       } else {
         /***  4人対戦 ***/
@@ -623,7 +570,8 @@ export default {
     createObserver() {
       this.unsubscribe = this.room.onSnapshot(
         (snapshot) => {
-          // 接続エラー時の処理
+
+          // 部屋が削除された場合の処理
           if (!snapshot.exists) {
             this.unsubscribe(); // リアルタイムリスナーを破棄する
             this.unsubscribe = null;
@@ -645,11 +593,11 @@ export default {
                 this.searched(); // 検索終了
                 return;
               } else if (data.player2_name !== null) {
-                // プレイヤー1かつ相手が見つかった場合、相手のデータをローカルに保存する
+                // プレイヤー1で相手が見つかれば検索終了
                 this.oppData1.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
                 this.oppData1.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
-
                 this.isSearchingOpp1 = false; // 相手表示
+
                 this.searched(); // 検索終了
                 return;
               }
@@ -766,6 +714,11 @@ export default {
             } else {
               /*** 対戦中の処理 ***/
 
+              if (this.concurrent_sessions === 1) {
+                this.connectionError();
+                return;
+              }
+
               /*** 対戦中に相手が抜けた時の処理 ***/
               // 相手1が抜けた
               if ((data.player1_name === null && this.opp1_no === 1) || (data.player2_name === null && this.opp1_no === 2)) {
@@ -805,7 +758,7 @@ export default {
                 this.oppData2.time = data.player2_time;
                 this.oppData2.status = "waiting";
                 this.judgeOrWait();
-              } else if (data.player3_ans !== null && this.opp2_no === 3 && data.player3_ans !== this.oppData3.select) {
+              } else if (data.player3_ans !== null && this.opp2_no === 3 && data.player3_ans !== this.oppData2.select) {
                 this.oppData2.select = data.player3_ans;
                 this.oppData2.time = data.player3_time;
                 this.oppData2.status = "waiting";
@@ -919,7 +872,7 @@ export default {
             season: questionRef.parent.id,
             no: questionRef.id, // 問番号
             body: data.text, // 問題文
-            options: { ア: data.ans1, イ: data.ans2, ウ: data.ans3, エ: data.ans4 },
+            options: [data.ans1, data.ans2, data.ans3, data.ans4 ],
             correctAns: data.correctAns,
             questionImageUrl: data.questionImageUrl,
             answerAllImageUrl: data.answerAllImageUrl,
@@ -991,17 +944,12 @@ export default {
 
       this.isJudging = false;
       this.isShowJudge = false; // 判定結果を非表示
-      this.isShowQuestion = false; // 問題を非表示
 
-      // 判定結果を完全に消えるのを待つ
+      // 判定結果が消えるのを待つ
       this.timeoutId = setTimeout(() => {
+        this.timeoutId = null;
+        this.isShowQuestion = false; // 問題を非表示
         this.question_now++;
-
-        if (this.MODE_4PLAYERS) {
-          this.rankings = []; // 判定結果をリセット
-        } else {
-          this.winner = null; // 勝敗結果をリセット
-        }
 
         // メッセージをフェードアウト
         message.animate(
@@ -1052,6 +1000,7 @@ export default {
       if (!this.MODE_4PLAYERS) {
         /*** 2人対戦 ***/
 
+        this.winner = null; // 勝敗結果をリセット
         this.oppData1.status = "selecting";
         this.oppData1.select = null;
 
@@ -1070,6 +1019,8 @@ export default {
         }
       } else {
         /*** 4人対戦 ***/
+
+        this.rankings = []; // 判定結果をリセット
 
         // 相手1をリセット
         if (this.oppData1.status !== "error") {
@@ -1240,7 +1191,7 @@ export default {
            *************************/
           let players = [this.myData, this.oppData1, this.oppData2, this.oppData3];
 
-          // 仮保存する得点を初期化
+          // 得点を仮保存するプロパティを初期化
           for (const player of players) {
             player.add_score_tmp = 0;
           }
@@ -1253,38 +1204,41 @@ export default {
 
           let now_add = 1; // 追加する順位
           let now_time = null; // 比較するタイム
-          const SCORES = [3, 2, 1, 0]; // 得点: 1位なら SCORES[0]
 
+          // 順位データに保存する
           players_sorted.forEach((player, index) => {
             if (now_time !== null) {
               if (player.time === now_time) {
                 // タイムが同じ
-                this.rankings.push({ [now_add]: player.name }); // {"〇位": "aaa"} を追加
-                player.add_score_tmp = SCORES[now_add - 1]; // 得点を仮保存
+                // 例{ "1": ["なまえ", 1, 55] }
+                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time} });
+                player.add_score_tmp = this.SCORES[now_add - 1]; // 得点を仮保存
+                player.rank_tmp = now_add; // 1問毎の順位
               } else {
                 // タイムが異なる: 下位に追加
                 now_time = player.time;
                 now_add = index + 1; // 現在の人数が順位となる
-                this.rankings.push({ [now_add]: player.name });
-                player.add_score_tmp = SCORES[now_add - 1]; // 得点を仮保存
+                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time} });
+                player.add_score_tmp = this.SCORES[now_add - 1];
+                player.rank_tmp = now_add;
               }
             } else {
               // 最初のデータを追加する
               now_time = player.time;
-              this.rankings.push({ 1: player.name });
-              player.add_score_tmp = 3; // 得点を仮保存
+              this.rankings.push({ "1": { name: player.name, select: player.select, time: player.time} });
+              player.add_score_tmp = 3;
+              player.rank_tmp = 1;
             }
           });
 
           // 順位のデータに不正解の人を追加
           players_mistake.forEach((player) => {
-            this.rankings.push({ "-": player.name });
+            this.rankings.push({ "-":{name: player.name, select: player.select, time: player.time} });
           });
           /***** 順位付けここまで
            ********************************/
 
-          // this.isShowJudge = true; // 回答結果を表示する
-          // console.log(this.rankings); // 一旦コンソールに表示
+          this.isShowJudge = true; // 回答結果を表示する
 
           this.timeoutId = setTimeout(() => {
             this.timeoutId = null;
@@ -1346,11 +1300,14 @@ export default {
             /*** 2人対戦 ***/
 
             // プレイヤー1は部屋削除
-            if (this.player_no === 1) {
+            if (this.player_no === 1 && this.room !== null) {
               this.room.get().then((snapshot) => {
                 if (snapshot.exists) {
                   this.room.delete();
+                  this.room = null;
                 }
+              }).catch(() => {
+                this.room = null;
               });
             }
 
@@ -1360,8 +1317,7 @@ export default {
 
               // 少しの間紙吹雪を出現させる
               this.isShowConfetti = true;
-              this.timeoutId = setTimeout(() => {
-                this.timeoutId = null;
+              setTimeout(() => {
                 this.isShowConfetti = false; // 紙吹雪非表示
               }, 12000);
             } else if (this.myData.score < this.oppData1.score) {
@@ -1373,7 +1329,53 @@ export default {
             }
           } else {
             /*** 4人対戦 ***/
-            // todo: ここで最終結果判定をおこなう
+
+            /*** 部屋を削除する ***
+             * 自身がプレイヤー1
+             * 自身がプレイヤー2かつプレイヤー1が接続エラー
+             * 自身がプレイヤー3かつプレイヤー1と2が接続エラー
+             ***********************/
+            if (
+              this.player_no === 1 ||
+              (this.oppData1.status === "error" && this.player_no === 2) ||
+              (this.oppData1.status === "error" && this.oppData2.status === "error" && this.player_no === 3)
+            ) {
+              this.room.delete();
+            }
+
+            const players = [this.myData, this.oppData1, this.oppData2, this.oppData3];
+
+            // スコアの高い順に並べる
+            let players_sorted = players.sort((a, b) => b.score - a.score);
+
+            // 順位を確定する
+            let now_rank = 1; // 追加する順位
+            let now_score = null; // 比較するタイム
+            players_sorted.forEach((player, index) => {
+              if (now_score !== null) {
+                if (player.score === now_score) {
+                  // スコアが同じ: 同じ順位にする
+                  player.rank_final = now_rank;
+                } else {
+                  // スコアが異なる: 下位の順位にする
+                  now_rank = index + 1;
+                  player.rank_final = now_rank;
+                }
+              } else {
+                // 最初のデータを追加する
+                now_score = player.score;
+                player.rank_final = 1;
+              }
+              player.status = "showRank";
+
+              // 1位の場合は少しの間紙吹雪を出現させる
+              if (player.rank_final === 1) {
+                this.isShowConfetti = true;
+                setTimeout(() => {
+                  this.isShowConfetti = false; // 紙吹雪非表示
+                }, 12000);
+              }
+            });
           }
 
           this.timeoutId = setTimeout(() => {
@@ -1464,11 +1466,15 @@ export default {
 
     /*** 画面を遷移する際の処理 ***/
     handlerLeave() {
-      if (this.room !== null) {
-        if (this.unsubscribe !== null) {
-          this.unsubscribe(); // リアルタイムリスナーを破棄する
-        }
+      clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
+      clearInterval(this.timerId); // タイマーを停止する
+      this.stateBattleFalse();
 
+      if (this.unsubscribe !== null) {
+        this.unsubscribe(); // リアルタイムリスナーを破棄する
+      }
+
+      if (this.room !== null) {
         if (!this.MODE_4PLAYERS) {
           /***** 2人モード時の処理 *****/
           this.room.delete(); // 部屋を削除する
@@ -1481,7 +1487,7 @@ export default {
             if (this.concurrent_sessions === 1) {
               this.room.delete();
             } else {
-              leaveRoom(this.room, this.player_no); // 部屋を削除せず退出する
+              leaveRoom(this.player_no, this.room);
             }
           } else {
             /*** 対戦中の処理 ***/
@@ -1489,27 +1495,25 @@ export default {
             if (this.concurrent_sessions <= 2) {
               this.room.delete();
             } else {
-              leaveRoom(this.room, this.player_no); // 部屋を削除せず退出する
+              leaveRoom(this.player_no, this.room);
             }
           }
         }
       }
 
-      this.stateBattleFalse();
-
-      function leaveRoom(room, player_no) {
+      function leaveRoom(player_no, room) {
         switch (player_no) {
           case 1:
             room.update({
               player1_name: null,
               player1_photoURL: null,
-            });
+            })
             break;
           case 2:
             room.update({
               player2_name: null,
               player2_photoURL: null,
-            });
+            })
             break;
           case 3:
             room.update({
