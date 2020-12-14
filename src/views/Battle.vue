@@ -120,6 +120,7 @@
 import Player from "@/components/battle/Player.vue";
 import { mapMutations, mapState } from "vuex";
 import { mdiAlertCircleOutline } from "@mdi/js";
+import firebase from "../firebase";
 export default {
   components: {
     player: Player,
@@ -138,17 +139,18 @@ export default {
       NUM_QUESTION: 5, // 総問題数
 
       MODE_4PLAYERS: false, // 4人対戦ならtrue
-      player_no: null, // プレイヤー番号: 1 | 2 | 3 | 4
+      player_no: null, // プレイヤー番号: 1,2,3,4
       opp1_no: null,
       opp2_no: null,
       opp3_no: null,
       concurrent_sessions: 0, // 接続人数
 
       /*** 部屋データ ***
+       *  isFull: 満員かどうか
        * プレイヤー: player1 | player2 | player3 | player4
        * プレイヤーデータ: name | photoURL | select | time
-       * questions: 問題の参照リスト
-       * isFull: 満員かどうか
+       * 例: player1_name
+       * questions[]: 問題の参照リスト配列
        ****/
       room: null, // 部屋のDocumentReference
       unsubscribe: null, // リアルタイムリスナーの破棄に使用する
@@ -165,8 +167,6 @@ export default {
        * select ... 回答
        * time ... 回答タイム
        * 初期化は this.myData = {...this.DATA_PLAYER_INIT} のようにする
-       *
-       * 他
        * add_score_tmp ... 1問毎の得点
        * rank_tmp ... 1問毎の順位
        * rank_final ... 最終結果
@@ -183,6 +183,7 @@ export default {
         rank_final: null, // 順位の最終結果
       },
       myData: {},
+      myAns: [], // 自分が回答したデータを保存する
       oppData1: {},
       oppData2: {},
       oppData3: {},
@@ -231,21 +232,20 @@ export default {
       timeoutId: null,
 
       // 表示制御
-      isShowQuestionArea: false, // 問題表示エリアを表示するタイミングを制御する
-      isShowQuestion: false, // 問題を表示するタイミングを制御する
-      isShowJudge: false, // 結果を表示するタイミングを制御する
-      isShowPlayerStatus: false, // プレイヤーの状態を表示するタイミングを制御する
-      isShowConfetti: false, // 紙吹雪を表示するタイミングを制御する
-      isShowRestart: false, // 「もう一度」ボタンを表示するタイミングを制御する
-      isShowReview: false, // 振り返りを表示するタイミングを制御する
-      isShowDialogQuitBattle: false, // 対戦中止を決定するモーダルの表示フラグ
+      isShowQuestionArea: false, // 問題エリア
+      isShowQuestion: false, // 問題
+      isShowJudge: false, // 結果
+      isShowPlayerStatus: false, // プレイヤーの状態
+      isShowConfetti: false, // 紙吹雪
+      isShowRestart: false, // 「もう一度」ボタン
+      isShowReview: false, // 振り返り
+      isShowDialogQuitBattle: false, // 対戦中止を決定するモーダル
 
       question_year: [2018, 2019],
-      questionRefs: [], // 問題の参照
+      questionRefs: [], // 問題の参照配列
       questions: [], // 実際の問題データ
       question_now: 0, // 現在の問題数
 
-      myAns: [], // 自分が回答したデータを保存する
       winner: null, // 0 引き分け | 1 自分 | 2 相手1 | 3 相手2 | 4 相手3
 
       /* 判定結果の順位データ
@@ -361,17 +361,19 @@ export default {
           .get()
           .then((querySnapshot) => {
             if (querySnapshot.empty) {
-              // 空き部屋が無い場合
+              // 空き部屋が無い場合:部屋を作成する
               this.createRoom(); // 部屋を作成する
             } else {
-              // 空き部屋がある場合入室処理(トランザクション)
+              // 空き部屋がある場合:入室処理
               let data;
               this.room = querySnapshot.docs[0].ref;
 
+              // トランザクションスタート
               return this.db
                 .runTransaction((transaction) => {
                   return transaction.get(this.room).then((snapshot) => {
                     data = snapshot.data();
+
                     if (!snapshot.exists || data.isFull) {
                       throw Error();
                     }
@@ -384,7 +386,6 @@ export default {
                   });
                 })
                 .then(() => {
-                  this.stateBattleTrue(); // 対戦フラグON
                   this.player_no = 2;
 
                   // 問題の参照型をDocumentReferenceに変換してローカルに保存する
@@ -398,7 +399,8 @@ export default {
 
                   this.createObserver(); // リアルタイムリスナー作成
                 })
-                .catch(() => {
+                .catch((error) => {
+                  console.log("検索しなおします", error);
                   this.search(); // 検索し直す
                 });
             }
@@ -852,12 +854,12 @@ export default {
 
     /*** 対戦相手が見つかった後の処理 ***/
     searched() {
-      const message = document.getElementById("message").firstElementChild;
-
       this.stateBattleTrue(); // ステータス:対戦中
 
+      const message = document.getElementById("message").firstElementChild;
+
       // 問題の参照を用いて問題データを取得する
-      for (let questionRef of this.questionRefs) {
+      for (const questionRef of this.questionRefs) {
         // questionRef は DocumentReference
         questionRef.get().then((querySnapshot) => {
           let data = querySnapshot.data();
@@ -1261,6 +1263,19 @@ export default {
 
     /*** 全問題が終了後 ***/
     endBattle() {
+      // サインインユーザは問題と回答データを保存する
+      if (this.currentUser !== null) {
+        this.db
+          .collection(`users/${this.currentUser.uid}/battleResult`)
+          .add({
+            questionRefs: this.questionRefs,
+            myAnswers: this.myAns,
+            createdAt: firebase.firestore.Timestamp
+          }).then(() => {
+            console.log("対戦結果を保存しました");
+          })
+      }
+
       const message = document.getElementById("message").firstElementChild;
 
       // メッセージをフェードアウト
@@ -1293,7 +1308,7 @@ export default {
         this.timeoutId = setTimeout(() => {
           this.timeoutId = null;
 
-          this.isShowQuestionArea = false; // 問題非表示
+          this.isShowQuestionArea = false; // 設問エリア非表示
 
           // 最終結果発表
           if (!this.MODE_4PLAYERS) {
