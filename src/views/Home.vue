@@ -5,11 +5,12 @@
     </div>
     <div class="select">
       <div class="links-battle">
+
         <div class="wrap-battle2">
           <div class="battle2">
             <router-link :to="{ name: 'Battle' }">
               <v-btn text color="primary">
-                <span class="link-text berlin-sans">Battle<span class="detail ml-1">[2人]</span></span>
+                <span class="link-battle berlin-sans">Battle<span class="detail ml-1">[2P]</span></span>
               </v-btn>
             </router-link>
           </div>
@@ -21,11 +22,12 @@
             </router-link>
           </div>
         </div>
+
         <div class="wrap-battle4">
           <div class="battle4">
             <router-link :to="{ name: 'Battle4' }">
               <v-btn text color="primary">
-                <span class="link-text berlin-sans">Battle<span class="detail ml-1">[4人]</span></span>
+                <span class="link-battle berlin-sans">Battle<span class="detail ml-1">[4P]</span></span>
               </v-btn>
             </router-link>
           </div>
@@ -114,8 +116,9 @@ export default {
       height: 2.5rem;
       text-transform: none;
     }
-    .link-text {
+    .link-battle {
       font-size: 2.2rem;
+      text-shadow: 0.5px 0.5px 1px #636ab2;
 
       .detail {
         font-size: 1.2rem;

@@ -146,7 +146,7 @@ export default {
       concurrent_sessions: 0, // 接続人数
 
       /*** 部屋データ ***
-       *  isFull: 満員かどうか
+       *  isEnableJoin: 入室可能かどうか
        * プレイヤー: player1 | player2 | player3 | player4
        * プレイヤーデータ: name | photoURL | select | time
        * 例: player1_name
@@ -356,13 +356,13 @@ export default {
 
         this.db
           .collection("rooms")
-          .where("isFull", "==", false)
+          .where("isEnableJoin", "==", true)
           .limit(1) // 1件だけ
           .get()
           .then((querySnapshot) => {
             if (querySnapshot.empty) {
-              // 空き部屋が無い場合:部屋を作成する
-              this.createRoom(); // 部屋を作成する
+              // 空き部屋が無い場合: 部屋を作成する
+              this.createRoom();
             } else {
               // 空き部屋がある場合:入室処理
               let data;
@@ -374,12 +374,12 @@ export default {
                   return transaction.get(this.room).then((snapshot) => {
                     data = snapshot.data();
 
-                    if (!snapshot.exists || data.isFull) {
+                    if (!snapshot.exists || !data.isEnableJoin) {
                       throw Error();
                     }
 
                     transaction.update(this.room, {
-                      isFull: true,
+                      isEnableJoin: false,
                       player2_name: this.myData.name,
                       player2_photoURL: this.myData.photoURL,
                     });
@@ -387,6 +387,8 @@ export default {
                 })
                 .then(() => {
                   this.player_no = 2;
+
+                  console.log(data.questions);
 
                   // 問題の参照型をDocumentReferenceに変換してローカルに保存する
                   for (let ref of data.questions) {
@@ -399,8 +401,7 @@ export default {
 
                   this.createObserver(); // リアルタイムリスナー作成
                 })
-                .catch((error) => {
-                  console.log("検索しなおします", error);
+                .catch(() => {
                   this.search(); // 検索し直す
                 });
             }
@@ -410,7 +411,7 @@ export default {
 
         this.db
           .collection("rooms4")
-          .where("isFull", "==", false)
+          .where("isEnableJoin", "==", true)
           .limit(1) // 1件だけ
           .get()
           .then((querySnapshot) => {
@@ -427,7 +428,7 @@ export default {
                 .runTransaction((transaction) => {
                   return transaction.get(this.room).then((snapshot) => {
                     data = snapshot.data();
-                    if (!snapshot.exists || data.isFull) {
+                    if (!snapshot.exists || !data.isEnableJoin) {
                       throw Error();
                     }
                     // ここからは部屋の人数が3人以下の場合の処理
@@ -440,9 +441,9 @@ export default {
                         .filter((i) => i === null)
                         .length;
 
-                    // 空き人数が1人なら満室フラグON
+                    // 空き人数が1人なら入室不可
                     if (emptySpace === 1) {
-                      obj.isFull = true;
+                      obj.isEnableJoin = false;
                     }
 
                     // 空いているプレイヤー番号を1から4の順に調べる
@@ -487,7 +488,7 @@ export default {
         this.db
           .collection("rooms")
           .add({
-            isFull: false,
+            isEnableJoin: true,
             questions: this.questionRefs,
 
             player1_name: this.myData.name,
@@ -514,7 +515,7 @@ export default {
         this.db
           .collection("rooms4")
           .add({
-            isFull: false,
+            isEnableJoin: true,
             questions: this.questionRefs,
 
             player1_name: this.myData.name,
@@ -559,8 +560,8 @@ export default {
           no = "0" + no; // 0パディング
         }
         // 問題被りチェック
-        if (!this.questionRefs.some((q) => q.path === `questions/${year}/${season}/${no}`)) {
-          this.questionRefs.push(this.db.doc(`questions/${year}/${season}/${no}`)); // 問題追加
+        if (!this.questionRefs.some((q) => q.path === `/feapmaster-5b5ad/databases/(default)/documents/questions/${year}/${season}/${no}`)) {
+          this.questionRefs.push(this.db.doc(`/feapmaster-5b5ad/databases/(default)/documents/question/${year}/${season}/${no}`)); // 問題の参照を追加
         } else {
           continue; // 同じ問題がある場合はもう一度
         }
@@ -1270,10 +1271,8 @@ export default {
           .add({
             questionRefs: this.questionRefs,
             myAnswers: this.myAns,
-            createdAt: firebase.firestore.Timestamp
-          }).then(() => {
-            console.log("対戦結果を保存しました");
-          })
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
       }
 
       const message = document.getElementById("message").firstElementChild;

@@ -50,7 +50,7 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn color="red darken-2" text @click="logout">ログアウト</v-btn>
+                  <v-btn color="red darken-2" text @click="$emit('signout')">ログアウト</v-btn>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -58,36 +58,14 @@
         </v-menu>
       </transition>
     </div>
-
-    <!-- ログアウト用のスナックバー -->
-    <v-snackbar v-model="snackbar_logout" timeout="5000">
-      ログアウトしました。
-      <template v-slot:action="{ attrs }">
-        <v-btn icon v-bind="attrs" @click="snackbar_logout = false">
-          <v-icon color="#FA3E7E">mdi-close-circle-outline</v-icon>
-        </v-btn>
-      </template>
-    </v-snackbar>
   </header>
 </template>
 
 <script>
 import { mapState } from "vuex";
 export default {
-  data() {
-    return {
-      snackbar_logout: false,
-    };
-  },
   computed: {
     ...mapState(["auth", "currentUser", "isPlaying"]),
-  },
-  methods: {
-    logout() {
-      this.auth.signOut().then(() => {
-        this.snackbar_logout = true; // スナックバーを表示する
-      });
-    },
   },
 };
 </script>
@@ -118,23 +96,6 @@ header {
     .btn-user {
       &.v-btn.v-btn {
         padding: 0;
-      }
-
-      .userPhoto {
-        //   display: inline-flex;
-        //   align-items: center;
-        //   justify-content: center;
-        //   border-radius: 50%;
-        //   background-color: #fff;
-        //   overflow: hidden;
-        // height: $header-height - 0.3rem;
-        //   width: $header-height - 0.3rem;
-        //   img {
-        //     display: inline-flex;
-        //     height: inherit;
-        //     width: inherit;
-        //     //max-height: $header-height - 0.3rem;
-        //   }
       }
     }
   }

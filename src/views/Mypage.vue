@@ -3,7 +3,7 @@
     <!-- userInfoここから -->
     <div class="userInfo">
       <v-card>
-        <v-list color="grey lighten-2">
+        <v-list color="blue lighten-5">
           <v-list-item>
             <v-list-item-avatar>
               <v-img :src="currentUser.photoURL"></v-img>
@@ -17,7 +17,9 @@
             </v-list-item-content>
           </v-list-item>
         </v-list>
+
         <v-divider></v-divider>
+
         <v-list nav dense>
           <v-list-item-group v-model="selectedItem" color="orange darken-4" mandatory>
             <v-list-item v-for="(item, i) in items" :key="i">
@@ -37,9 +39,17 @@
 
     <div class="userDetails">
       <transition name="fade" mode="out-in">
-        <div v-if="selectedItem === 0" key="mylist" class="mylist white">マイリスト</div>
-        <div v-else-if="selectedItem === 1" key="history" class="history white">履歴</div>
-        <div v-else-if="selectedItem === 2" key="history-battle" class="history-battle white">過去10戦の履歴</div>
+        <div v-if="selectedItem === 0" key="mylist" class="mylist">マイリスト</div>
+
+        <div v-else-if="selectedItem === 1" key="history-battle" class="history">
+          <h1>過去10戦成績[4人]</h1>
+          <v-divider></v-divider>
+          <div v-for="(record, index) in battleRecords" :key="index" class="mt-2">
+            <div v-for="(questionRef, index) in record.questionRefs" :key="index">{{ questionRef.path }} : {{ record.myAnswers[index] }}</div>
+          </div>
+        </div>
+
+        <div v-else-if="selectedItem === 2" key="history-battle4" class="history-battle">過去10戦成績[4人]</div>
       </transition>
     </div>
   </div>
@@ -49,15 +59,33 @@
 import { mapState } from "vuex";
 export default {
   data: () => ({
-    selectedItem: 0,
+    selectedItem: 1,
     items: [
       { text: "マイリスト", icon: "mdi-folder" },
-      { text: "履歴", icon: "mdi-history" },
-      { text: "過去10戦の成績", icon: "mdi-sword-cross" },
+      { text: "過去10戦成績[2人]", icon: "mdi-sword-cross" },
+      { text: "過去10戦成績[4人]", icon: "mdi-sword-cross" },
     ],
+    battleRecords: [],
   }),
   computed: {
-    ...mapState(["currentUser"]),
+    ...mapState(["currentUser", "db"]),
+  },
+  mounted() {
+    // 戦績データを取得する
+    this.getBattleRecord();
+  },
+  methods: {
+    getBattleRecord() {
+      this.db
+        .collection(`users/${this.currentUser.uid}/battleResult`)
+        .orderBy("createdAt", "desc") // 新しい順
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((queryDocumentSnapshot) => {
+            this.battleRecords.push(queryDocumentSnapshot.data());
+          });
+        });
+    },
   },
 };
 </script>
@@ -69,11 +97,13 @@ export default {
     "... ... ..." 1rem
     "userInfo ... detail" 1fr
     / 250px 1rem 1fr;
-}
-.userInfo {
-  grid-area: userInfo;
-}
-.userDetails {
-  grid-area: detail;
+
+  .userInfo {
+    grid-area: userInfo;
+  }
+
+  .userDetails {
+    grid-area: detail;
+  }
 }
 </style>

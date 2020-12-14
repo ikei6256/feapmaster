@@ -7,6 +7,7 @@
           <v-icon color="green" size="1.2rem">{{ icons.mdiCheckboxMarkedCircle }}</v-icon>
         </template>
       </v-expansion-panel-header>
+
       <v-expansion-panel-content>
         <div class="review-content pt-4 pt-sm-2">
           <span class="question-data grey--text text--darken-2">{{ question | formatQuestionData }}</span>
@@ -18,9 +19,9 @@
             <img :src="question.answerAllImageUrl" alt="Answer Image" />
           </div>
           <ul class="pl-0">
-            <li v-for="(value, key, index) in question.options" :key="index" class="my-2 my-sm-4">
+            <li v-for="(value, index) in question.options" :key="index" class="my-2 my-sm-4">
               <div v-if="value !== null" class="question-option">
-                <v-icon size="1.2rem">{{ key }}</v-icon>
+                <v-icon size="1.2rem">{{ options[index] }}</v-icon>
                 <span v-if="value !== null" class="question-option-text pl-2 pl-sm-4">{{ value }}</span>
                 <img v-if="question.answerImageUrls[index] !== null" :src="question.answerImageUrls[index]" alt="Option Image" class="pl-2 pl-sm-4" />
               </div>
@@ -33,14 +34,14 @@
             <p class="my-2 my-sm-4">
               あなたの回答:
               <span v-if="myAns[i] !== null" class="judge-myAns pl-1">
-                {{ Object.keys(question.options)[myAns[i] - 1] }}
+                {{ options[myAns[i] - 1] }}
                 <v-icon v-if="question.correctAns === myAns[i]" color="green" size="0.9rem">{{ icons.mdiCircleOutline }}</v-icon>
                 <v-icon v-else color="red" size="0.9rem">{{ icons.mdiCloseThick }}</v-icon>
               </span>
               <span v-else class="grey--text text--darken-1">-</span>
             </p>
             <p class="mb-0">
-              正答:<span class="judge-correctAns pl-1">{{ Object.keys(question.options)[question.correctAns - 1] }}</span>
+              正答:<span class="judge-correctAns pl-1">{{ options[question.correctAns - 1] }}</span>
             </p>
           </div>
         </div>
@@ -64,6 +65,7 @@ export default {
         mdiCheckboxMarkedCircle,
       },
       panel: [],
+      options: ["ア", "イ", "ウ", "エ"],
 
       /* テスト用 */
       // questions: [

@@ -1,11 +1,23 @@
 <template>
   <v-app>
     <div class="root">
-      <header-component class="header-component"></header-component>
+      <header-component class="header-component" @signout="signout"></header-component>
       <transition name="fade" mode="out-in">
         <router-view class="area-contents" />
       </transition>
     </div>
+
+    <!-- ログアウト時に出現するスナックバー -->
+    <v-snackbar v-model="snackbar_auth" timeout="5000">
+      <span v-if="auth.currentUser !== null">ログインしました。</span>
+      <span v-else>ログアウトしました。</span>
+      <template v-slot:action="{ attrs }">
+        <v-btn icon v-bind="attrs" @click="snackbar_auth = false">
+          <v-icon color="#FA3E7E">mdi-close-circle-outline</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
+
   </v-app>
 </template>
 
@@ -16,11 +28,13 @@ export default {
   components: {
     "header-component": Header,
   },
+  data() {
+    return {
+      snackbar_auth: false,
+    }
+  },
   computed: {
     ...mapState(["auth", "db"]),
-  },
-  methods: {
-    ...mapMutations(["setUser", "unsetUser"]),
   },
   mounted() {
     this.auth.onAuthStateChanged((user) => {
@@ -56,6 +70,9 @@ export default {
           userObj.uid = user.uid;
           this.setUser(userObj);
 
+          // スナックバー出現
+          this.snackbar_auth = true;
+
           // 現在の画面がログインページならホームへ遷移する
           if (this.$router.currentRoute.name === "Login") {
             this.$router.push({ name: "Home" });
@@ -63,9 +80,13 @@ export default {
         })
       } else {
         // signed out
+        const page = this.$router.currentRoute.name;
 
-        // 現在のページがマイページならホームへ遷移する
-        if (this.$router.currentRoute.name === "Mypage") {
+        // 現在のページがマイページか対戦画面ならホームへ遷移する
+        if (page === "Mypage") {
+          this.$router.push({ name: "Home" });
+        } else if (page === "Battle" || page === "Battle4" ) {
+          this.stateBattleFalse(); // 対戦フラグOFF
           this.$router.push({ name: "Home" });
         }
 
@@ -73,6 +94,14 @@ export default {
         this.unsetUser();
       }
     });
+  },
+  methods: {
+    ...mapMutations(["setUser", "unsetUser", "stateBattleFalse"]),
+    signout() {
+      this.auth.signOut().then(() => {
+        this.snackbar_auth = true; // スナックバー出現
+      })
+    }
   },
 };
 </script>
