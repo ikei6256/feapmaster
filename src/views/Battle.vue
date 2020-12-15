@@ -19,7 +19,13 @@
       <div class="player2">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp1" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[1]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
+          <player
+            v-else
+            :playerData="oppData1"
+            :isShowPlayerStatus="isShowPlayerStatus"
+            :card_color="card_colors[1]"
+            :MODE_4PLAYERS="MODE_4PLAYERS"
+          ></player>
         </transition>
       </div>
     </div>
@@ -33,19 +39,37 @@
       <div class="player2">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp1" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData1" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[1]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
+          <player
+            v-else
+            :playerData="oppData1"
+            :isShowPlayerStatus="isShowPlayerStatus"
+            :card_color="card_colors[1]"
+            :MODE_4PLAYERS="MODE_4PLAYERS"
+          ></player>
         </transition>
       </div>
       <div class="player3">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp2" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData2" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[2]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
+          <player
+            v-else
+            :playerData="oppData2"
+            :isShowPlayerStatus="isShowPlayerStatus"
+            :card_color="card_colors[2]"
+            :MODE_4PLAYERS="MODE_4PLAYERS"
+          ></player>
         </transition>
       </div>
       <div class="player4">
         <transition name="fade" mode="out-in">
           <v-skeleton-loader v-if="isSearchingOpp3" type="image" :height="height_skeleton" elevation="2"></v-skeleton-loader>
-          <player v-else :playerData="oppData3" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[3]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
+          <player
+            v-else
+            :playerData="oppData3"
+            :isShowPlayerStatus="isShowPlayerStatus"
+            :card_color="card_colors[3]"
+            :MODE_4PLAYERS="MODE_4PLAYERS"
+          ></player>
         </transition>
       </div>
     </div>
@@ -258,7 +282,7 @@ export default {
        * ]
        */
       rankings: [],
-      SCORES: [3,2,1,0], // 4人対戦での得点 1位なら this.SCORES[0]
+      SCORES: [3, 2, 1, 0], // 4人対戦での得点 1位なら this.SCORES[0]
 
       message_num: 0,
       messages: ["待機中", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
@@ -388,8 +412,6 @@ export default {
                 .then(() => {
                   this.player_no = 2;
 
-                  console.log(data.questions);
-
                   // 問題の参照型をDocumentReferenceに変換してローカルに保存する
                   for (let ref of data.questions) {
                     this.questionRefs.push(this.db.doc(ref.path));
@@ -436,10 +458,7 @@ export default {
                     let obj = {}; // アップデートに使うオブジェクト
 
                     // 空き人数を調べる
-                    emptySpace =
-                      [data.player1_name, data.player2_name, data.player3_name, data.player4_name]
-                        .filter((i) => i === null)
-                        .length;
+                    emptySpace = [data.player1_name, data.player2_name, data.player3_name, data.player4_name].filter((i) => i === null).length;
 
                     // 空き人数が1人なら入室不可
                     if (emptySpace === 1) {
@@ -560,8 +579,8 @@ export default {
           no = "0" + no; // 0パディング
         }
         // 問題被りチェック
-        if (!this.questionRefs.some((q) => q.path === `/feapmaster-5b5ad/databases/(default)/documents/questions/${year}/${season}/${no}`)) {
-          this.questionRefs.push(this.db.doc(`/feapmaster-5b5ad/databases/(default)/documents/question/${year}/${season}/${no}`)); // 問題の参照を追加
+        if (!this.questionRefs.some((q) => q.path === `/questions/${year}/${season}/${no}`)) {
+          this.questionRefs.push(this.db.doc(`/questions/${year}/${season}/${no}`)); // 問題の参照を追加
         } else {
           continue; // 同じ問題がある場合はもう一度
         }
@@ -573,7 +592,6 @@ export default {
     createObserver() {
       this.unsubscribe = this.room.onSnapshot(
         (snapshot) => {
-
           // 部屋が削除された場合の処理
           if (!snapshot.exists) {
             this.unsubscribe(); // リアルタイムリスナーを破棄する
@@ -832,6 +850,7 @@ export default {
       this.isShowPlayerStatus = true; // ステータスを表示 (接続エラー寺に非表示の可能性があるため)
 
       const message = document.getElementById("message").firstElementChild;
+
       if (message) {
         message.style.opacity = 1;
       }
@@ -875,7 +894,7 @@ export default {
             season: questionRef.parent.id,
             no: questionRef.id, // 問番号
             body: data.text, // 問題文
-            options: [data.ans1, data.ans2, data.ans3, data.ans4 ],
+            options: [data.ans1, data.ans2, data.ans3, data.ans4],
             correctAns: data.correctAns,
             questionImageUrl: data.questionImageUrl,
             answerAllImageUrl: data.answerAllImageUrl,
@@ -1214,21 +1233,21 @@ export default {
               if (player.time === now_time) {
                 // タイムが同じ
                 // 例{ "1": ["なまえ", 1, 55] }
-                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time} });
+                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time } });
                 player.add_score_tmp = this.SCORES[now_add - 1]; // 得点を仮保存
                 player.rank_tmp = now_add; // 1問毎の順位
               } else {
                 // タイムが異なる: 下位に追加
                 now_time = player.time;
                 now_add = index + 1; // 現在の人数が順位となる
-                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time} });
+                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time } });
                 player.add_score_tmp = this.SCORES[now_add - 1];
                 player.rank_tmp = now_add;
               }
             } else {
               // 最初のデータを追加する
               now_time = player.time;
-              this.rankings.push({ "1": { name: player.name, select: player.select, time: player.time} });
+              this.rankings.push({ 1: { name: player.name, select: player.select, time: player.time } });
               player.add_score_tmp = 3;
               player.rank_tmp = 1;
             }
@@ -1236,7 +1255,7 @@ export default {
 
           // 順位のデータに不正解の人を追加
           players_mistake.forEach((player) => {
-            this.rankings.push({ "-":{name: player.name, select: player.select, time: player.time} });
+            this.rankings.push({ "-": { name: player.name, select: player.select, time: player.time } });
           });
           /***** 順位付けここまで
            ********************************/
@@ -1264,15 +1283,113 @@ export default {
 
     /*** 全問題が終了後 ***/
     endBattle() {
+      const players = [this.myData, this.oppData1, this.oppData2, this.oppData3];
+
+      // リアルタイムリスナーを破棄する
+      if (this.unsubscribe !== null) {
+        this.unsubscribe();
+        this.unsubscribe = null;
+      }
+
+      // 4人対戦での順位決めを行う
+      if (this.MODE_4PLAYERS) {
+        // スコアの高い順に並べる
+        let players_sorted = players.sort((a, b) => b.score - a.score);
+
+        // 順位を確定する
+        let now_rank = 1; // プレイヤーデータに追加する順位
+        let now_score = null; // 比較するタイム
+        players_sorted.forEach((player, index) => {
+          if (now_score !== null) {
+            if (player.score === now_score) {
+              // スコアが同じ: 同じ順位にする
+              player.rank_final = now_rank;
+            } else {
+              // スコアが異なる: 下位の順位にする
+              now_rank = index + 1;
+              player.rank_final = now_rank;
+            }
+          } else {
+            // 最初のデータを追加する
+            now_score = player.score;
+            player.rank_final = 1;
+          }
+        });
+      }
+
       // サインインユーザは問題と回答データを保存する
       if (this.currentUser !== null) {
-        this.db
-          .collection(`users/${this.currentUser.uid}/battleResult`)
-          .add({
+        const docUser = this.db.doc(`users/${this.currentUser.uid}`);
+
+        if (!this.MODE_4PLAYERS) {
+          /*** 2人対戦 ***/
+          const record = {
+            questions: this.questions,
+            myAnswers: this.myAns,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            opp_Name: this.oppData1.name,
+            opp_photoURL: this.oppData1.photoURL,
+          };
+
+          if (this.myData.score > this.oppData1.score) {
+            record.result = "win";
+            docUser.update({
+              battle_win: firebase.firestore.FieldValue.increment(1),
+            });
+          } else if (this.myData.score < this.oppData1.score) {
+            record.result = "lose";
+            docUser.update({
+              battle_lose: firebase.firestore.FieldValue.increment(1),
+            });
+          } else {
+            record.result = "draw";
+            docUser.update({
+              battle_draw: firebase.firestore.FieldValue.increment(1),
+            })
+          }
+
+          this.db.collection(`users/${this.currentUser.uid}/battleResult`).add(record);
+        } else {
+          /*** 4人対戦 ***/
+          const record = {
             questionRefs: this.questionRefs,
             myAnswers: this.myAns,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            opp1_name: this.oppData1.name,
+            opp1_photoURL: this.oppData1.photoURL,
+            opp2_name: this.oppData2.name,
+            opp2_photoURL: this.oppData2.photoURL,
+            opp3_name: this.oppData3.name,
+            opp3_photoURL: this.oppData3.photoURL,
+            rank: this.myData.rank_final,
+          };
+
+          // ユーザの順位を記録する
+          switch (this.myData.rank_final) {
+            case 1:
+              docUser.update({
+                battle4_1: firebase.firestore.FieldValue.increment(),
+              });
+              break;
+            case 2:
+              docUser.update({
+                battle4_2: firebase.firestore.FieldValue.increment(),
+              });
+              break;
+            case 3:
+              docUser.update({
+                battle4_3: firebase.firestore.FieldValue.increment(),
+              });
+              break;
+            case 4:
+              docUser.update({
+                battle4_4: firebase.firestore.FieldValue.increment(),
+              });
+              break;
+          }
+
+          this.db.collection(`users/${this.currentUser.uid}/battleResult4`).add(record);
+        }
       }
 
       const message = document.getElementById("message").firstElementChild;
@@ -1315,14 +1432,17 @@ export default {
 
             // プレイヤー1は部屋削除
             if (this.player_no === 1 && this.room !== null) {
-              this.room.get().then((snapshot) => {
-                if (snapshot.exists) {
-                  this.room.delete();
+              this.room
+                .get()
+                .then((snapshot) => {
+                  if (snapshot.exists) {
+                    this.room.delete();
+                    this.room = null;
+                  }
+                })
+                .catch(() => {
                   this.room = null;
-                }
-              }).catch(() => {
-                this.room = null;
-              });
+                });
             }
 
             if (this.myData.score > this.oppData1.score) {
@@ -1357,39 +1477,17 @@ export default {
               this.room.delete();
             }
 
-            const players = [this.myData, this.oppData1, this.oppData2, this.oppData3];
-
-            // スコアの高い順に並べる
-            let players_sorted = players.sort((a, b) => b.score - a.score);
-
-            // 順位を確定する
-            let now_rank = 1; // 追加する順位
-            let now_score = null; // 比較するタイム
-            players_sorted.forEach((player, index) => {
-              if (now_score !== null) {
-                if (player.score === now_score) {
-                  // スコアが同じ: 同じ順位にする
-                  player.rank_final = now_rank;
-                } else {
-                  // スコアが異なる: 下位の順位にする
-                  now_rank = index + 1;
-                  player.rank_final = now_rank;
-                }
-              } else {
-                // 最初のデータを追加する
-                now_score = player.score;
-                player.rank_final = 1;
-              }
+            // 順位を表示して1位の場合は少しの間紙吹雪を出現させる
+            for (const player of players) {
               player.status = "showRank";
 
-              // 1位の場合は少しの間紙吹雪を出現させる
               if (player.rank_final === 1) {
-                this.isShowConfetti = true;
+                this.isShowConfetti = true; // 紙吹雪表示
                 setTimeout(() => {
                   this.isShowConfetti = false; // 紙吹雪非表示
                 }, 12000);
               }
-            });
+            }
           }
 
           this.timeoutId = setTimeout(() => {
@@ -1521,13 +1619,13 @@ export default {
             room.update({
               player1_name: null,
               player1_photoURL: null,
-            })
+            });
             break;
           case 2:
             room.update({
               player2_name: null,
               player2_photoURL: null,
-            })
+            });
             break;
           case 3:
             room.update({

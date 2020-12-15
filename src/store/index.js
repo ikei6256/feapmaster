@@ -22,13 +22,7 @@ export default new Vuex.Store({
 
     // currentUserにデータをセットする
     setUser (state, payload) {
-      state.currentUser = {
-        name: payload.name,
-        email: payload.email,
-        photoURL: payload.photoURL,
-        uid: payload.uid,
-        level: payload.level
-      }
+      state.currentUser = { ...payload };
     },
     unsetUser (state) {
       state.currentUser = null;

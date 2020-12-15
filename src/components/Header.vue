@@ -19,13 +19,13 @@
               <v-avatar color="#fff" size="2.4rem">
                 <v-img :src="currentUser.photoURL" alt="User Photo"></v-img>
               </v-avatar>
-              <v-icon small>mdi-chevron-down</v-icon>
+              <v-icon small>{{ icons.mdiChevronDown }}</v-icon>
             </v-btn>
           </template>
 
           <!-- ホバー時出現 -->
           <v-card min-width="200px">
-            <v-list dense color="grey lighten-5">
+            <v-list dense>
               <v-list-item>
                 <v-layout justify-center>
                   <v-list-item-avatar class="mr-0 mb-0" color="#fff">
@@ -56,6 +56,7 @@
             </v-list>
           </v-card>
         </v-menu>
+
       </transition>
     </div>
   </header>
@@ -63,7 +64,15 @@
 
 <script>
 import { mapState } from "vuex";
+import { mdiChevronDown } from "@mdi/js";
 export default {
+  data() {
+    return {
+      icons: {
+        mdiChevronDown
+      }
+    }
+  },
   computed: {
     ...mapState(["auth", "currentUser", "isPlaying"]),
   },

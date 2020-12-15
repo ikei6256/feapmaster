@@ -41,7 +41,8 @@ export default {
       if (user) {
         // signed in
 
-        const userObj = {
+        // name, email, photoURL, level, battle_win, battle_lose, battle4_win, battle4_lose
+        let userObj = {
           email: user.email,
         }
         const docRef = this.db.collection("users").doc(user.uid);
@@ -49,24 +50,28 @@ export default {
         docRef.get().then( (snapshot) => {
           // ユーザ情報がFirestoreに存在するかチェック
           if (snapshot.exists) {
-            userObj.level = snapshot.data().level;
-            userObj.name = snapshot.data().name;
-            userObj.photoURL = snapshot.data().photoURL;
+            // データをコピー
+            userObj = { ...userObj, ...snapshot.data() };
           } else {
             // ユーザ情報がFirestoreに無ければ新しく登録する
             userObj.level = 1;
             userObj.name = user.displayName;
-            // 画像があるかチェックする
-            if (user.photoURL === null) {
-              // 画像が無い場合はデフォルトの画像
-              userObj.photoURL = "https://firebasestorage.googleapis.com/v0/b/feapmaster-5b5ad.appspot.com/o/userImage%2Fno-image.png?alt=media&token=7eb5ca9d-911b-4871-9929-9aaae704867a";
-            } else {
-              userObj.photoURL = user.photoURL;
-            }
+
+            // 画像が無い場合はデフォルト画像
+            userObj.photoURL = user.photoURL !== null ? user.photoURL :
+              "https://firebasestorage.googleapis.com/v0/b/feapmaster-5b5ad.appspot.com/o/userImage%2Fno-image.png?alt=media&token=7eb5ca9d-911b-4871-9929-9aaae704867a";
+
+            userObj.battle_win = 0;
+            userObj.battle_lose = 0;
+            userObj.battle_draw = 0;
+            userObj.battle4_1 = 0;
+            userObj.battle4_2 = 0;
+            userObj.battle4_3 = 0;
+            userObj.battle4_4 = 0;
             docRef.set(userObj);
           }
 
-          // ローカルに保存する
+          // オブジェクトにUIDを追加してローカルに保存する
           userObj.uid = user.uid;
           this.setUser(userObj);
 

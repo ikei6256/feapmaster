@@ -1,7 +1,7 @@
 <template>
   <v-expansion-panels v-model="panel" accordion hover multiple>
     <v-expansion-panel v-for="(question, i) in questions" :key="i">
-      <v-expansion-panel-header color="grey lighten-4" disable-icon-rotate>
+      <v-expansion-panel-header color="grey lighten-5" disable-icon-rotate>
         <span class="question-body">{{ question.body }}</span>
         <template v-if="question.correctAns === myAns[i]" v-slot:actions>
           <v-icon color="green" size="1.2rem">{{ icons.mdiCheckboxMarkedCircle }}</v-icon>

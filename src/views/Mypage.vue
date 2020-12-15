@@ -39,17 +39,21 @@
 
     <div class="userDetails">
       <transition name="fade" mode="out-in">
-        <div v-if="selectedItem === 0" key="mylist" class="mylist">マイリスト</div>
+        <div v-if="selectedItem === 0" key="mylist">マイリスト</div>
 
-        <div v-else-if="selectedItem === 1" key="history-battle" class="history">
-          <h1>過去10戦成績[4人]</h1>
+        <div v-else-if="selectedItem === 1" key="history-battle">
+          <div>過去10戦 (2人対戦)</div>
           <v-divider></v-divider>
-          <div v-for="(record, index) in battleRecords" :key="index" class="mt-2">
-            <div v-for="(questionRef, index) in record.questionRefs" :key="index">{{ questionRef.path }} : {{ record.myAnswers[index] }}</div>
+
+          <div v-if="battleRecords.length !== 0">
+            <div v-for="(record, index) in battleRecords" :key="index" class="mt-2">
+              <v-subheader>{{ record.createdAt.toDate() }}</v-subheader>
+              <!-- <review :questions="list_questions[index] :myAns="record.myAnswers"></review> -->
+            </div>
           </div>
         </div>
 
-        <div v-else-if="selectedItem === 2" key="history-battle4" class="history-battle">過去10戦成績[4人]</div>
+        <div v-else-if="selectedItem === 2" key="history-battle4">過去10戦 (4人対戦)</div>
       </transition>
     </div>
   </div>
@@ -58,24 +62,29 @@
 <script>
 import { mapState } from "vuex";
 export default {
-  data: () => ({
-    selectedItem: 1,
-    items: [
-      { text: "マイリスト", icon: "mdi-folder" },
-      { text: "過去10戦成績[2人]", icon: "mdi-sword-cross" },
-      { text: "過去10戦成績[4人]", icon: "mdi-sword-cross" },
-    ],
-    battleRecords: [],
-  }),
+  components: {
+    // review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
+  },
+  data() {
+    return {
+      selectedItem: 1,
+      items: [
+        { text: "マイリスト", icon: "mdi-folder" },
+        { text: "過去10戦(2人対戦)", icon: "mdi-sword-cross" },
+        { text: "過去10戦(4人対戦)", icon: "mdi-sword-cross" },
+      ],
+      battleRecords: [],
+    };
+  },
   computed: {
     ...mapState(["currentUser", "db"]),
   },
   mounted() {
     // 戦績データを取得する
-    this.getBattleRecord();
+    // this.setBattleRecord();
   },
   methods: {
-    getBattleRecord() {
+    setBattleRecord() {
       this.db
         .collection(`users/${this.currentUser.uid}/battleResult`)
         .orderBy("createdAt", "desc") // 新しい順

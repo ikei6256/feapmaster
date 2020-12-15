@@ -37,6 +37,11 @@ const routes = [
     path: "/battle4", // 4人対戦
     name: "Battle4",
     component: () => import(/* webpackChunkName: "battle4" */ "../views/Battle.vue")
+  },
+  {
+    path: "/test",
+    name: "Test",
+    component: () => import(/* webpackChunkName: "test"*/ "../views/Test.vue")
   }
 ]
 
