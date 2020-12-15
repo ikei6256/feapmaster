@@ -7,7 +7,7 @@ import "firebase/auth";
 import "firebase/firestore";
 
 /*** FEAPMaster(feapmaster-5b5ad)の設定 ***/
-var firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyApuVwrZDXa8YNqrDnB-uytnKcrT1v7yQA",
   authDomain: "feapmaster-5b5ad.firebaseapp.com",
   databaseURL: "https://feapmaster-5b5ad.firebaseio.com",

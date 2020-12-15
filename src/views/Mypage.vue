@@ -48,7 +48,7 @@
           <div v-if="battleRecords.length !== 0">
             <div v-for="(record, index) in battleRecords" :key="index" class="mt-2">
               <v-subheader>{{ record.createdAt.toDate() }}</v-subheader>
-              <!-- <review :questions="list_questions[index] :myAns="record.myAnswers"></review> -->
+              <review :questions="record.questions" :myAns="record.myAnswers"></review>
             </div>
           </div>
         </div>
@@ -63,15 +63,15 @@
 import { mapState } from "vuex";
 export default {
   components: {
-    // review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
+    review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
   },
   data() {
     return {
       selectedItem: 1,
       items: [
         { text: "マイリスト", icon: "mdi-folder" },
-        { text: "過去10戦(2人対戦)", icon: "mdi-sword-cross" },
-        { text: "過去10戦(4人対戦)", icon: "mdi-sword-cross" },
+        { text: "過去の10戦(2人対戦)", icon: "mdi-sword-cross" },
+        { text: "過去の10戦(4人対戦)", icon: "mdi-sword-cross" },
       ],
       battleRecords: [],
     };
@@ -81,18 +81,30 @@ export default {
   },
   mounted() {
     // 戦績データを取得する
-    // this.setBattleRecord();
+    // this.setBattleRecords();
   },
   methods: {
-    setBattleRecord() {
-      this.db
+    setBattleRecords() {
+      const battleResultsQuery = this.db
         .collection(`users/${this.currentUser.uid}/battleResult`)
-        .orderBy("createdAt", "desc") // 新しい順
-        .get()
+        .orderBy("createdAt", "desc"); // 新しい順
+
+      battleResultsQuery.get({ source: "cache" })
         .then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            throw Error();
+          }
           querySnapshot.forEach((queryDocumentSnapshot) => {
             this.battleRecords.push(queryDocumentSnapshot.data());
           });
+        })
+        .catch(() => {
+          battleResultsQuery.get({ source: "server" })
+            .then((querySnapshot) => {
+              querySnapshot.forEach((queryDocumentSnapshot) => {
+                this.battleRecords.push(queryDocumentSnapshot.data());
+              });
+            });
         });
     },
   },

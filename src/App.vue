@@ -36,6 +36,9 @@ export default {
   computed: {
     ...mapState(["auth", "db"]),
   },
+  created() {
+    this.db.enablePersistence({ synchronizeTabs: true });
+  },
   mounted() {
     this.auth.onAuthStateChanged((user) => {
       if (user) {
