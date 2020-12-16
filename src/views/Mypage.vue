@@ -7,21 +7,22 @@
           <v-list-item>
             <v-spacer></v-spacer>
             <div class="mt-2">
-              <label>
-                <v-hover v-slot="{ hover }">
-                  <v-badge :value="hover" bordered overlap icon="mdi-wrench" color="grey darken-2">
-                    <v-avatar v-ripple size="60" class="avatar">
-                      <v-img cursor :src="currentUser.photoURL"></v-img>
+              <v-hover v-slot="{ hover }">
+                <label>
+                  <v-badge :value="hover" overlap icon="mdi-wrench" color="grey darken-2">
+                    <v-avatar v-ripple size="60">
+                      <v-img :src="currentUser.photoURL"></v-img>
+                      <v-overlay :value="hover" absolute opacity="0.6" style="font-size:0.875rem">編集</v-overlay>
                     </v-avatar>
                   </v-badge>
-                </v-hover>
-                <input type="file" @change="onFileChange" style="display:none"/>
-              </label>
+                  <input type="file" @change="onFileChange" style="display: none" />
+                </label>
+              </v-hover>
             </div>
             <v-spacer></v-spacer>
           </v-list-item>
 
-          <v-list-item class="name_email" ripple>
+          <v-list-item @mouseover="hover_name_email = true" @mouseleave="hover_name_email = false" ripple style="cursor:pointer">
             <v-list-item-content>
               <v-list-item-title>{{ currentUser.name }}</v-list-item-title>
               <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
@@ -29,6 +30,7 @@
             <v-list-item-action>
               <v-icon right small>mdi-cog</v-icon>
             </v-list-item-action>
+            <v-overlay absolute :value="hover_name_email" opacity="0.6" style="font-size:0.875rem">編集</v-overlay>
           </v-list-item>
         </v-list>
 
@@ -59,25 +61,25 @@
           <div>過去10戦 (2人対戦)</div>
           <v-divider></v-divider>
 
-          <!-- <transition name="fade"> -->
-          <div v-if="battleRecords === null" key="loading">
-            <vue-loading type="bubbles" color="#FF9800" :size="{ width: '50px', height: '50px' }"></vue-loading>
-          </div>
-          <div v-else-if="Array.isArray(battleRecords) && battleRecords.length !== 0" key="battleRecords">
-            <div v-for="(record, index) in battleRecords" :key="index" class="mt-2">
-              <v-subheader>{{ record.createdAt.toDate() }}</v-subheader>
-              <review :questions="record.questions" :myAns="record.myAnswers"></review>
+          <transition name="fade">
+            <div v-if="battleRecords === null" key="loading">
+              <!-- <vue-loading type="bubbles" color="#FF9800" :size="{ width: '50px', height: '50px' }"></vue-loading> -->
             </div>
-          </div>
-          <div v-else-if="Array.isArray(battleRecords)" key="battleRecordsNone">
-            <v-alert dense type="info" class="mt-2">対戦結果が登録されていません。</v-alert>
-          </div>
-          <div v-else-if="battleRecords === 'error'" key="error">
-            <v-alert dense border="left" icon="mdi-alert" type="warning" class="mt-2">
-              申し訳ございません。通信エラーが発生しています。しばらくの後にアクセスするか開発チームまでお問い合わせください。
-            </v-alert>
-          </div>
-          <!-- </transition> -->
+            <div v-else-if="Array.isArray(battleRecords) && battleRecords.length !== 0" key="battleRecords">
+              <div v-for="(record, index) in battleRecords" :key="index" class="mt-2">
+                <v-subheader>{{ record.createdAt.toDate() }}</v-subheader>
+                <review :questions="record.questions" :myAns="record.myAnswers"></review>
+              </div>
+            </div>
+            <div v-else-if="Array.isArray(battleRecords)" key="battleRecordsNone">
+              <v-alert dense type="info" class="mt-2">対戦結果が登録されていません。</v-alert>
+            </div>
+            <div v-else-if="battleRecords === 'error'" key="error">
+              <v-alert dense border="left" icon="mdi-alert" type="warning" class="mt-2">
+                申し訳ございません。通信エラーが発生しています。しばらくの後にアクセスするか開発チームまでお問い合わせください。
+              </v-alert>
+            </div>
+          </transition>
         </div>
 
         <div v-else-if="selectedItem === 2" key="history-battle4">過去10戦 (4人対戦)</div>
@@ -88,14 +90,15 @@
 
 <script>
 import { mapState, mapMutations } from "vuex";
-import { VueLoading } from "vue-loading-template";
+// import { VueLoading } from "vue-loading-template";
 export default {
   components: {
-    VueLoading,
+    // VueLoading,
     review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
   },
   data() {
     return {
+      hover_name_email: false,
       selectedItem: 1,
       items: [
         { text: "マイリスト", icon: "mdi-folder" },
@@ -159,6 +162,9 @@ export default {
 };
 </script>
 
+<style lang="scss">
+</style>
+
 <style lang="scss" scoped>
 .mypage {
   display: grid;
@@ -169,20 +175,6 @@ export default {
 
   .userInfo {
     grid-area: userInfo;
-
-    // .avatar {
-    //   cursor: pointer;
-    // }
-
-    .avatar,
-    .name_email {
-      cursor: pointer;
-      transition: background-color 0.2s;
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-    }
   }
 
   .userDetails {
