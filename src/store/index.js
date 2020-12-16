@@ -10,6 +10,16 @@ export default new Vuex.Store({
     currentUser: null, // ユーザの情報をローカルに保存する
     db: firebase.firestore(), // Firestoreへの参照
     isPlaying: false, // 対戦中かどうか
+
+    /** **データをどこから読み込むかのフラグ**
+     * キャッシュから読み取りたい場合はここでフラグ管理する
+     * 初回はサーバ get({ source: "server" })
+     * 初回以降はキャッシュ get({ source: "cache" })
+     */
+    sourceFromCache: {
+      battleRecords: false,
+      battleRecords4: false,
+    },
   },
   mutations: {
     // Firebase参照の保存
@@ -20,7 +30,7 @@ export default new Vuex.Store({
       state.db = payload.db;
     },
 
-    // currentUserにデータをセットする
+    // ユーザデータをセットする
     setUser (state, payload) {
       state.currentUser = { ...payload };
     },
@@ -34,6 +44,11 @@ export default new Vuex.Store({
     },
     stateBattleFalse (state) {
       state.isPlaying = false;
+    },
+
+    // データソースを変更する
+    triedFromServer (state, payload) {
+      state.sourceFromCache[payload.key] = true;
     }
   },
   // actions: {

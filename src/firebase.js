@@ -5,6 +5,7 @@ import firebase from "firebase/app";
 // Add the Firebase products that you want to use
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/storage";
 
 /*** FEAPMaster(feapmaster-5b5ad)の設定 ***/
 const firebaseConfig = {
@@ -14,7 +15,7 @@ const firebaseConfig = {
   projectId: "feapmaster-5b5ad",
   storageBucket: "feapmaster-5b5ad.appspot.com",
   messagingSenderId: "1089919960597",
-  appId: "1:1089919960597:web:973cb76fa3bddf5d49f01c"
+  appId: "1:1089919960597:web:973cb76fa3bddf5d49f01c",
 };
 firebase.initializeApp(firebaseConfig); // Initialize Firebase
 

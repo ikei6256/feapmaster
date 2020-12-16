@@ -38,13 +38,25 @@ export default {
   },
   created() {
     this.db.enablePersistence({ synchronizeTabs: true });
-  },
-  mounted() {
+
+    // ユーザ情報をセットする
     this.auth.onAuthStateChanged((user) => {
       if (user) {
         // signed in
 
-        // name, email, photoURL, level, battle_win, battle_lose, battle4_win, battle4_lose
+        /** **ユーザ情報をセットするオブジェクト**
+         * @type {object}
+         * @prop {string} name 名前
+         * @prop {string} email メール
+         * @prop {number} level レベル
+         * @prop {number} battle_win 2人対戦での勝利数
+         * @prop {number} battle_lose 2人対戦での敗北数
+         * @prop {number} battle4_1 4人対戦での1位取得数
+         * @prop {number} battle4_2 4人対戦での2位取得数
+         * @prop {number} battle4_3 4人対戦での3位取得数
+         * @prop {number} battle4_4 4人対戦での4位取得数
+         * @prop {string} uid uid
+         */
         let userObj = {
           email: user.email,
         }
@@ -102,6 +114,8 @@ export default {
         this.unsetUser();
       }
     });
+  },
+  mounted() {
   },
   methods: {
     ...mapMutations(["setUser", "unsetUser", "stateBattleFalse"]),

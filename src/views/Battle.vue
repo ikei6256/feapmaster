@@ -1348,7 +1348,7 @@ export default {
             })
           }
 
-          this.db.collection(`users/${this.currentUser.uid}/battleResult`).add(record);
+          this.db.collection(`users/${this.currentUser.uid}/battleRecords`).add(record);
         } else {
           /*** 4人対戦 ***/
           const record = {
@@ -1388,7 +1388,7 @@ export default {
               break;
           }
 
-          this.db.collection(`users/${this.currentUser.uid}/battleResult4`).add(record);
+          this.db.collection(`users/${this.currentUser.uid}/battleRecords4`).add(record);
         }
       }
 

@@ -45,12 +45,16 @@
 
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn :to="{ name: 'Mypage' }" text>マイページ</v-btn>
+                  <v-btn :to="{ name: 'Mypage' }" text color="light-blue darken-4">
+                    <v-icon left>mdi-account</v-icon>
+                    マイページ</v-btn>
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-btn color="red darken-2" text @click="$emit('signout')">ログアウト</v-btn>
+                  <v-btn color="red darken-2" text @click="$emit('signout')">
+                    <v-icon left>mdi-logout</v-icon>
+                    ログアウト</v-btn>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
