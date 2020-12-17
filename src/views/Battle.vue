@@ -124,10 +124,9 @@
     <!-- ここから: Modal -->
     <v-dialog v-model="isShowDialogQuitBattle" content-class="dialog_battle_cancel" transition="scroll-y-transition" hide-overlay>
       <v-card color="grey lighten-5">
-        <v-card-title class="dialog_battle_cancel_title"
-          ><v-icon>{{ icons.mdiAlertCircleOutline }}</v-icon
-          >注意</v-card-title
-        >
+        <v-card-title class="yellow lighten-2">
+          <v-icon>{{ icons.mdiAlertCircleOutline }}</v-icon>注意
+        </v-card-title>
         <v-card-text class="py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -1661,10 +1660,6 @@ export default {
 
     @media screen and (min-width: 600px) {
       width: 588px;
-    }
-
-    .dialog_battle_cancel_title {
-      background-color: #fded3f;
     }
   }
 }

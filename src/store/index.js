@@ -22,33 +22,31 @@ export default new Vuex.Store({
     },
   },
   mutations: {
-    // Firebase参照の保存
-    setAuth (state, payload) {
-      state.auth = payload.auth;
-    },
-    setDb (state, payload) {
-      state.db = payload.db;
-    },
-
-    // ユーザデータをセットする
+    /** ユーザデータをセットする */
     setUser (state, payload) {
       state.currentUser = { ...payload };
     },
+    /** ユーザ画像をセットする */
+    setUserPhoto (state, payload) {
+      state.currentUser.photoURL = payload.url;
+    },
+    /** ユーザデータをクリア */
     unsetUser (state) {
       state.currentUser = null;
     },
 
-    // 対戦中か否か
+    /** ステータス変更: 対戦中 */
     stateBattleTrue (state) {
       state.isPlaying = true;
     },
+    /** ステータス変更: 対戦中ではない */
     stateBattleFalse (state) {
       state.isPlaying = false;
     },
 
-    // データソースを変更する
-    triedFromServer (state, payload) {
-      state.sourceFromCache[payload.key] = true;
+    /** キャッシュフラグを変更 */
+    cacheServerData (state, data) {
+      state.sourceFromCache[data] = true;
     }
   },
   // actions: {

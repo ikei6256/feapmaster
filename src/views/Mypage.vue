@@ -1,5 +1,5 @@
 <template>
-  <div class="mypage">
+  <div class="mypage pb-2 pb-sm-4">
     <!-- userInfoここから -->
     <div class="userInfo">
       <v-card>
@@ -10,28 +10,30 @@
               <v-hover v-slot="{ hover }">
                 <label>
                   <v-badge :value="hover" overlap icon="mdi-wrench" color="grey darken-2">
-                    <v-avatar v-ripple size="60">
+                    <v-avatar v-ripple size="60" style="cursor: pointer">
                       <v-img :src="currentUser.photoURL"></v-img>
-                      <v-overlay :value="hover" absolute opacity="0.6" style="font-size:0.875rem">編集</v-overlay>
+                      <v-overlay :value="hover" absolute opacity="0.6" style="font-size: 0.875rem">編集</v-overlay>
                     </v-avatar>
                   </v-badge>
-                  <input type="file" @change="onFileChange" style="display: none" />
+                  <input type="file" @change="onFileChange" style="display: none" accept="image/*" />
                 </label>
               </v-hover>
             </div>
             <v-spacer></v-spacer>
           </v-list-item>
 
-          <v-list-item @mouseover="hover_name_email = true" @mouseleave="hover_name_email = false" ripple style="cursor:pointer">
-            <v-list-item-content>
-              <v-list-item-title>{{ currentUser.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-icon right small>mdi-cog</v-icon>
-            </v-list-item-action>
-            <v-overlay absolute :value="hover_name_email" opacity="0.6" style="font-size:0.875rem">編集</v-overlay>
-          </v-list-item>
+          <v-hover v-slot="{ hover }">
+            <v-list-item ripple style="cursor: pointer">
+              <v-list-item-content>
+                <v-list-item-title>{{ currentUser.name }}</v-list-item-title>
+                <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-icon right small>mdi-cog</v-icon>
+              </v-list-item-action>
+              <v-overlay absolute :value="hover" opacity="0.5" style="font-size: 0.875rem">編集する</v-overlay>
+            </v-list-item>
+          </v-hover>
         </v-list>
 
         <v-divider></v-divider>
@@ -63,7 +65,7 @@
 
           <transition name="fade">
             <div v-if="battleRecords === null" key="loading">
-              <!-- <vue-loading type="bubbles" color="#FF9800" :size="{ width: '50px', height: '50px' }"></vue-loading> -->
+              <VueLoading type="bubbles" color="#FF9800" :size="{ width: '50px', height: '50px' }"></VueLoading>
             </div>
             <div v-else-if="Array.isArray(battleRecords) && battleRecords.length !== 0" key="battleRecords">
               <div v-for="(record, index) in battleRecords" :key="index" class="mt-2">
@@ -71,7 +73,7 @@
                 <review :questions="record.questions" :myAns="record.myAnswers"></review>
               </div>
             </div>
-            <div v-else-if="Array.isArray(battleRecords)" key="battleRecordsNone">
+            <div v-else-if="Array.isArray(battleRecords) && battleRecords.length === 0" key="battleRecordsNone">
               <v-alert dense type="info" class="mt-2">対戦結果が登録されていません。</v-alert>
             </div>
             <div v-else-if="battleRecords === 'error'" key="error">
@@ -85,20 +87,33 @@
         <div v-else-if="selectedItem === 2" key="history-battle4">過去10戦 (4人対戦)</div>
       </transition>
     </div>
+
+    <ModalAlert
+      :isShow="isShowModalFailedUpload"
+      :actionOk="true"
+      :actionCancel="false"
+      title_color="yellow lighten-2"
+      title="アップロードに失敗しました。"
+      text="アップロード可能な画像形式は PNG、JPG、GIF です。<br>ファイルサイズの上限は 2M byte です。"
+      @click="isShowModalFailedUpload = false"
+    >
+    </ModalAlert>
   </div>
 </template>
 
 <script>
+import firebase from "../firebase";
 import { mapState, mapMutations } from "vuex";
-// import { VueLoading } from "vue-loading-template";
+import { VueLoading } from "vue-loading-template";
 export default {
   components: {
-    // VueLoading,
+    VueLoading,
     review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
+    ModalAlert: () => import(/*webpackChunkName: "modalalert" */ "../components/ModalAlert.vue"),
   },
   data() {
     return {
-      hover_name_email: false,
+      isShowModalFailedUpload: false,
       selectedItem: 1,
       items: [
         { text: "マイリスト", icon: "mdi-folder" },
@@ -113,33 +128,104 @@ export default {
   },
   mounted() {
     // 戦績データを取得する
-    // this.getBattleRecords();
+    this.getBattleRecords();
   },
   methods: {
-    ...mapMutations(["triedFromServer"]),
+    ...mapMutations(["cacheServerData", "setUserPhoto"]),
 
     /** ファイルを Firebase Storageにアップロードする */
     onFileChange(e) {
-      const files = e.target.files || e.dataTransfer.files;
-      console.log(files);
+      // 入力されたファイルがなければ何もしない
+      if (e.target.files.length === 0) {
+        return;
+      }
+
+      const file = e.target.files[0] || e.dataTransfer.files[0];
+      const fr = new FileReader();
+
+      // 簡易バリデーション gif,jpeg,png 2M以下
+      if (file.type.match(/image\/(gif|jpeg|png)/) === null || file.size > 2097152) {
+        // アップロード失敗
+        this.isShowModalFailedUpload = true; // モーダル出現
+        return;
+      }
+
+      // file を Array Buffer化した後に実行 e.target,result は Array Buffer
+      fr.onload = e => {
+        const fileType = this.getImageFileType(e.target.result);
+        if (fileType.match(/jpeg|png|gif/) !== null) {
+          const imageRef = firebase.storage().ref().child(`userImage/${this.currentUser.uid}`);
+          // const imageDeleteRef = firebase.storage().ref().child(`testImage/${this.currentUser.photoURL}`);
+
+          // アップロード処理
+          imageRef.put(file).then(() => {
+            imageRef.getDownloadURL().then((url) => {
+              // todo:自分のプロフィールに画像をセットする
+              this.db.doc(`users/${this.currentUser.uid}`).update("photoURL", url).then(() => {
+                // ローカルに反映する
+                this.setUserPhoto({url: url});
+              }).catch(() => {
+                // アップロード失敗
+                this.isShowModalFailedUpload = true;
+              });
+            }).catch(() => {
+              // アップロード失敗
+              this.isShowModalFailedUpload = true;
+            })
+          }).catch(() => {
+            // アップロード失敗
+            this.isShowModalFailedUpload = true;
+          });
+        } else {
+          // アップロード失敗
+          this.isShowModalFailedUpload = true;
+        }
+      }
+
+      // Array Buffer化
+      fr.readAsArrayBuffer(file);
     },
+
+    /** イメージのファイルタイプをバイナリーレベルで調べる */
+    getImageFileType(arrayBuffer) {
+      var ba = new Uint8Array(arrayBuffer);
+      var headerStr = "";
+      var headerHex = "";
+      for (var i = 0; i < 10; i++) {
+        // 始めの10個分を読む
+        headerHex += ba[i].toString(16); // 16進文字列で読む
+        headerStr += String.fromCharCode(ba[i]); // 文字列で読む
+      }
+      var fileType = "unknown";
+      if (headerHex.indexOf("ffd8") != -1) {
+        // JPGはヘッダーに「ffd8」を含む
+        fileType = "jpeg";
+      } else if (headerStr.indexOf("PNG") != -1) {
+        // PNGはヘッダーに「PNG」を含む
+        fileType = "png";
+      } else if (headerStr.indexOf("GIF") != -1) {
+        // GIFはヘッダーに「GIF」を含む
+        fileType = "gif";
+      }
+      return fileType;
+    }, //END getImageFileType()
 
     /** 2人対戦データを取得する */
     getBattleRecords() {
       const battleRecordsQuery = this.db.collection(`users/${this.currentUser.uid}/battleRecords`).orderBy("createdAt", "desc"); // 新しい順
 
-      const source = this.sourceFromCache.battle_result ? "cache" : "server";
+      const source = this.sourceFromCache.battleRecords ? "cache" : "server";
 
       // もしサーバーから取得したのであれば次回からはキャッシュを読み取る
       if (source === "server") {
-        this.triedFromServer("battleRecords");
+        this.cacheServerData("battleRecords");
       }
-
-      console.log("source:", source);
 
       battleRecordsQuery
         .get({ source: source })
         .then((querySnapshot) => {
+          console.log("source:", source);
+          this.battleRecords = [];
           querySnapshot.forEach((queryDocumentSnapshot) => {
             this.battleRecords.push(queryDocumentSnapshot.data());
           });
@@ -161,9 +247,6 @@ export default {
   },
 };
 </script>
-
-<style lang="scss">
-</style>
 
 <style lang="scss" scoped>
 .mypage {
