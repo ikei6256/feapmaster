@@ -26,14 +26,14 @@
         <div class="wrap-battle4">
           <div class="battle4">
             <router-link :to="{ name: 'Battle4' }">
-              <v-btn text color="primary">
+              <v-btn text color="pink darken-1">
                 <span class="link-battle berlin-sans">Battle<span class="detail ml-1">[4P]</span></span>
               </v-btn>
             </router-link>
           </div>
           <div class="battle4_input">
             <router-link :to="{ name: 'Battle4' }">
-              <v-btn text color="primary">
+              <v-btn text color="pink darken-1">
                 <span class="input_room">ルーム入力</span>
               </v-btn>
             </router-link>

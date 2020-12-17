@@ -115,7 +115,7 @@
 
     <!-- 振り返り -->
     <transition name="fade">
-      <div v-show="isShowReview" class="my-2 my-sm-4">
+      <div v-if="isShowReview" class="my-2 my-sm-4">
         <v-subheader>▼振り返り</v-subheader>
         <review :questions="questions" :myAns="myAns"></review>
       </div>
@@ -334,7 +334,71 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("beforeunload", this.handlerLeave);
-    this.handlerLeave();
+    // this.handlerLeave();
+
+    clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
+    clearInterval(this.timerId); // タイマーを停止する
+    this.stateBattleFalse();
+
+    if (this.unsubscribe !== null) {
+      this.unsubscribe(); // リアルタイムリスナーを破棄する
+    }
+
+    if (this.room !== null) {
+      if (!this.MODE_4PLAYERS) {
+        /***** 2人モード時の処理 *****/
+        this.room.delete(); // 部屋を削除する
+      } else {
+        /***** 4人モード時の処理 *****/
+
+        if (!this.isPlaying) {
+          /*** 検索中の処理 ***/
+          // 人数が1人なら部屋を削除する
+          if (this.concurrent_sessions === 1) {
+            this.room.delete();
+          } else {
+            leaveRoom(this.player_no, this.room);
+          }
+        } else {
+          /*** 対戦中の処理 ***/
+          // 人数が2人以下なら部屋を削除する
+          if (this.concurrent_sessions <= 2) {
+            this.room.delete();
+          } else {
+            leaveRoom(this.player_no, this.room);
+          }
+        }
+      }
+    }
+
+    function leaveRoom(player_no, room) {
+      switch (player_no) {
+        case 1:
+          room.update({
+            player1_name: null,
+            player1_photoURL: null,
+          });
+          break;
+        case 2:
+          room.update({
+            player2_name: null,
+            player2_photoURL: null,
+          });
+          break;
+        case 3:
+          room.update({
+            player3_name: null,
+            player3_photoURL: null,
+          });
+          break;
+        case 4:
+          room.update({
+            player4_name: null,
+            player4_photoURL: null,
+          });
+          break;
+      }
+    }
   },
   methods: {
     ...mapMutations(["stateBattleTrue", "stateBattleFalse"]),
@@ -1172,6 +1236,7 @@ export default {
 
         const correctAns = this.questions[this.question_now - 1].correctAns; // 正答番号
 
+        // 勝敗判定を行う
         if (!this.MODE_4PLAYERS) {
           /*** 2人対戦 ***/
 
@@ -1224,7 +1289,7 @@ export default {
           // 不正解の人
           let players_mistake = players.filter((p) => p.select !== correctAns);
 
-          let now_add = 1; // 追加する順位
+          let now_rank = 1; // 順位
           let now_time = null; // 比較するタイム
 
           // 順位データに保存する
@@ -1232,22 +1297,22 @@ export default {
             if (now_time !== null) {
               if (player.time === now_time) {
                 // タイムが同じ
-                // 例{ "1": ["なまえ", 1, 55] }
-                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time } });
-                player.add_score_tmp = this.SCORES[now_add - 1]; // 得点を仮保存
-                player.rank_tmp = now_add; // 1問毎の順位
+                // 例{rank:1, name:"なまえ", select:1, time:55}
+                this.rankings.push({ rank: now_rank, name: player.name, select: player.select, time: player.time });
+                player.add_score_tmp = this.SCORES[now_rank - 1]; // 得点を仮保存
+                player.rank_tmp = now_rank; // 1問毎の順位
               } else {
                 // タイムが異なる: 下位に追加
                 now_time = player.time;
-                now_add = index + 1; // 現在の人数が順位となる
-                this.rankings.push({ [now_add]: { name: player.name, select: player.select, time: player.time } });
-                player.add_score_tmp = this.SCORES[now_add - 1];
-                player.rank_tmp = now_add;
+                now_rank = index + 1; // 現在の人数が順位となる
+                this.rankings.push({ rank: now_rank, name: player.name, select: player.select, time: player.time });
+                player.add_score_tmp = this.SCORES[now_rank - 1];
+                player.rank_tmp = now_rank;
               }
             } else {
               // 最初のデータを追加する
               now_time = player.time;
-              this.rankings.push({ 1: { name: player.name, select: player.select, time: player.time } });
+              this.rankings.push({ rank: 1, name: player.name, select: player.select, time: player.time });
               player.add_score_tmp = 3;
               player.rank_tmp = 1;
             }
@@ -1255,7 +1320,7 @@ export default {
 
           // 順位のデータに不正解の人を追加
           players_mistake.forEach((player) => {
-            this.rankings.push({ "-": { name: player.name, select: player.select, time: player.time } });
+            this.rankings.push({ rank: "-", name: player.name, select: player.select, time: player.time });
           });
           /***** 順位付けここまで
            ********************************/
@@ -1345,7 +1410,7 @@ export default {
             record.result = "draw";
             docUser.update({
               battle_draw: firebase.firestore.FieldValue.increment(1),
-            })
+            });
           }
 
           this.db.collection(`users/${this.currentUser.uid}/battleRecords`).add(record);
@@ -1577,70 +1642,10 @@ export default {
     },
 
     /*** 画面を遷移する際の処理 ***/
-    handlerLeave() {
-      clearTimeout(this.timeoutId); // 現在進行中のtimeout処理を停止
-      clearInterval(this.timerId); // タイマーを停止する
-      this.stateBattleFalse();
-
-      if (this.unsubscribe !== null) {
-        this.unsubscribe(); // リアルタイムリスナーを破棄する
-      }
-
-      if (this.room !== null) {
-        if (!this.MODE_4PLAYERS) {
-          /***** 2人モード時の処理 *****/
-          this.room.delete(); // 部屋を削除する
-        } else {
-          /***** 4人モード時の処理 *****/
-
-          if (!this.isPlaying) {
-            /*** 検索中の処理 ***/
-            // 人数が1人なら部屋を削除する
-            if (this.concurrent_sessions === 1) {
-              this.room.delete();
-            } else {
-              leaveRoom(this.player_no, this.room);
-            }
-          } else {
-            /*** 対戦中の処理 ***/
-            // 人数が2人以下なら部屋を削除する
-            if (this.concurrent_sessions <= 2) {
-              this.room.delete();
-            } else {
-              leaveRoom(this.player_no, this.room);
-            }
-          }
-        }
-      }
-
-      function leaveRoom(player_no, room) {
-        switch (player_no) {
-          case 1:
-            room.update({
-              player1_name: null,
-              player1_photoURL: null,
-            });
-            break;
-          case 2:
-            room.update({
-              player2_name: null,
-              player2_photoURL: null,
-            });
-            break;
-          case 3:
-            room.update({
-              player3_name: null,
-              player3_photoURL: null,
-            });
-            break;
-          case 4:
-            room.update({
-              player4_name: null,
-              player4_photoURL: null,
-            });
-            break;
-        }
-      }
+    handlerLeave(e) {
+      e.preventDefault();
+      this.room.delete();
+      return "よろしいですか？";
     },
   }, // End: methods
 };

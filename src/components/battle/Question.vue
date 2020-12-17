@@ -129,10 +129,15 @@
               <span class="time">タイム</span>
             </div>
             <div v-for="n in 4" :key="n" class="detail white--text mb-1 mb-sm-2 py-1">
-              <span class="rank">{{ Object.keys(rankings[n - 1])[0] }}位</span>
-              <span class="name px-1">{{ Object.values(rankings[n - 1])[0].name }}</span>
-              <span class="ans">{{ options[ Object.values(rankings[n - 1])[0].select - 1 ]}}</span>
-              <span class="time">{{ Object.values(rankings[n - 1])[0].time | formatTime }}</span>
+              <span class="rank">{{ rankings[n-1].rank }}位</span>
+              <span class="name px-1">{{ rankings[n-1].name }}</span>
+              <span class="ans">
+                {{ options[ rankings[n-1].select - 1 ]}}
+                <span v-if="rankings[n-1].select === null">-</span>
+                <v-icon v-else-if="rankings[n-1].select === questions[question_now-1].correctAns" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
+                <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>
+              </span>
+              <span class="time">{{ rankings[n-1].time | formatTime }}</span>
             </div>
           </div>
           <div class="result-footer py-4">
@@ -268,7 +273,7 @@ $battle-blue: #113bad;
   .option-text {
     font-size: 0.875rem;
     line-height: 1.5;
-    letter-spacing: 0.05rem;
+    letter-spacing: 0.08rem;
   }
 
   .options {

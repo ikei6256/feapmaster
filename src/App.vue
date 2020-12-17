@@ -17,7 +17,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-
   </v-app>
 </template>
 
@@ -30,6 +29,10 @@ export default {
   },
   data() {
     return {
+      /** **ユーザの初回チェックであれば画面遷移しない**
+       * ゲストユーザで新規タブで対戦画面を開くと画面遷移してしまうのを防ぐ
+       */
+      FIRST_LOAD_USER: true,
       snackbar_auth: false,
     }
   },
@@ -105,7 +108,7 @@ export default {
         // 現在のページがマイページか対戦画面ならホームへ遷移する
         if (page === "Mypage") {
           this.$router.push({ name: "Home" });
-        } else if (page === "Battle" || page === "Battle4" ) {
+        } else if ((page === "Battle" || page === "Battle4") && !this.FIRST_LOAD_USER) {
           this.stateBattleFalse(); // 対戦フラグOFF
           this.$router.push({ name: "Home" });
         }
@@ -113,9 +116,11 @@ export default {
         // ユーザ情報をリセットする
         this.unsetUser();
       }
+
+      if(this.FIRST_LOAD_USER) {
+        this.FIRST_LOAD_USER = false;
+      }
     });
-  },
-  mounted() {
   },
   methods: {
     ...mapMutations(["setUser", "unsetUser", "stateBattleFalse"]),

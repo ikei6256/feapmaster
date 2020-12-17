@@ -3,8 +3,9 @@
     <v-expansion-panel v-for="(question, i) in questions" :key="i">
       <v-expansion-panel-header color="grey lighten-5" disable-icon-rotate>
         <span class="question-body">{{ question.body }}</span>
-        <template v-if="question.correctAns === myAns[i]" v-slot:actions>
-          <v-icon color="green" size="1.2rem">{{ icons.mdiCheckboxMarkedCircle }}</v-icon>
+        <template v-if="myAns[i] !== null" v-slot:actions>
+          <v-icon v-if="question.correctAns === myAns[i]" color="green" size="1.2rem">{{ icons.mdiCheckCircle }}</v-icon>
+          <v-icon v-else color="red" size="1.2rem">{{ icons.mdiCloseThick }}</v-icon>
         </template>
       </v-expansion-panel-header>
 
@@ -51,7 +52,7 @@
 </template>
 
 <script>
-import { mdiCircleOutline, mdiCloseThick, mdiCheckboxMarkedCircle } from "@mdi/js";
+import { mdiCircleOutline, mdiCloseThick, mdiCheckCircle } from "@mdi/js";
 export default {
   props: {
     questions: Array,
@@ -62,7 +63,7 @@ export default {
       icons: {
         mdiCircleOutline,
         mdiCloseThick,
-        mdiCheckboxMarkedCircle,
+        mdiCheckCircle,
       },
       panel: [],
       options: ["ア", "イ", "ウ", "エ"],
@@ -97,9 +98,19 @@ export default {
     };
   },
   filters: {
-    formatQuestionData: function (val) {
-      const season = val.season === "spring" ? "春" : "秋";
-      return "" + val.year + season + " 問" + val.no;
+    formatQuestionData: function (question) {
+      const season = question.season === "spring" ? "春" : "秋";
+      const date = question.season === "spring" ? new Date(question.year, 4, 1, 0, 0, 0) : new Date(question.year, 10, 1, 0, 0, 0);
+      const dateParts = new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {era: 'long'}).formatToParts(date);
+
+      let era = "";
+
+      // 例: "令和元年"
+      for (let i = 0; i < 3; i++) {
+        era += dateParts[i].value
+      }
+
+      return era + "(" + question.year + ")" + season + " 問" + question.no;
     },
   },
 };
