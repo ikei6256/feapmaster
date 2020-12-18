@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isShow" content-class="modal_alert" transition="scroll-y-transition" hide-overlay>
+  <v-dialog :value="isShow" content-class="modal_alert" transition="scroll-y-transition" hide-overlay @keydown="$emit('hide')">
     <v-card color="grey lighten-5">
       <v-card-title :class="title_color">
         <v-icon>mdi-alert-circle-outline</v-icon>{{ title }}
@@ -8,7 +8,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn v-if="actionCancel" text @click="isShow = false" color="indigo darken-3">キャンセル</v-btn>
-        <v-btn v-if="actionOk" text color="primary" @click="$emit('click')">OK</v-btn>
+        <v-btn v-if="actionOk" text color="primary" @click="$emit('hide')">OK</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

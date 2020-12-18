@@ -10,7 +10,7 @@
               <v-hover v-slot="{ hover }">
                 <label>
                   <v-badge :value="hover" overlap icon="mdi-wrench" color="grey darken-2">
-                    <v-avatar v-ripple size="60" style="cursor: pointer">
+                    <v-avatar v-ripple size="60" style="cursor: pointer" color="#fff">
                       <v-img :src="currentUser.photoURL"></v-img>
                       <v-overlay :value="hover" absolute opacity="0.6" style="font-size: 0.875rem">編集</v-overlay>
                     </v-avatar>
@@ -23,10 +23,9 @@
           </v-list-item>
 
           <v-hover v-slot="{ hover }">
-            <v-list-item ripple style="cursor: pointer">
+            <v-list-item dense ripple style="cursor: pointer" @click="showModalEditProfile">
               <v-list-item-content>
                 <v-list-item-title>{{ currentUser.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-icon right small>mdi-cog</v-icon>
@@ -34,6 +33,47 @@
               <v-overlay absolute :value="hover" opacity="0.5" style="font-size: 0.875rem">編集する</v-overlay>
             </v-list-item>
           </v-hover>
+
+          <v-list-item dense>
+            <v-list-item-content>
+                <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+
+          <!-- todo:メールユーザは編集できるようにしたい -->
+
+          <!-- <v-dialog v-model="isShowModalEditProfile" max-width="500px" hide-overlay>
+            <template v-slot:activator="{ on, attrs }">
+              <v-hover v-slot="{ hover }">
+                <v-list-item ripple style="cursor: pointer" v-on="on" v-bind="attrs">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ currentUser.name }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-icon right small>mdi-cog</v-icon>
+                  </v-list-item-action>
+                  <v-overlay absolute :value="hover" opacity="0.5" style="font-size: 0.875rem">編集する</v-overlay>
+                </v-list-item>
+              </v-hover>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="headline">プロフィール編集</span>
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-text-field v-model="editName" label="名前"></v-text-field>
+                  <v-text-field v-model="editMail" label="メール" hint="例: test@example.com" persistent-hint :rules="[v => /.+@.+/.test(v) || 'E-mail must be valid']" validate-on-blur></v-text-field>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="grey darken-2" text @click="isShowModalEditProfile = false">キャンセル</v-btn>
+                <v-btn color="blue darken-1" text @click="isShowModalEditProfile = false">編集する</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog> -->
         </v-list>
 
         <v-divider></v-divider>
@@ -95,7 +135,7 @@
       title_color="yellow lighten-2"
       title="アップロードに失敗しました。"
       text="アップロード可能な画像形式は PNG、JPG、GIF です。<br>ファイルサイズの上限は 2M byte です。"
-      @click="isShowModalFailedUpload = false"
+      @hide="isShowModalFailedUpload = false"
     >
     </ModalAlert>
   </div>
@@ -114,7 +154,10 @@ export default {
   data() {
     return {
       isShowModalFailedUpload: false,
-      selectedItem: 1,
+      isShowModalEditProfile: false,
+      editName: "",
+      editMail: "",
+      selectedItem: 0,
       items: [
         { text: "マイリスト", icon: "mdi-folder" },
         { text: "過去の10戦(2人対戦)", icon: "mdi-sword-cross" },
@@ -128,12 +171,12 @@ export default {
   },
   mounted() {
     // 戦績データを取得する
-    this.getBattleRecords();
+    // this.getBattleRecords();
   },
   methods: {
     ...mapMutations(["cacheServerData", "setUserPhoto"]),
 
-    /** ファイルを Firebase Storageにアップロードする */
+    /** 入力されたファイルのバリデーションを行う */
     onFileChange(e) {
       // 入力されたファイルがなければ何もしない
       if (e.target.files.length === 0) {
@@ -143,44 +186,58 @@ export default {
       const file = e.target.files[0] || e.dataTransfer.files[0];
       const fr = new FileReader();
 
+      /** アップロード失敗時の処理 */
+      const failedUpload = () => {
+        this.isShowModalFailedUpload = true; // モーダル出現
+        e.target.value = ""; // 入力したファイルをリセット
+      };
+
       // 簡易バリデーション gif,jpeg,png 2M以下
       if (file.type.match(/image\/(gif|jpeg|png)/) === null || file.size > 2097152) {
         // アップロード失敗
-        this.isShowModalFailedUpload = true; // モーダル出現
+        failedUpload();
         return;
       }
 
-      // file を Array Buffer化した後に実行 e.target,result は Array Buffer
-      fr.onload = e => {
+      // ファイルをアップロードする処理。file を Array Buffer 化した後に実行する。
+      fr.onload = (e) => {
         const fileType = this.getImageFileType(e.target.result);
+
         if (fileType.match(/jpeg|png|gif/) !== null) {
           const imageRef = firebase.storage().ref().child(`userImage/${this.currentUser.uid}`);
-          // const imageDeleteRef = firebase.storage().ref().child(`testImage/${this.currentUser.photoURL}`);
 
           // アップロード処理
-          imageRef.put(file).then(() => {
-            imageRef.getDownloadURL().then((url) => {
-              // todo:自分のプロフィールに画像をセットする
-              this.db.doc(`users/${this.currentUser.uid}`).update("photoURL", url).then(() => {
-                // ローカルに反映する
-                this.setUserPhoto({url: url});
-              }).catch(() => {
-                // アップロード失敗
-                this.isShowModalFailedUpload = true;
-              });
-            }).catch(() => {
-              // アップロード失敗
-              this.isShowModalFailedUpload = true;
+          imageRef
+            .put(file)
+            .then(() => {
+              imageRef
+                .getDownloadURL()
+                .then((url) => {
+                  // 自分のプロフィールに画像をセットする
+                  this.db
+                    .doc(`users/${this.currentUser.uid}`)
+                    .update("photoURL", url)
+                    .then(() => {
+                      // ローカルに反映する
+                      this.setUserPhoto({ url: url });
+                    })
+                    .catch(() => {
+                      failedUpload();
+                    });
+                })
+                .catch(() => {
+                  failedUpload();
+                });
             })
-          }).catch(() => {
-            // アップロード失敗
-            this.isShowModalFailedUpload = true;
-          });
+            .catch(() => {
+              failedUpload();
+            });
         } else {
-          // アップロード失敗
-          this.isShowModalFailedUpload = true;
+          failedUpload();
         }
-      }
+
+        fr.onload = null; // イベントリスナー破棄
+      };
 
       // Array Buffer化
       fr.readAsArrayBuffer(file);
@@ -224,7 +281,6 @@ export default {
       battleRecordsQuery
         .get({ source: source })
         .then((querySnapshot) => {
-          console.log("source:", source);
           this.battleRecords = [];
           querySnapshot.forEach((queryDocumentSnapshot) => {
             this.battleRecords.push(queryDocumentSnapshot.data());
