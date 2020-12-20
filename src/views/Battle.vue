@@ -2,7 +2,7 @@
   <div class="battle mt-2 mt-sm-4">
     <!-- 紙吹雪 -->
     <transition name="fade">
-      <confetti v-if="isShowConfetti"></confetti>
+      <Confetti v-if="isShowConfetti"></Confetti>
     </transition>
 
     <!-- メッセージ -->
@@ -10,7 +10,7 @@
       <span>{{ message }}</span>
     </div>
 
-    <!-- ここから: プレイヤー表示エリア -->
+    <!-- プレイヤー表示エリア: 2人対戦 -->
     <div v-if="!MODE_4PLAYERS" class="area-players mt-2 mt-sm-4">
       <div class="player1">
         <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[0]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <!-- 4人モード -->
+    <!-- プレイヤー表示エリア: 4人対戦 -->
     <div v-else class="area-players4 mt-2 mt-sm-4">
       <div class="player1">
         <player :playerData="myData" :isShowPlayerStatus="isShowPlayerStatus" :card_color="card_colors[0]" :MODE_4PLAYERS="MODE_4PLAYERS"></player>
@@ -73,17 +73,15 @@
         </transition>
       </div>
     </div>
-    <!-- ここまで: プレイヤー表示エリア -->
 
-    <!-- ここから: 問題表示エリア -->
+    <!-- 問題表示エリア -->
     <transition name="fade">
       <div v-if="isShowQuestionArea" class="my-2 my-sm-4">
-        <!-- プログレスバー -->
         <div class="mt-2 mt-sm-4 px-1 px-sm-2">
-          <progressbar :timer_limit="timer_limit" :timer_valuenow="timer_valuenow"></progressbar>
+          <Progressbar :timer_limit="timer_limit" :timer_valuenow="timer_valuenow"></Progressbar>
         </div>
 
-        <question
+        <Question
           class="my-2 my-sm-4"
           @selected="selected"
           @toggleShowJudge="isShowJudge = !isShowJudge"
@@ -98,10 +96,9 @@
           :winner="winner"
           :MODE_4PLAYERS="MODE_4PLAYERS"
           :rankings="rankings"
-        ></question>
+        ></Question>
       </div>
     </transition>
-    <!-- ここまで: 問題表示 -->
 
     <!-- 再戦ボタン  -->
     <transition name="fade">
@@ -117,7 +114,7 @@
     <transition name="fade">
       <div v-if="isShowReview" class="my-2 my-sm-4">
         <v-subheader>▼振り返り</v-subheader>
-        <review :questions="questions" :myAns="myAns"></review>
+        <Review :questions="questions" :myAns="myAns"></Review>
       </div>
     </transition>
 
@@ -147,10 +144,10 @@ import firebase from "../firebase";
 export default {
   components: {
     player: Player,
-    progressbar: () => import(/* webpackChunkName: "progressbar" */ "../components/battle/ProgressBar.vue"),
-    question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
-    confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
-    review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
+    Progressbar: () => import(/* webpackChunkName: "progressbar" */ "../components/battle/ProgressBar.vue"),
+    Question: () => import(/* webpackChunkName: "question" */ "../components/battle/Question.vue"),
+    Confetti: () => import(/* webpackChunkName: "confetti" */ "../components/battle/Confetti.vue"),
+    Review: () => import(/* webpackChunkName: "review" */ "../components/battle/Review.vue"),
   },
   data() {
     return {
@@ -179,7 +176,7 @@ export default {
       unsubscribe: null, // リアルタイムリスナーの破棄に使用する
       nextLocation: null, // 画面遷移メソッド
 
-      /*** プレイヤーデータ ***
+      /** **プレイヤーデータ**
        * name ... 名前
        * photoURL ... 画像
        * status ... プレイヤーの状態
@@ -271,23 +268,20 @@ export default {
 
       winner: null, // 0 引き分け | 1 自分 | 2 相手1 | 3 相手2 | 4 相手3
 
-      /* 判定結果の順位データ
-       * 例
+      /** **判定結果の順位データ**
+       * -----例-----
        * [
-       *  { "1": {name: "あああ", select: 1, time: 150} },
-       *  { "1": {name: "いいい", select: 1, time: 150} },
-       *  { "3": {name: "ううう", select: 1, time: 180} },
-       *  { "-": {name: "えええ", select: 2, time: 100} }
+       *  { rank:1 name: "あああ", select: 1, time: 150 },
+       *  { rank:1 name: "いいい", select: 1, time: 150 },
+       *  { rank:3 name: "ううう", select: 1, time: 300 },
+       *  { rank:null name: "えええ", select: 2, time: 500 },
        * ]
-       */
+       ************/
       rankings: [],
       SCORES: [3, 2, 1, 0], // 4人対戦での得点 1位なら this.SCORES[0]
 
       message_num: 0,
       messages: ["待機中", "対戦を開始します！", "第1問", "第2問", "第3問", "第4問", "第5問", "終了!", "接続エラーが発生しました。"],
-
-      /*** テスト用 ***/
-      // isShowQuestionArea: true,
     };
   },
   computed: {
@@ -1285,7 +1279,7 @@ export default {
           // 正解の人かつタイムの早い順
           let players_sorted = players.filter((p) => p.select === correctAns).sort((a, b) => a.time - b.time);
 
-          // 不正解の人
+          /** 不正解の人を保存する配列 */
           let players_mistake = players.filter((p) => p.select !== correctAns);
 
           let now_rank = 1; // 順位
@@ -1319,7 +1313,9 @@ export default {
 
           // 順位のデータに不正解の人を追加
           players_mistake.forEach((player) => {
-            this.rankings.push({ rank: "-", name: player.name, select: player.select, time: player.time });
+            this.rankings.push({ rank: null, name: player.name, select: player.select, time: player.time });
+            player.add_score_tmp = 0;
+            player.rank_tmp = null;
           });
           /***** 順位付けここまで
            ********************************/
@@ -1332,7 +1328,6 @@ export default {
             // 得点に反映する
             for (const player of players) {
               player.score += player.add_score_tmp;
-              player.add_score_tmp = 0; // 仮保存した得点をリセット
             }
 
             // 少し待ってから次の問題へ
@@ -1391,7 +1386,7 @@ export default {
             questions: this.questions,
             myAnswers: this.myAns,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            opp_Name: this.oppData1.name,
+            opp_name: this.oppData1.name,
             opp_photoURL: this.oppData1.photoURL,
           };
 
@@ -1416,7 +1411,7 @@ export default {
         } else {
           /*** 4人対戦 ***/
           const record = {
-            questionRefs: this.questionRefs,
+            questions: this.questions,
             myAnswers: this.myAns,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             opp1_name: this.oppData1.name,
@@ -1432,22 +1427,22 @@ export default {
           switch (this.myData.rank_final) {
             case 1:
               docUser.update({
-                battle4_1: firebase.firestore.FieldValue.increment(),
+                battle4_1: firebase.firestore.FieldValue.increment(1),
               });
               break;
             case 2:
               docUser.update({
-                battle4_2: firebase.firestore.FieldValue.increment(),
+                battle4_2: firebase.firestore.FieldValue.increment(1),
               });
               break;
             case 3:
               docUser.update({
-                battle4_3: firebase.firestore.FieldValue.increment(),
+                battle4_3: firebase.firestore.FieldValue.increment(1),
               });
               break;
             case 4:
               docUser.update({
-                battle4_4: firebase.firestore.FieldValue.increment(),
+                battle4_4: firebase.firestore.FieldValue.increment(1),
               });
               break;
           }

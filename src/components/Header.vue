@@ -104,7 +104,7 @@ header {
   .menu {
     grid-area: menu;
     justify-self: right;
-    font-size: 14px;
+    font-size: 0.875rem;
 
     .btn-user {
       &.v-btn.v-btn {

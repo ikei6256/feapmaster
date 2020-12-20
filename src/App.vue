@@ -8,7 +8,7 @@
     </div>
 
     <!-- ログアウト時に出現するスナックバー -->
-    <v-snackbar v-model="snackbar_auth" timeout="5000">
+    <v-snackbar v-model="snackbar_auth" timeout="4750">
       <span v-if="auth.currentUser !== null">ログインしました。</span>
       <span v-else>ログアウトしました。</span>
       <template v-slot:action="{ attrs }">
@@ -58,7 +58,8 @@ export default {
          * @prop {number} battle4_2 4人対戦での2位取得数
          * @prop {number} battle4_3 4人対戦での3位取得数
          * @prop {number} battle4_4 4人対戦での4位取得数
-         * @prop {string} uid uid
+         * @prop {string} uid
+         * @prop {string} providerId
          */
         let userObj = {
           email: user.email,
@@ -91,6 +92,7 @@ export default {
 
           // オブジェクトにUIDを追加してローカルに保存する
           userObj.uid = user.uid;
+          userObj.providerId = user.providerData[0].providerId;
           this.setUser(userObj);
 
           // スナックバー出現
@@ -142,6 +144,9 @@ export default {
 }
 .rotate-45 {
   transform: rotate(45deg);
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Montserrat", "NotoSansJP", Roboto, "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Droid Sans Japanese", sans-serif;
 }
 </style>
 

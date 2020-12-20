@@ -35,3 +35,15 @@
     opacity: 0;
   }
 }
+
+// スクロールボタン
+.btn-fade  {
+  &-enter-active,
+  &-leave-active {
+    transition: 0.2s;
+  }
+  &-enter,
+  &-leave-to {
+    transform: scale(0);
+  }
+}

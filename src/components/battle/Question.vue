@@ -119,7 +119,12 @@
             <v-btn class="judge_close" icon x-small @click.stop="closeDialogResult"
               ><v-icon>{{ icons.mdiClose }}</v-icon></v-btn
             >
-            <span class="rank red--text text--lighten-2">{{ myData.rank_tmp }}位</span><span class="rank-point ml-1 grey--text text--darken-1">[+3]</span>
+            <div v-if="myData.rank_tmp !== null" >
+              <span class="rank red--text text--lighten-2">{{ myData.rank_tmp }}位</span><span class="rank-point ml-1 grey--text text--darken-1">[+{{ myData.add_score_tmp }}]</span>
+            </div>
+            <div v-else>
+              <span class="no_rank">順位無し</span>
+            </div>
           </div>
           <div class="result-body py-1 py-sm-2">
             <div class="head mb-2 mb-sm-4">
@@ -411,20 +416,25 @@ $battle-blue: #113bad;
 .wrap-result4 {
   .result-header {
     .rank {
-      font-family: NotoSansJP;
+      font-family: "NotoSansJP", sans-serif;
       font-weight: 900;
       font-size: 2rem;
       text-shadow: 1px 1px 0 rgba(68, 68, 68, 0.5);
     }
+    .no_rank {
+      font-family: "NotoSansJP", sans-serif;
+      font-weight: 500;
+      font-size: 1.5rem;
+    }
     .rank-point {
-      font-family: NotoSansJP;
+      font-family: "NotoSansJP", sans-serif;
       font-weight: 700;
       font-size: 0.875rem;
     }
   }
 
   .result-body {
-    font-family: NotoSansJP;
+    font-family: "NotoSansJP", sans-serif;
     background: linear-gradient(to right, #ffcdd2 12.5%, #bbdefb 10%);
 
     .head,

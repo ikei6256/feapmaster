@@ -1,0 +1,74 @@
+/* --------------------
+ * フォント関連はここで定義する
+ * index.htmlでpreloadする
+ * -------------------- */
+
+$weights: 400, 500, 700;
+
+@each $weight in $weights {
+  @font-face {
+    font-family: Roboto;
+    font-display: swap;
+    font-style: normal;
+    font-weight: $weight;
+    src:
+      local('Roboto'),
+      url('/font/Roboto#{$weight}.ttf') format('truetype');
+  }
+}
+
+@each $weight in $weights {
+  @font-face {
+    font-family: "Montserrat";
+    font-display: swap;
+    font-style: normal;
+    font-weight: $weight;
+    src:
+      local('Montserrat'),
+      url('/font/Montserrat#{$weight}.ttf') format('truetype');
+  }
+}
+
+@each $weight in $weights {
+  @font-face {
+    font-family: "NotoSansJP";
+    font-display: swap;
+    font-style: normal;
+    font-weight: $weight;
+    src: url('/font/NotoSansJP#{$weight}.otf') format('opentype');
+  }
+}
+
+@font-face {
+  font-family: "NotoSansJP";
+  font-display: swap;
+  font-style: normal;
+  font-weight: 900;
+  src: url('/font/NotoSansJP900.otf') format('opentype');
+}
+
+.pacifico {
+  font-family: 'Pacifico', cursive;
+
+  @at-root {
+    @font-face {
+      font-family: 'Pacifico';
+      font-display: swap;
+      src:
+        local('Pacifico'),
+        url('/font/Pacifico-Regular.ttf') format('truetype');
+    }
+  }
+}
+
+.berlin-sans {
+  font-family: 'Berlin Sans FB Demi Bold', sans-serif;
+
+  @at-root {
+    @font-face {
+      font-family: 'Berlin Sans FB Demi Bold';
+      font-display: swap;
+      src: url('/font/BRLNSDB.ttf') format('truetype');
+    }
+  }
+}

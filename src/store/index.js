@@ -17,6 +17,7 @@ export default new Vuex.Store({
      * 初回以降はキャッシュ get({ source: "cache" })
      */
     sourceFromCache: {
+      myLists: false,
       battleRecords: false,
       battleRecords4: false,
     },
@@ -26,10 +27,19 @@ export default new Vuex.Store({
     setUser (state, payload) {
       state.currentUser = { ...payload };
     },
-    /** ユーザ画像をセットする */
+    /** ユーザ画像を設定する */
     setUserPhoto (state, payload) {
-      state.currentUser.photoURL = payload.url;
+      state.currentUser.photoURL = payload.photoURL;
     },
+    /** ユーザ名を設定する */
+    setUserName (state, payload) {
+      state.currentUser.name = payload.name;
+    },
+    /** ユーザメールを設定する */
+    setUserEmail (state, payload) {
+      state.currentUser.email = payload.email;
+    },
+
     /** ユーザデータをクリア */
     unsetUser (state) {
       state.currentUser = null;
