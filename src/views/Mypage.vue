@@ -614,6 +614,7 @@ export default {
           querySnapshot.forEach((queryDocumentSnapshot) => {
             this.myLists.push(queryDocumentSnapshot.data());
           });
+          this.getQuestion();
         })
         .catch(() => {
           // キャッシュの取得に失敗した場合にサーバから取得する
@@ -623,6 +624,7 @@ export default {
               querySnapshot.forEach((queryDocumentSnapshot) => {
                 this.myLists.push(queryDocumentSnapshot.data());
               });
+              this.getQuestionAP();
             })
             .catch(() => {
               alert("エラーが発生しました。");
@@ -650,6 +652,16 @@ export default {
               alert("エラーが発生しました。");
             });
         });
+    },
+
+    /** 問題を取得する: FE */
+    getQuestion() {
+
+    },
+
+    /** 問題を取得する: AP */
+    getQuestionAP() {
+
     },
 
     /** エラーメッセージを表示する */
