@@ -102,6 +102,8 @@ export default {
           if (this.$router.currentRoute.name === "Login") {
             this.$router.push({ name: "Home" });
           }
+        }).catch((e) => {
+          alert('エラーが発生しました。CODE:' + String(e.code));
         })
       } else {
         // signed out
@@ -134,21 +136,6 @@ export default {
   },
 };
 </script>
-
-<style lang="scss">
-#app {
-  font-family: Roboto, "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Droid Sans Japanese", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #fac84b;
-}
-.rotate-45 {
-  transform: rotate(45deg);
-}
-h1, h2, h3, h4, h5, h6 {
-  font-family: "Montserrat", "NotoSansJP", Roboto, "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Droid Sans Japanese", sans-serif;
-}
-</style>
 
 <style lang="scss" scoped>
 .root {

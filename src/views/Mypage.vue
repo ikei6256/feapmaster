@@ -90,7 +90,7 @@
                       label="メール"
                       hint="例: test@example.com"
                       persistent-hint
-                      :rules="[RULES_EMAIL.required, RELES_EMAIL.regex]"
+                      :rules="[RULES_EMAIL.required, RULES_EMAIL.regex]"
                       :disabled="disableEditProfile"
                       validate-on-blur
                     ></v-text-field>
@@ -111,7 +111,7 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="grey darken-2" text @click="isShowModalEditEmail = false">キャンセル</v-btn>
-                  <v-btn @click="editEmail" :loading="loadingEditProfile" :disabled="disableEditProfile || inputEditEmail.length === 0 || inputPassword.length === 0" color="blue darken-1" text>変更する</v-btn>
+                  <v-btn @click="editEmail" :loading="loadingEditProfile" :disabled="disableEditProfile || inputEditEmail.length === 0 || inputEditEmail === currentUser.email ||inputPassword.length === 0" color="blue darken-1" text>変更する</v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -139,12 +139,76 @@
 
     <div class="userDetails">
       <transition name="fade" mode="out-in">
-        <!-- マイリスト -->
-        <div v-if="selectedItem === 0" key="mylist">マイリスト</div>
+        <!-- マイ問題集 -->
+        <div v-if="selectedItem === 0" key="mylist">
+          <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">
+            <v-icon>mdi-folder</v-icon>
+            <span class="ml-2">マイ問題集</span>
+          </h1>
+
+          <v-card>
+            <v-tabs v-model="activeTab" grow>
+              <v-tabs-slider color="white"></v-tabs-slider>
+              <v-tab class="blue darken-1 white--text">FE</v-tab>
+              <v-tab class="red lighten-1 white--text">AP</v-tab>
+            </v-tabs>
+
+            <v-expansion-panels v-if="myLists.length !== 0" v-model="panel" accordion hover multiple>
+              <v-expansion-panel v-for="(myList, i) in myLists" :key="i">
+                <v-expansion-panel-header color="blue lighten-5" disable-icon-rotate>
+                  <span class="question-body">{{ myList.listName }}</span>
+                </v-expansion-panel-header>
+
+                <v-expansion-panel-content>
+                  <div v-for="(myList, i) in myLists" :key="i">
+
+                  </div>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+            </v-expansion-panels>
+
+            <v-list v-if="myLists.length !== 0">
+              <v-list-group v-for="(myList, index) in myLists" :key="index" no>
+
+                <template v-slot:activator>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="myList.listName"></v-list-item-title>
+                  </v-list-item-content>
+                </template>
+
+                <!-- <v-list-item
+                  v-for="child in item.items"
+                  :key="child.title"
+                >
+                  <v-list-item-content>
+                    <v-list-item-title v-text="child.title"></v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item> -->
+
+              </v-list-group>
+            </v-list>
+
+            <div v-else>
+              <v-alert class="ma-2" type="warning" dense icon="mdi-alert">
+                マイ問題集がありません。
+              </v-alert>
+            </div>
+
+            <!-- <div v-if="myLists.length !== 0">
+              <div v-for="(myList, index) in myLists" :key="index">
+                {{ myList.listName }}
+                {{ Object.keys(myList) }}
+              </div>
+            </div> -->
+          </v-card>
+        </div>
 
         <!-- 2人対戦データ -->
         <div v-else-if="selectedItem === 1" key="history-battle">
-          <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">過去10戦 (2人対戦)</h1>
+          <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">
+            <v-icon>mdi-sword-cross</v-icon>
+            <span class="ml-2">過去10戦 (2人対戦)</span>
+          </h1>
 
           <transition name="fade" mode="out-in">
             <div v-if="battleRecords === null" key="loading">
@@ -157,10 +221,16 @@
                   <v-chip v-else-if="record.result=='lose'" class="mx-1" color="blue" text-color="white" x-small>負け</v-chip>
                   <v-chip v-else class="mx-1" color="green" text-color="white" x-small>引き分け</v-chip>
                   {{ record.createdAt.toDate() | formatDate }}
-                  vs. {{ record.opp_name }}
-                  <v-avatar class="ml-1" size=30 color="white">
-                    <v-img :src="record.opp_photoURL"></v-img>
-                  </v-avatar>
+                  vs.
+                  <span class="opp_name">{{ record.opp_name }}</span>
+                  <v-tooltip top nudge-bottom="10">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-avatar class="ml-1" size=28 color="white" v-on="on" v-bind="attrs">
+                        <v-img :src="record.opp_photoURL"></v-img>
+                      </v-avatar>
+                    </template>
+                    <span>{{ record.opp_name }}</span>
+                  </v-tooltip>
                 </v-subheader>
                 <review :questions="record.questions" :myAns="record.myAnswers"></review>
               </div>
@@ -169,16 +239,17 @@
               <v-alert class="userDetails-alert mt-2" type="info" dense>対戦結果が登録されていません。</v-alert>
             </div>
             <div v-else-if="battleRecords === 'error'" key="error">
-              <v-alert class="userDetails-alert mt-2" type="warning" dense icon="mdi-alert">
-                申し訳ございません。通信エラーが発生しています。しばらくの後にアクセスするか開発チームまでお問い合わせください。
-              </v-alert>
+              <v-alert class="userDetails-alert mt-2" type="warning" dense icon="mdi-alert">通信エラー</v-alert>
             </div>
           </transition>
         </div>
 
         <!-- 4人対戦データ -->
         <div v-else-if="selectedItem === 2" key="history-battle4">
-          <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">過去10戦 (4人対戦)</h1>
+          <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">
+            <v-icon>mdi-sword-cross</v-icon>
+            <span class="ml-2">過去10戦 (4人対戦)</span>
+          </h1>
 
           <transition name="fade" mode="out-in">
             <div v-if="battleRecords4 === null" key="loading">
@@ -189,22 +260,36 @@
               <div v-for="(record, index) in battleRecords4" :key="index" class="mt-2 mt-sm-4">
                 <v-subheader>▽
 
-                  <!-- todo: 1位... -->
                   <v-chip class="mx-1" color="pink" text-color="white" x-small>{{ record.rank }}位</v-chip>
-
                   {{ record.createdAt.toDate() | formatDate }}
-                  vs. {{ record.opp1_name }}
-                  <v-avatar class="mx-1" size=30 color="white">
-                    <v-img :src="record.opp1_photoURL"></v-img>
-                  </v-avatar>
-                  {{ record.opp2_name }}
-                  <v-avatar class="mx-1" size=30 color="white">
-                    <v-img :src="record.opp2_photoURL"></v-img>
-                  </v-avatar>
-                  {{ record.opp3_name }}
-                  <v-avatar class="mx-1" size=30 color="white">
-                    <v-img :src="record.opp3_photoURL"></v-img>
-                  </v-avatar>
+                  vs.
+                  <span class="opp_name d-none d-md-flex">{{ record.opp1_name }}</span>
+                  <v-tooltip top nudge-bottom="10">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-avatar class="ml-1 mr-3" size=28 color="white" v-on="on" v-bind="attrs">
+                        <v-img :src="record.opp1_photoURL"></v-img>
+                      </v-avatar>
+                    </template>
+                    <span>{{ record.opp1_name }}</span>
+                  </v-tooltip>
+                  <span class="opp_name d-none d-md-flex">{{ record.opp2_name }}</span>
+                  <v-tooltip top nudge-bottom="10">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-avatar class="ml-1 mr-3" size=28 color="white" v-on="on" v-bind="attrs">
+                        <v-img :src="record.opp2_photoURL"></v-img>
+                      </v-avatar>
+                    </template>
+                    <span>{{ record.opp2_name }}</span>
+                  </v-tooltip>
+                  <span class="opp_name d-none d-md-flex">{{ record.opp3_name }}</span>
+                  <v-tooltip top nudge-bottom="10">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-avatar class="ml-1" size=28 color="white" v-on="on" v-bind="attrs">
+                        <v-img :src="record.opp3_photoURL"></v-img>
+                      </v-avatar>
+                    </template>
+                    <span>{{ record.opp3_name }}</span>
+                  </v-tooltip>
                 </v-subheader>
 
                 <review :questions="record.questions" :myAns="record.myAnswers"></review>
@@ -216,9 +301,7 @@
             </div>
 
             <div v-else-if="battleRecords4 === 'error'" key="error">
-              <v-alert class="userDetails-alert mt-2" type="warning" dense icon="mdi-alert">
-                通信エラーが発生しています。しばらくの後にアクセスするか開発チームまでお問い合わせください。
-              </v-alert>
+              <v-alert class="userDetails-alert mt-2" type="warning" dense icon="mdi-alert">通信エラー</v-alert>
             </div>
           </transition>
         </div>
@@ -232,7 +315,7 @@
       title_color="yellow lighten-2"
       :title="modalAlertTitle"
       :text="modalAlertText"
-      @hide="isShowModalFailedUpload = false"
+      @hide="isShowModalAlert = false"
     >
     </ModalAlert>
 
@@ -280,15 +363,17 @@ export default {
 
       isShowBtnScroll: false,
 
-      selectedItem: 1,
+      selectedItem: 0,
       items: [
-        { text: "マイリスト", icon: "mdi-folder" },
+        { text: "マイ問題集", icon: "mdi-folder" },
         { text: "過去10戦(2人対戦)", icon: "mdi-sword-cross" },
         { text: "過去10戦(4人対戦)", icon: "mdi-sword-cross" },
       ],
-      myList: null,
+      myLists: [],
       battleRecords: null,
       battleRecords4: null,
+
+      activeTab: 0,
     };
   },
   computed: {
@@ -297,6 +382,9 @@ export default {
   mounted() {
     // 戦績データを取得する
     this.getBattleRecords();
+
+    // マイ問題集を取得する
+    this.getMyLists();
   },
   filters: {
     /** 日付をフォーマットする */
@@ -471,6 +559,32 @@ export default {
 
     /** マイリストを取得する */
     getMyLists() {
+      const myListsCollection = this.db.collection(`users/${this.currentUser.uid}/myLists`);
+      myListsCollection.get({ source: "cache" }).then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          // 空
+          return;
+        }
+
+        querySnapshot.forEach((queryDocumentSnapshot) => {
+          this.myLists.push(queryDocumentSnapshot.data());
+        });
+
+      }).catch(() => {
+        myListsCollection.get({ source: "server" }).then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            // 空
+            return;
+          }
+
+          querySnapshot.forEach((queryDocumentSnapshot) => {
+            this.myLists.push(queryDocumentSnapshot.data());
+          });
+
+        }).catch(() => {
+          alert("エラーが発生しました。");
+        })
+      })
     },
 
     /** エラーメッセージを表示する */
@@ -551,10 +665,10 @@ export default {
                   this.isShowSnackbar = false;
                 }, 4750);
               }).catch((e) => {
-                this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + e.code);
+                this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + String(e.code));
               });
             }).catch((e) => {
-              this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + e.code);
+              this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + String(e.code));
             });
           }).catch(() => {
             this.showModalAlert("エラーが発生しました。", "メールアドレスが既に使われているか無効な形式です。");
@@ -650,11 +764,15 @@ export default {
     .userDetails-headline {
       font-size: 1.8rem;
       letter-spacing: 0.08rem;
-      text-shadow: 1px 1px 1px #969696;
+      text-shadow: 1px 1px 1px #969696 rgba(150, 150, 150, 0.5);
     }
 
     .userDetails-alert {
       font-size: 0.9rem;
+    }
+
+    .opp_name {
+      font-size: 0.75rem;
     }
   }
 }

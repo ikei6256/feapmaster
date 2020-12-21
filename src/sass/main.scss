@@ -16,3 +16,14 @@ li {
 :focus {
   outline: none;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Montserrat", "NotoSansJP", Roboto, "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Droid Sans Japanese", sans-serif;
+}
+
+#app {
+  font-family: Roboto, "Helvetica Neue", "Helvetica", "Arial", "Droid Sans", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Droid Sans Japanese", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fac84b;
+}

@@ -118,7 +118,7 @@
       </div>
     </transition>
 
-    <!-- ここから: Modal -->
+    <!-- 対戦中遷移注意モーダル -->
     <v-dialog v-model="isShowDialogQuitBattle" content-class="dialog_battle_cancel" transition="scroll-y-transition" hide-overlay>
       <v-card color="grey lighten-5">
         <v-card-title class="yellow lighten-2">
@@ -132,7 +132,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!-- ここまで: Modal-->
   </div>
 </template>
 
