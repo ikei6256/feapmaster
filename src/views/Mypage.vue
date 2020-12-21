@@ -1,18 +1,8 @@
 <template>
   <div class="mypage pb-4 pb-sm-8">
-
     <!-- トップへ戻るボタン -->
     <transition name="btn-fade">
-      <v-btn
-        v-scroll="onScroll"
-        v-show="isShowBtnScroll"
-        fab
-        color="primary"
-        fixed
-        bottom
-        right
-        @click="$vuetify.goTo(0)"
-      >
+      <v-btn v-scroll="onScroll" v-show="isShowBtnScroll" fab color="primary" fixed bottom right @click="$vuetify.goTo(0)">
         <v-icon small>mdi-arrow-up</v-icon>
       </v-btn>
     </transition>
@@ -58,7 +48,14 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="grey darken-2" text @click="isShowModalEditName = false">キャンセル</v-btn>
-                  <v-btn @click="editName" :loading="loadingEditProfile" :disabled="disableEditProfile || inputEditName.length === 0" color="blue darken-1" text>変更する</v-btn>
+                  <v-btn
+                    @click="editName"
+                    :loading="loadingEditProfile"
+                    :disabled="disableEditProfile || inputEditName.length === 0"
+                    color="blue darken-1"
+                    text
+                    >変更する</v-btn
+                  >
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -99,7 +96,7 @@
                       label="パスワード"
                       :append-icon="isVisiblePassword ? 'mdi-eye' : 'mdi-eye-off'"
                       :type="isVisiblePassword ? 'text' : 'password'"
-                      :rules="[v => !!v || '必須項目です。']"
+                      :rules="[(v) => !!v || '必須項目です。']"
                       :disabled="disableEditProfile"
                       counter
                       @click:append="isVisiblePassword = !isVisiblePassword"
@@ -111,7 +108,16 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="grey darken-2" text @click="isShowModalEditEmail = false">キャンセル</v-btn>
-                  <v-btn @click="editEmail" :loading="loadingEditProfile" :disabled="disableEditProfile || inputEditEmail.length === 0 || inputEditEmail === currentUser.email ||inputPassword.length === 0" color="blue darken-1" text>変更する</v-btn>
+                  <v-btn
+                    @click="editEmail"
+                    :loading="loadingEditProfile"
+                    :disabled="
+                      disableEditProfile || inputEditEmail.length === 0 || inputEditEmail === currentUser.email || inputPassword.length === 0
+                    "
+                    color="blue darken-1"
+                    text
+                    >変更する</v-btn
+                  >
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -148,58 +154,75 @@
 
           <v-card>
             <v-tabs v-model="activeTab" grow>
-              <v-tabs-slider color="white"></v-tabs-slider>
-              <v-tab class="blue darken-1 white--text">FE</v-tab>
-              <v-tab class="red lighten-1 white--text">AP</v-tab>
+              <v-tabs-slider color="grey"></v-tabs-slider>
+              <v-tab :class="activeTab === 0 ? 'blue darken-1 white--text' : 'blue lighten-5'">FE</v-tab>
+              <v-tab :class="activeTab === 1 ? 'red lighten-1 white--text' : 'red lighten-5'">AP</v-tab>
             </v-tabs>
 
-            <v-expansion-panels v-if="myLists.length !== 0" v-model="panel" accordion hover multiple>
-              <v-expansion-panel v-for="(myList, i) in myLists" :key="i">
-                <v-expansion-panel-header color="blue lighten-5" disable-icon-rotate>
-                  <span class="question-body">{{ myList.listName }}</span>
-                </v-expansion-panel-header>
+            <v-tabs-items v-model="activeTab">
+              <v-tab-item>
+                <v-list v-if="myLists.length !== 0" dense>
+                  <v-subheader>FE</v-subheader>
+                  <v-list-group v-for="(myList, index) in myLists" :key="index" no-action color="blue darken-1">
+                    <template v-slot:activator>
+                      <v-icon class="mr-2">mdi-folder</v-icon>
+                      <v-list-item-content>
+                        <v-list-item-title v-text="myList.listName"></v-list-item-title>
+                      </v-list-item-content>
+                    </template>
 
-                <v-expansion-panel-content>
-                  <div v-for="(myList, i) in myLists" :key="i">
+                    <div class="pa-2">
+                      <!-- <v-expansion-panels accordion multiple>
+                        <v-expansion-panel v-for="(item, i) in 5" :key="i">
+                          <v-expansion-panel-header color="blue lighten-5"> Item </v-expansion-panel-header>
+                          <v-expansion-panel-content>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+                            aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                          </v-expansion-panel-content>
+                        </v-expansion-panel>
+                      </v-expansion-panels> -->
+                    </div>
+                  </v-list-group>
+                </v-list>
 
+                <div v-else>
+                  <div class="px-2 pt-2">
+                    <v-alert type="warning" dense icon="mdi-alert"> マイ問題集(FE)に問題が登録されていません。 </v-alert>
                   </div>
-                </v-expansion-panel-content>
-              </v-expansion-panel>
-            </v-expansion-panels>
+                </div>
+              </v-tab-item>
+              <v-tab-item>
+                <v-list v-if="myListsAP.length !== 0" dense>
+                  <v-subheader>AP</v-subheader>
+                  <v-list-group v-for="(myList, index) in myListsAP" :key="index" no-action color="red lighten-1">
+                    <template v-slot:activator>
+                      <v-icon class="mr-2">mdi-folder</v-icon>
+                      <v-list-item-content>
+                        <v-list-item-title v-text="myList.listName"></v-list-item-title>
+                      </v-list-item-content>
+                    </template>
 
-            <v-list v-if="myLists.length !== 0">
-              <v-list-group v-for="(myList, index) in myLists" :key="index" no>
+                    <div class="pa-2">
+                      <!-- <v-expansion-panels>
+                        <v-expansion-panel v-for="(item, i) in 5" :key="i">
+                          <v-expansion-panel-header> Item </v-expansion-panel-header>
+                          <v-expansion-panel-content>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                          </v-expansion-panel-content>
+                        </v-expansion-panel>
+                      </v-expansion-panels> -->
+                    </div>
+                  </v-list-group>
+                </v-list>
 
-                <template v-slot:activator>
-                  <v-list-item-content>
-                    <v-list-item-title v-text="myList.listName"></v-list-item-title>
-                  </v-list-item-content>
-                </template>
-
-                <!-- <v-list-item
-                  v-for="child in item.items"
-                  :key="child.title"
-                >
-                  <v-list-item-content>
-                    <v-list-item-title v-text="child.title"></v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item> -->
-
-              </v-list-group>
-            </v-list>
-
-            <div v-else>
-              <v-alert class="ma-2" type="warning" dense icon="mdi-alert">
-                マイ問題集がありません。
-              </v-alert>
-            </div>
-
-            <!-- <div v-if="myLists.length !== 0">
-              <div v-for="(myList, index) in myLists" :key="index">
-                {{ myList.listName }}
-                {{ Object.keys(myList) }}
-              </div>
-            </div> -->
+                <div v-else>
+                  <div class="px-2 pt-2">
+                    <v-alert type="warning" dense icon="mdi-alert"> マイ問題集(AP)に問題が登録されていません。 </v-alert>
+                  </div>
+                </div>
+              </v-tab-item>
+            </v-tabs-items>
           </v-card>
         </div>
 
@@ -216,16 +239,17 @@
             </div>
             <div v-else-if="Array.isArray(battleRecords) && battleRecords.length !== 0" key="battleRecords">
               <div v-for="(record, index) in battleRecords" :key="index" class="mt-2 mt-sm-4">
-                <v-subheader>▽
-                  <v-chip v-if="record.result=='win'" class="mx-1" color="red" text-color="white" x-small>勝ち</v-chip>
-                  <v-chip v-else-if="record.result=='lose'" class="mx-1" color="blue" text-color="white" x-small>負け</v-chip>
+                <v-subheader
+                  >▽
+                  <v-chip v-if="record.result == 'win'" class="mx-1" color="red" text-color="white" x-small>勝ち</v-chip>
+                  <v-chip v-else-if="record.result == 'lose'" class="mx-1" color="blue" text-color="white" x-small>負け</v-chip>
                   <v-chip v-else class="mx-1" color="green" text-color="white" x-small>引き分け</v-chip>
                   {{ record.createdAt.toDate() | formatDate }}
                   vs.
                   <span class="opp_name">{{ record.opp_name }}</span>
                   <v-tooltip top nudge-bottom="10">
                     <template v-slot:activator="{ on, attrs }">
-                      <v-avatar class="ml-1" size=28 color="white" v-on="on" v-bind="attrs">
+                      <v-avatar class="ml-1" size="28" color="white" v-on="on" v-bind="attrs">
                         <v-img :src="record.opp_photoURL"></v-img>
                       </v-avatar>
                     </template>
@@ -258,7 +282,8 @@
 
             <div v-else-if="Array.isArray(battleRecords4) && battleRecords4.length !== 0" key="battleRecords">
               <div v-for="(record, index) in battleRecords4" :key="index" class="mt-2 mt-sm-4">
-                <v-subheader>▽
+                <v-subheader
+                  >▽
 
                   <v-chip class="mx-1" color="pink" text-color="white" x-small>{{ record.rank }}位</v-chip>
                   {{ record.createdAt.toDate() | formatDate }}
@@ -266,7 +291,7 @@
                   <span class="opp_name d-none d-md-flex">{{ record.opp1_name }}</span>
                   <v-tooltip top nudge-bottom="10">
                     <template v-slot:activator="{ on, attrs }">
-                      <v-avatar class="ml-1 mr-3" size=28 color="white" v-on="on" v-bind="attrs">
+                      <v-avatar class="ml-1 mr-3" size="28" color="white" v-on="on" v-bind="attrs">
                         <v-img :src="record.opp1_photoURL"></v-img>
                       </v-avatar>
                     </template>
@@ -275,7 +300,7 @@
                   <span class="opp_name d-none d-md-flex">{{ record.opp2_name }}</span>
                   <v-tooltip top nudge-bottom="10">
                     <template v-slot:activator="{ on, attrs }">
-                      <v-avatar class="ml-1 mr-3" size=28 color="white" v-on="on" v-bind="attrs">
+                      <v-avatar class="ml-1 mr-3" size="28" color="white" v-on="on" v-bind="attrs">
                         <v-img :src="record.opp2_photoURL"></v-img>
                       </v-avatar>
                     </template>
@@ -284,7 +309,7 @@
                   <span class="opp_name d-none d-md-flex">{{ record.opp3_name }}</span>
                   <v-tooltip top nudge-bottom="10">
                     <template v-slot:activator="{ on, attrs }">
-                      <v-avatar class="ml-1" size=28 color="white" v-on="on" v-bind="attrs">
+                      <v-avatar class="ml-1" size="28" color="white" v-on="on" v-bind="attrs">
                         <v-img :src="record.opp3_photoURL"></v-img>
                       </v-avatar>
                     </template>
@@ -347,8 +372,11 @@ export default {
       isShowModalEditEmail: false,
       validEditEmail: true,
       RULES_EMAIL: {
-        required: v => !!v || '必須項目です。',
-        regex: v => /^(([^<>()[\]\\.,;:\s@]+(\.[^<>()[\]\\.,;:\s@]+)*)|(.+))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || '無効な形式です。例: test@example.com'
+        required: (v) => !!v || "必須項目です。",
+        regex: (v) =>
+          /^(([^<>()[\]\\.,;:\s@]+(\.[^<>()[\]\\.,;:\s@]+)*)|(.+))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+            v
+          ) || "無効な形式です。例: test@example.com",
       },
 
       isShowSnackbar: false,
@@ -370,6 +398,7 @@ export default {
         { text: "過去10戦(4人対戦)", icon: "mdi-sword-cross" },
       ],
       myLists: [],
+      myListsAP: [],
       battleRecords: null,
       battleRecords4: null,
 
@@ -389,7 +418,7 @@ export default {
   filters: {
     /** 日付をフォーマットする */
     formatDate(date) {
-      return date.getFullYear() + "年"+ (date.getMonth()+1) + "月" + date.getDate() + "日" + date.getHours() + "時" + date.getMinutes() + "分";
+      return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日" + date.getHours() + "時" + date.getMinutes() + "分";
     },
   },
   methods: {
@@ -397,8 +426,8 @@ export default {
 
     /** スクロールイベントを取得する関数 */
     onScroll(e) {
-      if (typeof window === 'undefined') return;
-      const top = window.pageYOffset ||   e.target.scrollTop || 0;
+      if (typeof window === "undefined") return;
+      const top = window.pageYOffset || e.target.scrollTop || 0;
       this.isShowBtnScroll = top > 500;
     },
 
@@ -436,28 +465,34 @@ export default {
           const imageRef = firebase.storage().ref().child(`userImage/${this.currentUser.uid}`);
 
           // アップロード処理
-          imageRef.put(file).then(() => {
-            // アップロード完了
-            // 画像URLを取得する
-            imageRef.getDownloadURL().then((photoURL) => {
-              // 自分のプロフィールに画像をセットする
-              this.db.doc(`users/${this.currentUser.uid}`)
-                .update("photoURL", photoURL).then(() => {
-                  // ローカルに反映する
-                  this.setUserPhoto({ photoURL: photoURL });
-                  this.snackbarText = "画像を変更しました。";
-                  this.isShowSnackbar = true;
-                  setTimeout(() => {
-                    this.isShowSnackbar = false;
-                  }, 4000);
+          imageRef
+            .put(file)
+            .then(() => {
+              // アップロード完了
+              // 画像URLを取得する
+              imageRef
+                .getDownloadURL()
+                .then((photoURL) => {
+                  // 自分のプロフィールに画像をセットする
+                  this.db
+                    .doc(`users/${this.currentUser.uid}`)
+                    .update("photoURL", photoURL)
+                    .then(() => {
+                      // ローカルに反映する
+                      this.setUserPhoto({ photoURL: photoURL });
+                      this.snackbarText = "画像を変更しました。";
+                      this.isShowSnackbar = true;
+                      setTimeout(() => {
+                        this.isShowSnackbar = false;
+                      }, 4000);
+                    })
+                    .catch(() => {
+                      failedUpload();
+                    });
                 })
                 .catch(() => {
                   failedUpload();
                 });
-              })
-              .catch(() => {
-                failedUpload();
-              });
             })
             .catch(() => {
               failedUpload();
@@ -510,7 +545,7 @@ export default {
       if (source === "server") this.cacheServerData("battleRecords");
       if (source4 === "server") this.cacheServerData("battleRecords4");
 
-      // データを読み込む
+      // 2人対戦データ取得
       battleRecordsQuery
         .get({ source: source })
         .then((querySnapshot) => {
@@ -533,6 +568,8 @@ export default {
               this.battleRecords = "error";
             });
         });
+
+      // 4人対戦データ取得
       battleRecords4Query
         .get({ source: source4 })
         .then((querySnapshot) => {
@@ -560,31 +597,59 @@ export default {
     /** マイリストを取得する */
     getMyLists() {
       const myListsCollection = this.db.collection(`users/${this.currentUser.uid}/myLists`);
-      myListsCollection.get({ source: "cache" }).then((querySnapshot) => {
-        if (querySnapshot.empty) {
-          // 空
-          return;
-        }
+      const myListsAPCollection = this.db.collection(`users/${this.currentUser.uid}/myListsAP`);
 
-        querySnapshot.forEach((queryDocumentSnapshot) => {
-          this.myLists.push(queryDocumentSnapshot.data());
-        });
+      // キャッシュ or サーバ
+      const source = this.sourceFromCache.myLists ? "cache" : "server";
+      const sourceAP = this.sourceFromCache.myListsAP ? "cache" : "server";
 
-      }).catch(() => {
-        myListsCollection.get({ source: "server" }).then((querySnapshot) => {
-          if (querySnapshot.empty) {
-            // 空
-            return;
-          }
+      // 1度サーバから取得していれば次回からはキャッシュを読み取る
+      if (source === "server") this.cacheServerData("myLists");
+      if (sourceAP === "server") this.cacheServerData("myListsAP");
 
+      // myLists取得
+      myListsCollection
+        .get({ source: source })
+        .then((querySnapshot) => {
           querySnapshot.forEach((queryDocumentSnapshot) => {
             this.myLists.push(queryDocumentSnapshot.data());
           });
-
-        }).catch(() => {
-          alert("エラーが発生しました。");
         })
-      })
+        .catch(() => {
+          // キャッシュの取得に失敗した場合にサーバから取得する
+          myListsCollection
+            .get({ source: "server" })
+            .then((querySnapshot) => {
+              querySnapshot.forEach((queryDocumentSnapshot) => {
+                this.myLists.push(queryDocumentSnapshot.data());
+              });
+            })
+            .catch(() => {
+              alert("エラーが発生しました。");
+            });
+        });
+
+      // myListsAP取得
+      myListsAPCollection
+        .get({ source: sourceAP })
+        .then((querySnapshot) => {
+          querySnapshot.forEach((queryDocumentSnapshot) => {
+            this.myListsAP.push(queryDocumentSnapshot.data());
+          });
+        })
+        .catch(() => {
+          // キャッシュの取得に失敗した場合にサーバから取得する
+          myListsAPCollection
+            .get({ source: "server" })
+            .then((querySnapshot) => {
+              querySnapshot.forEach((queryDocumentSnapshot) => {
+                this.myListsAP.push(queryDocumentSnapshot.data());
+              });
+            })
+            .catch(() => {
+              alert("エラーが発生しました。");
+            });
+        });
     },
 
     /** エラーメッセージを表示する */
@@ -639,44 +704,55 @@ export default {
         .then((userCredential) => {
           // 再認証完了
           // メールを変更する
-          userCredential.user.updateEmail(this.inputEditEmail).then(() => {
-            // 変更完了
+          userCredential.user
+            .updateEmail(this.inputEditEmail)
+            .then(() => {
+              // 変更完了
 
-            // Firestoreの情報を変更する
-            this.db.doc(`users/${this.currentUser.uid}`).update({
-              email: this.inputEditEmail,
-            }).then(() => {
-              // Firestore更新完了
-              // メールをローカルに保存する
-              this.setUserEmail({ email: this.inputEditEmail });
+              // Firestoreの情報を変更する
+              this.db
+                .doc(`users/${this.currentUser.uid}`)
+                .update({
+                  email: this.inputEditEmail,
+                })
+                .then(() => {
+                  // Firestore更新完了
+                  // メールをローカルに保存する
+                  this.setUserEmail({ email: this.inputEditEmail });
 
-              // IDトークン更新
-              this.auth.currentUser.getIdToken(true).then(() => {
-                // 編集終わり
-                this.isShowModalEditEmail = false; // 編集画面を閉じる
-                this.inputEditEmail = "";
-                this.inputPassword = "";
-                this.isVisiblePassword = false;
-                this.disableEditProfile = false;
-                this.loadingEditProfile = false;
-                this.snackbarText = "メールを変更しました。";
-                this.isShowSnackbar = true;
-                setTimeout(() => {
-                  this.isShowSnackbar = false;
-                }, 4750);
-              }).catch((e) => {
-                this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + String(e.code));
-              });
-            }).catch((e) => {
-              this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + String(e.code));
+                  // IDトークン更新
+                  this.auth.currentUser
+                    .getIdToken(true)
+                    .then(() => {
+                      // 編集終わり
+                      this.isShowModalEditEmail = false; // 編集画面を閉じる
+                      this.inputEditEmail = "";
+                      this.inputPassword = "";
+                      this.isVisiblePassword = false;
+                      this.disableEditProfile = false;
+                      this.loadingEditProfile = false;
+                      this.snackbarText = "メールを変更しました。";
+                      this.isShowSnackbar = true;
+                      setTimeout(() => {
+                        this.isShowSnackbar = false;
+                      }, 4750);
+                    })
+                    .catch((e) => {
+                      this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + String(e.code));
+                    });
+                })
+                .catch((e) => {
+                  this.showModalAlert("エラーが発生しました。", "予期せぬエラーが発生しました。CODE:" + String(e.code));
+                });
+            })
+            .catch(() => {
+              this.showModalAlert("エラーが発生しました。", "メールアドレスが既に使われているか無効な形式です。");
             });
-          }).catch(() => {
-            this.showModalAlert("エラーが発生しました。", "メールアドレスが既に使われているか無効な形式です。");
-          });
-        }).catch(() => {
+        })
+        .catch(() => {
           this.showModalAlert("エラーが発生しました。", "パスワードが間違っている可能性があります。");
         });
-    }
+    },
   },
 };
 </script>

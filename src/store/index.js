@@ -18,6 +18,7 @@ export default new Vuex.Store({
      */
     sourceFromCache: {
       myLists: false,
+      myListsAP: false,
       battleRecords: false,
       battleRecords4: false,
     },
