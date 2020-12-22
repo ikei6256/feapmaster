@@ -96,6 +96,7 @@
           :winner="winner"
           :MODE_4PLAYERS="MODE_4PLAYERS"
           :rankings="rankings"
+          :time_judgeModal="time_judgeModal"
         ></Question>
       </div>
     </transition>
@@ -122,7 +123,8 @@
     <v-dialog v-model="isShowDialogQuitBattle" content-class="dialog_battle_cancel" transition="scroll-y-transition" hide-overlay>
       <v-card color="grey lighten-5">
         <v-card-title class="yellow lighten-2">
-          <v-icon>{{ icons.mdiAlertCircleOutline }}</v-icon>注意
+          <v-icon>{{ icons.mdiAlertCircleOutline }}</v-icon
+          >注意
         </v-card-title>
         <v-card-text class="py-2">対戦を中止して画面を離れてもよろしいですか？</v-card-text>
         <v-card-actions>
@@ -164,31 +166,28 @@ export default {
       opp3_no: null,
       concurrent_sessions: 0, // 接続人数
 
-      /*** 部屋データ ***
-       *  isEnableJoin: 入室可能かどうか
-       * プレイヤー: player1 | player2 | player3 | player4
-       * プレイヤーデータ: name | photoURL | select | time
-       * 例: player1_name
-       * questions[]: 問題の参照リスト配列
-       ****/
-      room: null, // 部屋のDocumentReference
+      /** **部屋データ(DocumentReference)**
+       * *isEnableJoin* 入室可能かどうか
+       * *プレイヤー* player1 | player2 | player3 | player4
+       * *プレイヤーデータ* name | photoURL | select | time
+       * **例** player1_name
+       * *questions[]* 問題の参照リスト配列
+       */
+      room: null,
       unsubscribe: null, // リアルタイムリスナーの破棄に使用する
       nextLocation: null, // 画面遷移メソッド
 
       /** **プレイヤーデータ**
-       * name ... 名前
-       * photoURL ... 画像
-       * status ... プレイヤーの状態
-       *   selecting | waiting | timeup |
-       *   win | lose | draw | error
-       *   showRank
-       * score ... 得点
-       * select ... 回答
-       * time ... 回答タイム
        * 初期化は this.myData = {...this.DATA_PLAYER_INIT} のようにする
-       * add_score_tmp ... 1問毎の得点
-       * rank_tmp ... 1問毎の順位
-       * rank_final ... 最終結果
+       * *name* 名前
+       * *photoURL* 画像
+       * *status* プレイヤーの状態 selecting | waiting | timeup | win | lose | draw | error | showRank
+       * *score* 得点
+       * *select* 回答
+       * *time* 回答タイム
+       * *add_score_tmp* 1問毎の得点
+       * *rank_tmp* 1問毎の順位
+       * *rank_final* 最終順位
        *********************/
       DATA_PLAYER_INIT: {
         name: null,
@@ -209,7 +208,8 @@ export default {
 
       card_colors: ["blue lighten-5", "red lighten-5", "purple lighten-5", "lime lighten-5"],
       height_skeleton: 0,
-      // 匿名用のランダムに表示する画像
+
+      /** 匿名用のランダムに表示する画像 */
       image_random: [
         "Bear",
         "Bee",
@@ -241,14 +241,17 @@ export default {
       isSearchingOpp2: true,
       isSearchingOpp3: true,
 
-      // 判定中フラグ
-      isJudging: false,
+      isJudging: false,  // 判定中フラグ
 
-      TIMER_LIMIT_DEFAULT: 150, // 制限時間のデフォルト値
+      TIMER_LIMIT_DEFAULT: 5, // 制限時間のデフォルト値 150
       timer_limit: 0, // 制限時間
       timer_valuenow: 0, // 経過時間
       timerId: null, // カウントダウンタイマーのIDを保存する
       timeoutId: null,
+
+      // 結果表示モーダルのデータ
+      time_judgeModal: null,
+      intervalId_judgeModal: null,
 
       // 表示制御
       isShowQuestionArea: false, // 問題エリア
@@ -268,13 +271,15 @@ export default {
       winner: null, // 0 引き分け | 1 自分 | 2 相手1 | 3 相手2 | 4 相手3
 
       /** **判定結果の順位データ**
-       * -----例-----
+       * ```json
+       * // 例
        * [
-       *  { rank:1 name: "あああ", select: 1, time: 150 },
-       *  { rank:1 name: "いいい", select: 1, time: 150 },
-       *  { rank:3 name: "ううう", select: 1, time: 300 },
-       *  { rank:null name: "えええ", select: 2, time: 500 },
+       *   { rank:1 name: "あああ", select: 1, time: 150 },
+       *   { rank:1 name: "いいい", select: 1, time: 150 },
+       *   { rank:3 name: "ううう", select: 1, time: 300 },
+       *   { rank:null name: "えええ", select: 2, time: 500 },
        * ]
+       * ```
        ************/
       rankings: [],
       SCORES: [3, 2, 1, 0], // 4人対戦での得点 1位なら this.SCORES[0]
@@ -395,7 +400,7 @@ export default {
   methods: {
     ...mapMutations(["stateBattleTrue", "stateBattleFalse"]),
 
-    /*** 対戦に関わるデータを初期化する ***/
+    /** **対戦に関わるデータを初期化する** */
     initData() {
       this.player_no = null;
       this.isSearchingOpp1 = true; // ステータス:検索中
@@ -427,7 +432,7 @@ export default {
       }
     },
 
-    /*** 対戦相手を検索する ***/
+    /** **対戦相手を検索する** */
     search() {
       this.initData(); // 対戦データを初期化する
 
@@ -553,7 +558,7 @@ export default {
       }
     },
 
-    /*** 部屋を作成する ***/
+    /** **部屋を作成する** */
     createRoom() {
       this.setQuestionRefs(); // 問題(Reference)をランダムに設定する
 
@@ -624,7 +629,7 @@ export default {
       }
     },
 
-    /*** 問題(Reference)をランダムに設定する ***/
+    /** **問題(Reference)をランダムに設定する** */
     setQuestionRefs() {
       let i = 0;
       do {
@@ -644,7 +649,7 @@ export default {
       } while (i < this.NUM_QUESTION);
     },
 
-    /*** 部屋ドキュメントのリアルタイムリスナーを作成する ***/
+    /** **部屋ドキュメントのリアルタイムリスナーを作成する** */
     createObserver() {
       this.unsubscribe = this.room.onSnapshot(
         (snapshot) => {
@@ -855,7 +860,7 @@ export default {
                 this.judgeOrWait();
               }
 
-              /*** 相手が時間切れの時の処理 ***/
+              /*** 相手が時間切れ ***/
               // 相手1が時間切れ
               if (
                 this.oppData1.status !== "timeup" &&
@@ -885,13 +890,10 @@ export default {
             }
           }
         }
-        // ,() => {
-        //   this.connectionError();
-        // }
       );
     },
 
-    /*** 接続エラー時の処理 ***/
+    /** **接続エラー時の処理** */
     connectionError() {
       clearTimeout(this.timeoutId); // 何かしらの処理をストップ
       clearInterval(this.timerId); // タイマーストップ
@@ -928,7 +930,7 @@ export default {
       }, 1500);
     },
 
-    /*** 対戦相手が見つかった後の処理 ***/
+    /** **対戦相手が見つかった後の処理** */
     searched() {
       this.stateBattleTrue(); // ステータス:対戦中
 
@@ -976,7 +978,7 @@ export default {
       }, this.SPEED_FADE);
     },
 
-    /*** 対戦を開始する ***/
+    /** **対戦を開始する** **/
     startBattle() {
       const message = document.getElementById("message").firstElementChild;
 
@@ -1011,7 +1013,7 @@ export default {
       }, 1500);
     }, // End: afterEnterShowOpp
 
-    /*** 次の問題へ進む ***/
+    /** **次の問題へ進む** */
     nextQuestion() {
       if (this.question_now >= this.NUM_QUESTION) {
         this.endBattle(); // 全問題を終えていたら終了処理へ
@@ -1070,7 +1072,7 @@ export default {
       }, 500);
     },
 
-    /*** プレイヤーの状態をリセットする ***/
+    /** **プレイヤーの状態をリセットする** */
     resetPlayerStatus() {
       this.myData.status = "selecting";
       this.myData.select = null;
@@ -1145,7 +1147,7 @@ export default {
       }
     },
 
-    /*** 回答タイマー開始 ***/
+    /** **回答タイマー開始** */
     startTimer() {
       this.timerId = setInterval(() => {
         // カウントダウン
@@ -1159,12 +1161,64 @@ export default {
           if (this.myData.status === "selecting") {
             this.myAns.push(null); // 時間切れ
             this.myData.status = "timeup";
+
+            // 状態を送信
+            switch (this.player_no) {
+              case 1:
+                this.room
+                  .update({
+                    player1_time: "timeup",
+                  })
+                  .then(() => {
+                    this.judgeOrWait();
+                  })
+                  .catch(() => {
+                    this.connectionError();
+                  });
+                break;
+              case 2:
+                this.room
+                  .update({
+                    player2_time: "timeup",
+                  })
+                  .then(() => {
+                    this.judgeOrWait();
+                  })
+                  .catch(() => {
+                    this.connectionError();
+                  });
+                break;
+              case 3:
+                this.room
+                  .update({
+                    player3_time: "timeup",
+                  })
+                  .then(() => {
+                    this.judgeOrWait();
+                  })
+                  .catch(() => {
+                    this.connectionError();
+                  });
+                break;
+              case 4:
+                this.room
+                  .update({
+                    player4_time: "timeup",
+                  })
+                  .then(() => {
+                    this.judgeOrWait();
+                  })
+                  .catch(() => {
+                    this.connectionError();
+                  });
+                break;
+            }
           }
         }
       }, 1000);
     },
 
-    /*** 勝敗判定に移るかのチェック ***/
+    /** **勝敗判定に移るかのチェック** */
     judgeOrWait() {
       if (!this.MODE_4PLAYERS && !this.isJudging) {
         /*** 2人対戦 ***/
@@ -1194,19 +1248,21 @@ export default {
       }
     },
 
-    /*** 勝敗判定: 時間制限を過ぎた | 両者の回答が揃った ***
+    /** **勝敗判定: 時間制限を過ぎた | 両者の回答が揃った**
+     * ```
      * 自分の勝ち:
-     *   自分が正解 & 相手が不正解か時間切れ
-     *   自分が正解 & 相手が正解 & 相手より回答が早い
+     *   自分が正解 && 相手が不正解か時間切れ
+     *   自分が正解 && 相手が正解 && 相手より回答が早い
      * 相手の勝ち:
-     *   相手が正解 & 自分が不正解か時間切れ
-     *   相手が正解 & 自分が正解 & 相手の回答が早い
+     *   相手が正解 && 自分が不正解か時間切れ
+     *   相手が正解 && 自分が正解 && 相手の回答が早い
      * 引き分け:
      *   両者時間切れ
-     *   自分が時間切れ & 相手が不正解
-     *   相手が時間切れ & 自分が不正解
+     *   自分が時間切れ && 相手が不正解
+     *   相手が時間切れ && 自分が不正解
      *   両者不正解
-     *   両者正解 & タイムが同じ
+     *   両者正解 && タイムが同じ
+     * ```
      */
     judge() {
       if (this.isJudging) {
@@ -1257,11 +1313,16 @@ export default {
               this.oppData1.score++;
             }
 
-            // 少し待ってから次の問題へ
-            this.timeoutId = setTimeout(() => {
-              this.timeoutId = null;
-              this.nextQuestion();
-            }, 4000);
+            this.time_judgeModal = 5; // タイマー初期値
+            this.intervalId_judgeModal = setInterval(() => {
+              this.time_judgeModal--;
+
+              if(this.time_judgeModal <= 0) {
+                clearInterval(this.intervalId_judgeModal);
+                this.intervalId_judgeModal = null;
+                this.nextQuestion(); // 次の問題
+              }
+            }, 1000);
           }, 1500);
         } else {
           /*** 4人対戦 ***/
@@ -1329,17 +1390,22 @@ export default {
               player.score += player.add_score_tmp;
             }
 
-            // 少し待ってから次の問題へ
-            this.timeoutId = setTimeout(() => {
-              this.timeoutId = null;
-              this.nextQuestion();
-            }, 4000);
+            this.time_judgeModal = 5; // タイマー初期値
+            this.intervalId_judgeModal = setInterval(() => {
+              this.time_judgeModal--;
+
+              if(this.time_judgeModal <= 0) {
+                clearInterval(this.intervalId_judgeModal);
+                this.intervalId_judgeModal = null;
+                this.nextQuestion(); // 次の問題
+              }
+            }, 1000);
           }, 1500);
         }
       }, 1000);
     },
 
-    /*** 全問題が終了後 ***/
+    /** **全問題が終了後** */
     endBattle() {
       const players = [this.myData, this.oppData1, this.oppData2, this.oppData3];
 
@@ -1558,7 +1624,7 @@ export default {
       }, this.SPEED_FADE);
     },
 
-    /*** もう一度対戦を行う ***/
+    /** **もう一度対戦を行う** */
     restart() {
       this.isShowConfetti = false; // 花吹雪を消す
       this.isShowReview = false; // 「振り返り」のエリアを消す
@@ -1567,7 +1633,7 @@ export default {
       this.search(); // 検索開始
     },
 
-    /*** Question.vue - 回答時の処理 ***/
+    /** **Question.vue - 回答時の処理** */
     selected(ans) {
       const ansTime = this.timer_limit - this.timer_valuenow;
 
@@ -1634,7 +1700,7 @@ export default {
       }
     },
 
-    /*** 画面を遷移する際の処理 ***/
+    /** **画面を遷移する際の処理** */
     handlerLeave(e) {
       e.preventDefault();
       this.room.delete();

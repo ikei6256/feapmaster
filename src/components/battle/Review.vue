@@ -67,34 +67,6 @@ export default {
       },
       panel: [],
       options: ["ア", "イ", "ウ", "エ"],
-
-      /* テスト用 */
-      // questions: [
-      //   {
-      //     year: 2020,
-      //     season: "autumn",
-      //     no: "1",
-      //     body: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Repudiandae suscipit sequi non nam inventore fugit dicta laborum nostrum deserunt ratione! Id ullam quisquam impedit harum quis accusantium facere exercitationem aliquid?",
-      //     options: [ {ア: null}, {イ: null}, {ウ: null}, {エ: null}],
-      //     answerImageUrls: [null, null, null, null]
-      //   },
-      //   {
-      //     year: 2020,
-      //     season: "autumn",
-      //     no: "1",
-      //     body: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Repudiandae suscipit sequi non nam inventore fugit dicta laborum nostrum deserunt ratione! Id ullam quisquam impedit harum quis accusantium facere exercitationem aliquid?",
-      //     options: {ア: null, イ: null, ウ: null, エ: null},
-      //     answerImageUrls: [null, null, null, null]
-      //   },
-      //   {
-      //     year: 2020,
-      //     season: "autumn",
-      //     no: "1",
-      //     body: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Repudiandae suscipit sequi non nam inventore fugit dicta laborum nostrum deserunt ratione! Id ullam quisquam impedit harum quis accusantium facere exercitationem aliquid?",
-      //     options: [ {ア: null}, {イ: null}, {ウ: null}, {エ: null}],
-      //     answerImageUrls: [null, null, null, null]
-      //   },
-      // ],
     };
   },
   filters: {

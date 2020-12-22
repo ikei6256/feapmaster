@@ -1,20 +1,16 @@
 <template>
   <div class="pb-4">
-    <!--- ここから: 問題表示エリア --->
+    <!--- 問題表示エリア --->
     <div class="question-content">
       <transition name="fade">
         <div v-if="isShowQuestion">
-          <!-- 問題文 -->
           <div class="pa-2 pa-sm-4">
             <p class="question-body mb-0" v-html="questions[question_now -1].body"></p>
             <div v-if="questions[question_now-1].questionImageUrl !== null" class="text-center mt-2 mt-sm-4">
               <img :src="questions[question_now-1].questionImageUrl" alt="Question Image" style="max-width: 100%" />
             </div>
           </div>
-
           <v-divider class="mx-1 mx-sm-2"></v-divider>
-
-          <!-- 回答 -->
           <div class="options pa-2 pa-sm-4">
             <div v-if="questions[question_now-1].answerAllImageUrl !== null" class="text-center">
               <img :src="questions[question_now-1].answerAllImageUrl" alt="回答用イメージ" />
@@ -38,10 +34,8 @@
         </div>
       </transition>
     </div>
-    <!--- ここまで: 問題表示エリア --->
 
-    <!--- ここから: 結果表示モーダル --->
-    <!-- 2人対戦 -->
+    <!-- 結果表示モーダル: 2人対戦 -->
     <v-dialog
       v-if="!MODE_4PLAYERS && isShowQuestion"
       :value="isShowJudge"
@@ -95,13 +89,13 @@
             <div class="left text-left pl-1 pl-sm-2">
               正答:<span class="correctAns pl-1">{{ options[questions[question_now-1].correctAns-1] }}</span>
             </div>
-            <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます</div>
+            <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます...{{ time_judgeModal }}</div>
           </div>
         </div>
       </v-card>
     </v-dialog>
 
-    <!-- 4人対戦 -->
+    <!-- 結果表示モーダル: 4人対戦 -->
     <v-dialog
       v-else-if="MODE_4PLAYERS && isShowQuestion && rankings.length !== 0"
       :value="isShowJudge"
@@ -134,7 +128,7 @@
               <span class="time">タイム</span>
             </div>
             <div v-for="n in 4" :key="n" class="detail white--text mb-1 mb-sm-2 py-1">
-              <span class="rank">{{ rankings[n-1].rank }}位</span>
+              <span class="rank">{{ rankings[n-1].rank | formatRank }}</span>
               <span class="name px-1">{{ rankings[n-1].name }}</span>
               <span class="ans">
                 {{ options[ rankings[n-1].select - 1 ]}}
@@ -149,12 +143,11 @@
             <div class="left text-left pl-1 pl-sm-2">
               正答:<span class="correctAns pl-1">{{ options[ questions[question_now-1].correctAns - 1] }}</span>
             </div>
-            <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます</div>
+            <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます...{{ time_judgeModal }}</div>
           </div>
         </div>
       </v-card>
     </v-dialog>
-    <!-- ここまで: 結果表示モーダル -->
   </div>
 </template>
 
@@ -173,6 +166,7 @@ export default {
     winner: Number,
     MODE_4PLAYERS: Boolean,
     rankings: Array,
+    time_judgeModal: Number,
   },
   data() {
     return {
@@ -182,48 +176,6 @@ export default {
         mdiClose,
       },
       options: ["ア", "イ", "ウ", "エ"],
-
-      /* テスト用 */
-      // question: {
-      //   body: "問題文",
-      //   questionImageUrl: null,
-      //   answerAllImageUrl: null,
-      //   answerImageUrls: [null, null, null, null],
-      //   options: { ア: "かいとう1", イ: "回答2", ウ: "回答3", エ: "回答4" },
-      //   correctAns: 1,
-      // },
-      // myData: {
-      //   name: "あなた",
-      //   photoURL: null,
-      //   status: null, // selecting | waiting | timeup | win | lose | draw | error
-      //   score: 0, // 得点
-      //   select: 1, // 回答番号
-      //   time: 30, // 回答タイム(秒)
-      // },
-      // oppData1: {
-      //   name: "あいて",
-      //   photoURL: null,
-      //   status: null,
-      //   score: 0,
-      //   select: 2,
-      //   time: 180,
-      // },
-      // oppData2: {
-      //   name: "あいて2",
-      //   photoURL: null,
-      //   status: null,
-      //   score: 0,
-      //   select: 2,
-      //   time: 150,
-      // },
-      // isShowQuestion: true,
-      // isShowJudge: true,
-      // rankings: [
-      //   {"1": {name: "あああ", select: 1, time: 150}},
-      //   {"1": {name: "いいい", select: 1, time: 100}},
-      //   {"3": {name: "ううう", select: 3, time: 120}},
-      //   {"-": {name: "えええ", select: 4, time: 80}},
-      // ],
     };
   },
   watch: {
@@ -236,8 +188,8 @@ export default {
     }
   },
   filters: {
-    // 秒数を受け取って 0:00 の形式に直す
-    formatTime(val) {
+    /** 秒数を受け取って 0:00 の形式に直す */
+    formatTime (val) {
       // マイナス値をとるときは何もしない
       if (val < 0) {
         return;
@@ -250,6 +202,14 @@ export default {
       }
       return "" + minute + ":" + second;
     },
+    /** 結果表示モーダルで表示する順位を返す */
+    formatRank (rank) {
+      if (rank === null) {
+        return "-";
+      }
+
+      return "" + rank + "位";
+    }
   },
   methods: {
     selected(event, ans) {

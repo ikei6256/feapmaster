@@ -14,13 +14,13 @@
               </v-btn>
             </router-link>
           </div>
-          <div class="battle2_input">
+          <!-- <div class="battle2_input">
             <router-link :to="{ name: 'Battle' }">
               <v-btn text color="primary">
                 <span class="input_room">ルーム入力</span>
               </v-btn>
             </router-link>
-          </div>
+          </div> -->
         </div>
 
         <div class="wrap-battle4">
@@ -31,17 +31,17 @@
               </v-btn>
             </router-link>
           </div>
-          <div class="battle4_input">
+          <!-- <div class="battle4_input">
             <router-link :to="{ name: 'Battle4' }">
-              <v-btn text color="pink darken-1">
+              <v-btn text color="pink darken-1" disabled>
                 <span class="input_room">ルーム入力</span>
               </v-btn>
             </router-link>
-          </div>
+          </div> -->
         </div>
       </div>
 
-      <div class="links-ext mt-8 text-center">
+      <div class="links-ext mt-16 text-center">
         <p>
           <v-btn class="external-btn" color="primary" href="https://feapmaster-mobile.web.app" target="_blank" text>
             Flutter for Web お試し版<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon>
@@ -113,11 +113,11 @@ export default {
 
   .links-battle {
     .v-btn {
-      height: 2.5rem;
+      height: 3rem;
       text-transform: none;
     }
     .link-battle {
-      font-size: 2.2rem;
+      font-size: 2.75rem;
       text-shadow: 0.5px 0.5px 1px #636ab2;
 
       .detail {
@@ -134,36 +134,36 @@ export default {
       margin-top: 1.5rem;
     }
 
-    @media screen and (min-width: 600px) {
-      display: grid;
-      grid-template:
-        "battle2 ... battle4"
-        / auto 5rem auto;
+    // @media screen and (min-width: 600px) {
+    //   display: grid;
+    //   grid-template:
+    //     "battle2 ... battle4"
+    //     / auto 5rem auto;
 
-      .wrap-battle2, .wrap-battle4 {
-        // リセット
-        display: block;
-        justify-content: normal;
-      }
-      .wrap-battle2 {
-        grid-area: battle2;
-        justify-self: right;
-        text-align: center;
-      }
-      .wrap-battle4 {
-        // リセット
-        margin: 0;
+    //   .wrap-battle2, .wrap-battle4 {
+    //     // リセット
+    //     display: block;
+    //     justify-content: normal;
+    //   }
+    //   .wrap-battle2 {
+    //     grid-area: battle2;
+    //     justify-self: right;
+    //     text-align: center;
+    //   }
+    //   .wrap-battle4 {
+    //     // リセット
+    //     margin: 0;
 
-        // ここから
-        grid-area: battle4;
-        justify-self: left;
-        text-align: center;
-      }
-      .wrap-battle2 .battle2,
-      .wrap-battle4 .battle4 {
-        margin-bottom: 0.5rem;
-      }
-    }
+    //     // ここから
+    //     grid-area: battle4;
+    //     justify-self: left;
+    //     text-align: center;
+    //   }
+    //   .wrap-battle2 .battle2,
+    //   .wrap-battle4 .battle4 {
+    //     margin-bottom: 0.5rem;
+    //   }
+    // }
   }
 
   .links-ext {
@@ -180,8 +180,6 @@ export default {
     }
   }
 }
-
-
 
 // Footer
 $footer-height: 3rem;
