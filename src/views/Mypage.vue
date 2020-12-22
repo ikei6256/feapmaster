@@ -122,6 +122,22 @@
               </v-card>
             </v-dialog>
           </div>
+
+          <!-- 成績 -->
+          <div class="px-2">
+            <v-chip x-small color="blue darken-1" text-color="white">2人対戦</v-chip>
+            <div class="record py-1 pl-2">
+              <span>勝ち: {{ currentUser.battle_win | formatRecord }}</span><span class="ml-2">負け: {{ currentUser.battle_lose | formatRecord }}</span><span class="ml-2">引き分け: {{ currentUser.battle_draw | formatRecord }}</span>
+            </div>
+            <v-chip class="mt-2" x-small color="red" text-color="white">4人対戦</v-chip>
+            <div class="record pt-1 pb-3 pl-2">
+              <span>1位: {{ currentUser.battle4_1 | formatRecord }}</span>
+              <span class="ml-2">2位: {{ currentUser.battle4_2 | formatRecord }}</span>
+              <span class="ml-2">3位: {{ currentUser.battle4_3 | formatRecord }}</span>
+              <span class="ml-2">4位: {{ currentUser.battle4_4 | formatRecord }}</span>
+            </div>
+
+          </div>
         </div>
 
         <v-divider></v-divider>
@@ -499,6 +515,15 @@ export default {
 
       return era + "(" + question.year + ")" + season + " 問" + question.no;
     },
+
+    /** 戦績(2人対戦)をフォーマット */
+    formatRecord: function (record) {
+      if (record === 0 || record === undefined || record === null) {
+        return "-";
+      } else {
+        return "" + record + "回";
+      }
+    },
   },
   methods: {
     ...mapMutations(["cacheServerData", "setUserPhoto", "setUserName", "setUserEmail"]),
@@ -705,9 +730,6 @@ export default {
               });
               this.getQuestion();
             })
-            .catch(() => {
-              alert("エラーが発生しました。");
-            });
         });
 
       // myListsAP取得
@@ -729,109 +751,78 @@ export default {
               });
               this.getQuestionAP();
             })
-            .catch(() => {
-              alert("エラーが発生しました。");
-            });
         });
     },
 
     /** 問題を取得する: FE */
-    getQuestion() {
+    async getQuestion() {
+      /** 問題オブジェクトを仮保存する配列 */
       let q_tmp = [];
 
       // myListsを元に問題を取得
       for(const myList of this.myLists) {
         if(Object.keys(myList).length === 1) {
+          // 要素が1つしかない場合(listNameのみ)はnullを追加
           this.myListsQuestions.push(null);
         } else {
-          Object.keys(myList).forEach((key, index) => {
+          for(let i = 0; i < Object.keys(myList).length; i++) {
+            const key = Object.keys(myList)[i];
+            // 問題のキーだけ取得する
             if (key !== "listName") {
-              // myList[key]は参照
               const questionRef = this.db.doc(myList[key].path);
-              questionRef.get({ source: "cache" }).then((snapshot) => {
-                const data = snapshot.data();
-                data.no = questionRef.id
-                data.season = questionRef.parent.id;
-                data.year = questionRef.parent.parent.id;
+              let snapshot = null;
 
-                q_tmp.push(data);
+              try {
+                snapshot = await questionRef.get({ source: "cache" });
+              } catch (e) {
+                snapshot = await questionRef.get({ source: "server" });
+              }
 
-                // 追加終了
-                if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
-                  this.myListsQuestions.push(q_tmp);
-                  q_tmp = [];
-                }
-              }).catch(() => {
-                const questionRef = this.db.doc(myList[key].path);
-                questionRef.get({ source: "server" }).then((snapshot) => {
-                  const data = snapshot.data();
-                  data.no = questionRef.id
-                  data.season = questionRef.parent.id;
-                  data.year = questionRef.parent.parent.id;
-
-                  q_tmp.push(data);
-
-                  // 追加終了
-                  if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
-                    this.myListsQuestions.push(q_tmp);
-                    q_tmp = [];
-                  }
-                })
-              });
+              const data = snapshot.data();
+              data.no = questionRef.id;
+              data.season = questionRef.parent.id;
+              data.year = questionRef.parent.parent.id;
+              q_tmp.push(data); // 問題を仮保存
             }
-          });
+          }
+
+          // 終了処理
+          this.myListsQuestions.push(q_tmp);
+          q_tmp = [];
         }
       }
     },
 
     /** 問題を取得する: AP */
-    getQuestionAP() {
+    async getQuestionAP() {
       let q_tmp = [];
 
-      // myListsAPを元に問題を取得
       for(const myList of this.myListsAP) {
-        if(Object.keys(myList).length === 1) {
+        if (Object.keys(myList).length === 1) {
           this.myListsQuestionsAP.push(null);
         } else {
-          Object.keys(myList).forEach((key, index) => {
-
+          for (let i = 0; i < Object.keys(myList).length; i++) {
+            const key = Object.keys(myList)[i];
             if (key !== "listName") {
-              // myList[key]は参照
               const questionRef = this.db.doc(myList[key].path);
-              questionRef.get({ source: "cache" }).then((snapshot) => {
-                const data = snapshot.data();
-                data.no = questionRef.id
-                data.season = questionRef.parent.id;
-                data.year = questionRef.parent.parent.id;
+              let snapshot = null;
 
-                q_tmp.push(data);
+              try {
+                snapshot = await questionRef.get({ source: "cache" });
+              } catch (e) {
+                snapshot = await questionRef.get({ source: "server" });
+              }
 
-                // 追加終了
-                if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
-                  this.myListsQuestionsAP.push(q_tmp);
-                  q_tmp = [];
-                }
-              }).catch(() => {
-                const questionRef = this.db.doc(myList[key].path);
-                questionRef.get({ source: "server" }).then((snapshot) => {
-                  const data = snapshot.data();
-                  data.no = questionRef.id
-                  data.season = questionRef.parent.id;
-                  data.year = questionRef.parent.parent.id;
-
-                  q_tmp.push(data);
-
-                  // 追加終了
-                  if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
-                    this.myListsQuestionsAP.push(q_tmp);
-                    q_tmp = [];
-                  }
-                })
-              });
+              const data = snapshot.data();
+              data.no = questionRef.id;
+              data.season = questionRef.parent.id;
+              data.year = questionRef.parent.parent.id;
+              q_tmp.push(data);
             }
+          }
 
-
-          });
+          this.myListsQuestionsAP.push(q_tmp);
+          q_tmp = [];
         }
       }
     },
@@ -1014,6 +1005,10 @@ export default {
         .config {
           grid-area: config;
         }
+      }
+
+      .record {
+        font-size: 0.75rem;
       }
     }
   }
