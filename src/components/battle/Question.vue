@@ -1,279 +1,441 @@
 <template>
-  <div>
-    <progressbar></progressbar>
-    <div class="questionArea pt-3 pb-3 pl-1 pr-1 p-sm-3">
-      <!-- 問題本文 -->
-      <div class="questionBody pb-2 mb-2">
-        <transition name="fade">
-          <div v-if="isShowQuestion">
-            {{ question.body }}
-            <div v-if="question.questionImageUrl != null" class="text-center pt-2 pb-2">
-              <img :src="question.questionImageUrl" alt="問題イメージ" style="max-width: 100%" />
-            </div>
-          </div>
-        </transition>
-      </div>
+  <div class="pb-4">
+    <!--- 問題表示エリア --->
+    <div class="question-content">
       <transition name="fade">
-        <div v-if="isShowQuestion" class="mb-4">
-          <div v-if="question.answerAllImageUrl != null">
-            <img :src="question.answerAllImageUrl" alt="回答用イメージ" class="pb-2" />
-          </div>
-          <div class="option mb-1">
-            <div class="d-table-cell">
-              <button @click="selected($event, 1)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">ア</button>
-            </div>
-            <div class="d-table-cell">
-              <span v-if="question.option1 != 'ア'">{{ question.option1 }}</span>
-              <img v-if="question.answerImageUrl1 != null" :src="question.answerImageUrl1" alt="回答用イメージその1" class="pt-1 pb-1" />
+        <div v-if="isShowQuestion">
+          <div class="pa-2 pa-sm-4">
+            <p class="question-body mb-0" v-html="questions[question_now -1].body"></p>
+            <div v-if="questions[question_now-1].questionImageUrl !== null" class="text-center mt-2 mt-sm-4">
+              <img :src="questions[question_now-1].questionImageUrl" alt="Question Image" style="max-width: 100%" />
             </div>
           </div>
-          <div class="option mb-1">
-            <div class="d-table-cell">
-              <button @click="selected($event, 2)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">イ</button>
+          <v-divider class="mx-1 mx-sm-2"></v-divider>
+          <div class="options pa-2 pa-sm-4">
+            <div v-if="questions[question_now-1].answerAllImageUrl !== null" class="text-center">
+              <img :src="questions[question_now-1].answerAllImageUrl" alt="回答用イメージ" />
             </div>
-            <div class="d-table-cell">
-              <span v-if="question.option2 != 'イ'">{{ question.option2 }}</span>
-              <img v-if="question.answerImageUrl2 != null" :src="question.answerImageUrl2" alt="回答用イメージその2" class="pt-1 pb-1" />
-            </div>
-          </div>
-          <div class="option mb-1">
-            <div class="d-table-cell">
-              <button @click="selected($event, 3)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">ウ</button>
-            </div>
-            <div class="d-table-cell">
-              <span v-if="question.option3 != 'ウ'">{{ question.option3 }}</span>
-              <img v-if="question.answerImageUrl3 != null" :src="question.answerImageUrl3" alt="回答用イメージその3" class="pt-1 pb-1" />
-            </div>
-          </div>
-          <div class="option mb-1">
-            <div class="d-table-cell">
-              <button @click="selected($event, 4)" class="btn btn-outline-dark btn-option mr-1" :disabled="myData.status != 'selecting'">エ</button>
-            </div>
-            <div class="d-table-cell">
-              <span v-if="question.option4 != 'エ'">{{ question.option4 }}</span>
-              <img v-if="question.answerImageUrl4 != null" :src="question.answerImageUrl4" alt="回答用イメージその4" class="pt-1 pb-1" />
+            <div v-for="n in 4" :key="n">
+              <v-btn
+                class="text-left mt-2 px-0 py-2"
+                @click="selected($event, n)"
+                :disabled="myData.status != 'selecting'"
+                height="auto"
+                width="100%"
+                text
+                v-ripple="{ class: 'blue--text text--darken-1' }"
+              >
+                <v-icon>{{ options[n-1] }}</v-icon>
+                <span class="option-text pl-2 pl-sm-4">{{ questions[question_now-1].options[n-1] }}</span>
+                <img v-if="questions[question_now-1].answerImageUrls[n-1] !== null" :src="questions[question_now-1].answerImageUrls[n-1]" alt="Option Image" />
+              </v-btn>
             </div>
           </div>
-        </div>
-      </transition>
-
-      <!-- 結果 -->
-      <transition name="fade">
-        <div v-if="isShowJudge" class="result">
-          <p class="correctAns">
-            正答
-            <span class="correctAns-option">{{ option[question.correctAns - 1] }}</span>
-            <!-- 勝敗結果 -->
-            <transition name="fade">
-              <span v-if="winner == 1" class="ml-2 text-danger judge" key="win">WIN</span>
-              <span v-else-if="winner == 2" class="ml-2 text-secondary judge" key="lose">LOSE</span>
-              <span v-else-if="winner == 0" class="ml-2 text-success judge" key="draw">DRAW</span>
-            </transition>
-          </p>
-          <p class="myResult">
-            {{ myData.name }}
-            <span v-if="myData.select != null">
-              <span class="myResult-select">{{ option[myData.select - 1] }}</span>
-              [タイム: {{ myData.time | to_ms }}]
-            </span>
-            <span v-else class="text-danger">時間切れ</span>
-          </p>
-          <p class="oppAns">
-            {{ oppData.name }}
-            <span v-if="oppData.select != null">
-              <span class="oppResult-select">{{ option[oppData.select - 1] }}</span>
-              [タイム: {{ oppData.time | to_ms }}]
-            </span>
-            <span v-else class="text-danger">時間切れ</span>
-          </p>
         </div>
       </transition>
     </div>
+
+    <!-- 結果表示モーダル: 2人対戦 -->
+    <v-dialog
+      v-if="!MODE_4PLAYERS && isShowQuestion"
+      :value="isShowJudge"
+      content-class="mx-1"
+      width="500"
+      transition="scroll-y-transition"
+      hide-overlay
+      persistent
+      no-click-animation
+    >
+      <v-card color="grey lighten-5">
+        <div class="wrap-result text-center">
+          <div class="result-header py-2">
+            <span class="judge_title berlin-sans">JUDGE</span>
+            <v-btn class="judge_close" icon x-small @click.stop="closeDialogResult"
+              ><v-icon>{{ icons.mdiClose }}</v-icon></v-btn
+            >
+            <span v-if="winner === 1" class="judge berlin-sans red--text">WIN</span>
+            <span v-else-if="winner === 2" class="judge berlin-sans blue--text">LOSE</span>
+            <span v-else class="judge berlin-sans green--text">DRAW</span>
+          </div>
+          <div class="result-body py-3">
+            <div class="name pb-3">
+              <span class="left px-1 px-sm-2">{{ myData.name }}</span>
+              <span class="right px-1 px-sm-2">{{ oppData1.name }}</span>
+            </div>
+            <div class="detail white--text py-2 my-2">
+              <span class="detail-item">回答</span>
+              <div class="left detail-ans-left">
+                {{ options[myData.select-1] }}
+                <span v-if="myData.select === null">-</span>
+                <v-icon v-else-if="questions[question_now-1].correctAns === myData.select" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
+                <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>
+              </div>
+              <div class="right detail-ans-right">
+                {{ options[oppData1.select-1] }}
+                <span v-if="oppData1.select === null">-</span>
+                <v-icon v-else-if="questions[question_now-1].correctAns === oppData1.select" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
+                <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>
+              </div>
+            </div>
+            <div class="detail white--text py-2 my-2">
+              <span class="detail-item">タイム</span>
+              <span v-if="myData.status !== 'timeup'" class="left">{{ myData.time | formatTime }}</span>
+              <span v-else class="left">-</span>
+              <span v-if="oppData1.status !== 'timeup'" class="right">{{ oppData1.time | formatTime }}</span>
+              <span v-else class="right">-</span>
+            </div>
+          </div>
+          <div class="result-footer py-4">
+            <div class="left text-left pl-1 pl-sm-2">
+              正答:<span class="correctAns pl-1">{{ options[questions[question_now-1].correctAns-1] }}</span>
+            </div>
+            <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます...{{ time_judgeModal }}</div>
+          </div>
+        </div>
+      </v-card>
+    </v-dialog>
+
+    <!-- 結果表示モーダル: 4人対戦 -->
+    <v-dialog
+      v-else-if="MODE_4PLAYERS && isShowQuestion && rankings.length !== 0"
+      :value="isShowJudge"
+      content-class="mx-1"
+      width="500"
+      transition="scroll-y-transition"
+      hide-overlay
+      persistent
+      no-click-animation
+    >
+      <v-card color="grey lighten-5">
+        <div class="wrap-result4 text-center">
+          <div class="result-header py-2">
+            <span class="judge_title berlin-sans">JUDGE</span>
+            <v-btn class="judge_close" icon x-small @click.stop="closeDialogResult"
+              ><v-icon>{{ icons.mdiClose }}</v-icon></v-btn
+            >
+            <div v-if="myData.rank_tmp !== null" >
+              <span class="rank red--text text--lighten-2">{{ myData.rank_tmp }}位</span><span class="rank-point ml-1 grey--text text--darken-1">[+{{ myData.add_score_tmp }}]</span>
+            </div>
+            <div v-else>
+              <span class="no_rank">順位無し</span>
+            </div>
+          </div>
+          <div class="result-body py-1 py-sm-2">
+            <div class="head mb-2 mb-sm-4">
+              <span class="rank">順位</span>
+              <span class="name">名前</span>
+              <span class="ans">回答</span>
+              <span class="time">タイム</span>
+            </div>
+            <div v-for="n in 4" :key="n" class="detail white--text mb-1 mb-sm-2 py-1">
+              <span class="rank">{{ rankings[n-1].rank | formatRank }}</span>
+              <span class="name px-1">{{ rankings[n-1].name }}</span>
+              <span class="ans">
+                {{ options[ rankings[n-1].select - 1 ]}}
+                <span v-if="rankings[n-1].select === null">-</span>
+                <v-icon v-else-if="rankings[n-1].select === questions[question_now-1].correctAns" size="0.9rem" color="green">{{ icons.mdiCircleOutline }}</v-icon>
+                <v-icon v-else size="0.9rem" color="red">{{ icons.mdiCloseThick }}</v-icon>
+              </span>
+              <span class="time">{{ rankings[n-1].time | formatTime }}</span>
+            </div>
+          </div>
+          <div class="result-footer py-4">
+            <div class="left text-left pl-1 pl-sm-2">
+              正答:<span class="correctAns pl-1">{{ options[ questions[question_now-1].correctAns - 1] }}</span>
+            </div>
+            <div class="right text-right grey--text text--darken-1 pr-1 pr-sm-2">自動で次の問題へ進みます...{{ time_judgeModal }}</div>
+          </div>
+        </div>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script>
-import ProgressBar from "./ProgressBar";
-import $ from "jquery";
+import { mdiCircleOutline, mdiCloseThick, mdiClose } from "@mdi/js";
 export default {
-  components: {
-    progressbar: ProgressBar,
-  },
   props: {
-    myData: Object,
-    oppData: Object,
-    question_now: Number,
-    question: Object,
     isShowQuestion: Boolean,
     isShowJudge: Boolean,
-    time_limit: Number,
+    myData: Object,
+    oppData1: Object,
+    oppData2: Object,
+    oppData3: Object,
+    questions: Array,
+    question_now: Number,
     winner: Number,
+    MODE_4PLAYERS: Boolean,
+    rankings: Array,
+    time_judgeModal: Number,
   },
   data() {
     return {
-      option: ["ア", "イ", "ウ", "エ"],
+      icons: {
+        mdiCircleOutline,
+        mdiCloseThick,
+        mdiClose,
+      },
+      options: ["ア", "イ", "ウ", "エ"],
     };
   },
   watch: {
-    // 正誤判定が表示されるタイミングで正答の背景色を変える
-    isShowJudge: function(val) {
-      if (val) {
-        // 色をつける
-        $(`.option:eq(${this.question.correctAns-1})`).css("background-color", "rgba(249, 182, 15, 0.2)")
+    isShowQuestion: function (val) {
+      if (val === false) {
+        setTimeout(() => {
+
+        }, 500);
       }
-    },
+    }
   },
   filters: {
-    // 秒数を受け取って 0:00 の形式に直す
-    to_ms(val) {
-      var minute = Math.floor(val / 60);
-      var second = Math.floor(val % 60);
+    /** 秒数を受け取って 0:00 の形式に直す */
+    formatTime (val) {
+      // マイナス値をとるときは何もしない
+      if (val < 0) {
+        return;
+      }
+
+      const minute = Math.floor(val / 60);
+      let second = Math.floor(val % 60);
       if (second < 10) {
-        second = "0" + second;
+        second = "0" + second; // ゼロパディングを付与
       }
       return "" + minute + ":" + second;
     },
+    /** 結果表示モーダルで表示する順位を返す */
+    formatRank (rank) {
+      if (rank === null) {
+        return "-";
+      }
+
+      return "" + rank + "位";
+    }
   },
   methods: {
     selected(event, ans) {
-      var waves, d, x, y;
-
-      /*** ボタンに色をつける ***/
-      if ($(event.target).find(".waves").length === 0) {
-        $(event.target).prepend('<span class="waves"></span>');
-      }
-
-      waves = $(event.target).find(".waves");
-      waves.removeClass("ripple");
-
-      if (!waves.height() && !waves.width()) {
-        d = Math.max($(event.target).outerWidth(), $(event.target).outerHeight());
-        waves.css({ height: d, width: d });
-      }
-
-      x = event.pageX - $(event.target).offset().left - waves.width() / 2;
-      y = event.pageY - $(event.target).offset().top - waves.height() / 2;
-
-      $(event.target).css({ color: "white" });
-      waves.css({ top: y + "px", left: x + "px" }).addClass("ripple");
-      /**********/
-
       this.$emit("selected", ans); // 回答番号をBattleComponentへ送る
+      event.currentTarget.style.backgroundColor = "#E3F2FD"; // ボタンに色をつける
+    },
+    closeDialogResult() {
+      this.$emit("toggleShowJudge");
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.questionArea {
-  min-height: 30rem;
-  background: white;
-  border-right: solid 0.5rem #5f5f91; /* 線 */
-  border-left: solid 0.5rem #5f5f91; /* 線 */
-  border-radius: 10px; /* 角の丸み */
-  color: #404040;
-}
-.questionBody {
-  min-height: 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-.option {
-  border-radius: 5px;
-}
-.result {
-  border-top: solid 1rem #e6b9f8;
-  border-bottom: solid 1rem #e6b9f8;
-  padding: 1rem 0.5rem;
-}
-.correctAns {
-  position: relative;
-  padding: 0.3em;
-  ::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 0.5rem;
-    background: repeating-linear-gradient(-45deg, #e6b9f8, #e6b9f8 2px, white 2px, white 4px);
+$battle-blue: #113bad;
+
+.question-content {
+  min-height: 22rem;
+  background-color: #fff;
+  border-right: solid 0.5rem $battle-blue;
+  border-left: solid 0.5rem $battle-blue;
+  border-radius: 0.5rem;
+  transition: all 1s;
+
+  .question-body,
+  .option-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    letter-spacing: 0.08rem;
+  }
+
+  .options {
+    .v-btn {
+      display: inline-block; // デフォルト flex
+      justify-content: left; // デフォルト center
+      text-transform: none; // デフォルト uppercase
+      white-space: normal; // デフォルト nowrap
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .option-btn {
+      .v-icon {
+        color: inherit;
+      }
+      .option-text {
+        line-height: 1.5;
+      }
+    }
   }
 }
-.correctAns-option,
-.judge,
-.myResult-select,
-.oppResult-select {
-  font-size: 1.5rem;
-}
-.myResult {
-  font-weight: bold;
-}
 
-/* ******************************
-BUTTONS
-****************************** */
-.btn {
-  overflow: hidden;
+/* --------------------
+ * 結果表示モーダル
+ * -------------------- */
+// 共通
+.result-header {
   position: relative;
-  z-index: 10;
-  white-space: nowrap;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  touch-action: manipulation;
-  backface-visibility: hidden;
+
+  .judge_title {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    font-size: 0.8rem;
+    color: #9e9e9e;
+  }
+  .judge_close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}
+.result-footer {
+  display: grid;
+  grid-template:
+    "left right"
+    / 1fr 1fr;
+  font-size: 0.875rem;
+
+  .left {
+    grid-area: left;
+
+    .correctAns {
+      font-weight: bold;
+    }
+  }
+  .right {
+    grid-area: right;
+  }
 }
 
-/* ----- BUTTON STATES ----- */
-.btn:focus,
-.btn:active:focus,
-.btn.active:focus,
-.btn.focus,
-.btn:active.focus,
-.btn.active.focus {
-  outline: none;
+// 2人用
+.wrap-result {
+  .result-header {
+    .judge {
+      font-size: 2.5rem;
+      text-shadow: 1px 1px 0 rgba(68, 68, 68, 0.8);
+    }
+  }
+
+  .result-body {
+    background: linear-gradient(to right, #bbdefb 50%, #ffcdd2 50%);
+    font-weight: bold;
+
+    .name {
+      display: grid;
+      grid-template:
+        "left right"
+        / 1fr 1fr;
+      font-weight: bold;
+      letter-spacing: 0.01rem;
+      white-space: nowrap;
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+      line-height: normal; // 絵文字に対応する
+
+      .left,
+      .right {
+        overflow: hidden;
+        text-overflow: ellipsis; // 「...」の表示
+      }
+      .left {
+        grid-area: left;
+      }
+      .right {
+        grid-area: right;
+      }
+    }
+
+    .detail {
+      position: relative;
+      display: grid;
+      grid-template:
+        "left right"
+        / 1fr 1fr;
+      align-items: center;
+      min-height: 1.5rem;
+      background-color: rgba(0, 0, 0, 0.6);
+      font-size: 0.9rem;
+      letter-spacing: 0.1rem;
+
+      .detail-ans-right,
+      .detail-ans-left {
+        letter-spacing: normal;
+      }
+
+      .detail-item {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translateY(-50%) translateX(-50%);
+        margin: auto;
+      }
+
+      .left {
+        grid-area: left;
+      }
+      .right {
+        grid-area: right;
+      }
+    }
+  }
 }
 
-.btn:hover,
-.btn:focus,
-.btn.focus {
-  background-color: #0094c4;
-  text-decoration: none;
-}
+// 4人用
+.wrap-result4 {
+  .result-header {
+    .rank {
+      font-family: "NotoSansJP", sans-serif;
+      font-weight: 900;
+      font-size: 2rem;
+      text-shadow: 1px 1px 0 rgba(68, 68, 68, 0.5);
+    }
+    .no_rank {
+      font-family: "NotoSansJP", sans-serif;
+      font-weight: 500;
+      font-size: 1.5rem;
+    }
+    .rank-point {
+      font-family: "NotoSansJP", sans-serif;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+  }
 
-.btn:active,
-.btn.active {
-  outline: 0;
-  background-image: none;
-}
+  .result-body {
+    font-family: "NotoSansJP", sans-serif;
+    background: linear-gradient(to right, #ffcdd2 12.5%, #bbdefb 10%);
 
-.btn.disabled,
-.btn[disabled],
-fieldset[disabled] .btn {
-  pointer-events: none;
-}
-</style>
+    .head,
+    .detail {
+      display: grid;
+      grid-template:
+        "rank name ans time"
+        / 0.5fr 1.5fr 1fr 1fr;
+      align-items: center;
+      letter-spacing: 0.02rem;
 
-<style lang="scss">
-/* ******************************
-RIPPLES EFFECT https://codepen.io/bootpen/pen/WrWZRd
-****************************** */
-.ripples {
-  overflow: hidden;
-  position: relative;
-}
-.waves {
-  z-index: -1;
-  position: absolute;
-  display: block;
-  border-radius: 100%;
-  background-color: rgb(0, 148, 196);
-  transform: scale(0);
-}
-.ripple {
-  animation: ripple 0.65s linear forwards;
-  @keyframes ripple {
-    100% {
-      transform: scale(2.5);
+      .rank {
+        grid-area: rank;
+      }
+      .name {
+        grid-area: name;
+      }
+      .ans {
+        grid-area: ans;
+      }
+      .time {
+        grid-area: time;
+      }
+    }
+
+    .head {
+      font-size: 0.9rem;
+      text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .detail {
+      font-size: 0.875rem;
+      font-weight: bold;
+      background-color: rgba(0, 0, 0, 0.6);
+
+      .name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; // 「...」の表示にする
+        line-height: normal; // 絵文字に対応するため
+      }
     }
   }
 }

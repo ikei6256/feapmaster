@@ -1,0 +1,49 @@
+/* --------------------
+ * トランジション関連はここで定義する
+ * -------------------- */
+
+// 画面遷移のアニメーション (フェードイン/フェードアウト)
+.fade {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.35s ease-in-out;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+// 少し遅くしたフェードアウト/フェードイン
+.fade-slow {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.75s ease-in-out;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+// フェードイン/フェードアウト 200ms
+.fade-200 {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.1s ease-in-out;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+  }
+}
+
+// スクロールボタン
+.btn-fade  {
+  &-enter-active,
+  &-leave-active {
+    transition: 0.2s;
+  }
+  &-enter,
+  &-leave-to {
+    transform: scale(0);
+  }
+}

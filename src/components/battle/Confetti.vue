@@ -1,5 +1,5 @@
 <template>
-  <canvas></canvas>
+  <canvas class="confetti"></canvas>
 </template>
 
 <script>
@@ -103,12 +103,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-canvas {
-  z-index: -1;
-  height: 100%;
+.confetti {
+  height: 100vh;
   width: 100%;
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: none;
 }
 </style>

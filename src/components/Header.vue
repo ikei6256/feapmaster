@@ -1,25 +1,120 @@
 <template>
-  <nav class="navbar mb-3">
-    <div class="container-sm pl-0 pr-0 pl-sm-2 pr-sm-2">
-      <router-link :to="{ name: 'Home' }">
-        <!-- <span class="navbar-brand mb-0 h1">FEAPMaster</span> -->
-        <img src="/img/logo.png" alt="FE AP Master" />
-      </router-link>
-      <!-- <div>
-        <router-link :to="{ name: 'Signin' }">
-          <button class="btn btn-success">ログイン</button>
+  <header>
+    <transition name="fade">
+      <div v-if="$route.name !== 'Home'" class="logo">
+        <router-link :to="{ name: 'Home' }">
+          <img src="/img/logo/logo.png" alt="FE AP Master" />
         </router-link>
-      </div> -->
+      </div>
+    </transition>
+    <div class="menu">
+      <transition name="fade-200" mode="out-in">
+        <v-btn v-if="currentUser === null && isPlaying === false" :to="{ name: 'Login' }" color="indigo" text class="font-weight-bold"
+          >ログイン</v-btn
+        >
+
+        <v-menu v-else-if="currentUser !== null && isPlaying === false" open-on-hover bottom offset-y rounded>
+          <template v-slot:activator="{ on }">
+            <v-btn class="btn-user" v-on="on" text>
+              <v-avatar color="#fff" size="2.4rem">
+                <v-img :src="currentUser.photoURL" alt="User Photo"></v-img>
+              </v-avatar>
+              <v-icon small>{{ icons.mdiChevronDown }}</v-icon>
+            </v-btn>
+          </template>
+
+          <!-- ホバー時出現 -->
+          <v-card min-width="200px">
+            <v-list dense>
+              <v-list-item>
+                <v-layout justify-center>
+                  <v-list-item-avatar class="mr-0 mb-0" color="#fff">
+                    <v-img :src="currentUser.photoURL"></v-img>
+                  </v-list-item-avatar>
+                </v-layout>
+              </v-list-item>
+
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="userName text-center">{{ currentUser.name }}</v-list-item-title>
+                  <v-list-item-subtitle class="text-center">{{ currentUser.email }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+
+              <v-divider></v-divider>
+
+              <v-list-item>
+                <v-list-item-content>
+                  <v-btn :to="{ name: 'Mypage' }" text color="light-blue darken-4">
+                    <v-icon left>mdi-account</v-icon>
+                    マイページ</v-btn>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-btn color="red darken-2" text @click="$emit('signout')">
+                    <v-icon left>mdi-logout</v-icon>
+                    ログアウト</v-btn>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
+
+      </transition>
     </div>
-  </nav>
+  </header>
 </template>
 
 <script>
-export default {};
+import { mapState } from "vuex";
+import { mdiChevronDown } from "@mdi/js";
+export default {
+  data() {
+    return {
+      icons: {
+        mdiChevronDown
+      }
+    }
+  },
+  computed: {
+    ...mapState(["auth", "currentUser", "isPlaying"]),
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-img {
-  height: 2rem;
+$header-height: 2.5rem;
+
+header {
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template:
+    "logo ... menu" $header-height
+    / auto 1fr auto;
+  align-items: center;
+
+  .logo {
+    grid-area: logo;
+    img {
+      max-height: $header-height;
+    }
+  }
+
+  .menu {
+    grid-area: menu;
+    justify-self: right;
+    font-size: 0.875rem;
+
+    .btn-user {
+      &.v-btn.v-btn {
+        padding: 0;
+      }
+    }
+  }
+
+  .userName {
+    line-height: normal;
+  }
 }
 </style>

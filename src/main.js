@@ -1,9 +1,8 @@
-import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
-import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrapのスタイルシート側の機能を読み込む
-import "bootstrap/dist/js/bootstrap"; // BootstrapのJavaScript側の機能を読み込む
+import Vue from "vue";
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+import vuetify from "./plugins/vuetify";
 
 Vue.config.productionTip = false; // 開発中は true にしたほうがいいかも
 // true の場合の方が開発者向けのメッセージがコンソールによりたくさん出るようです。
@@ -13,5 +12,6 @@ Vue.config.productionTip = false; // 開発中は true にしたほうがいい�
 new Vue({
   router,
   store,
+  vuetify,
   render: h => h(App)
 }).$mount('#app')
