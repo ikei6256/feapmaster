@@ -161,7 +161,11 @@
 
             <v-tabs-items v-model="activeTab">
               <v-tab-item>
-                <v-list v-if="myLists.length !== 0" dense>
+                <div v-if="myLists === null">
+                  <VueLoading type="bubbles" color="#fac84b" :size="{ width: '3rem', height: '3rem' }"></VueLoading>
+                </div>
+
+                <v-list v-else-if="myLists.length !== 0" dense>
                   <v-subheader>FE</v-subheader>
                   <v-list-group v-for="(myList, index) in myLists" :key="index" no-action color="blue darken-1">
                     <template v-slot:activator>
@@ -171,16 +175,43 @@
                       </v-list-item-content>
                     </template>
 
-                    <div class="pa-2">
-                      <!-- <v-expansion-panels accordion multiple>
-                        <v-expansion-panel v-for="(item, i) in 5" :key="i">
-                          <v-expansion-panel-header color="blue lighten-5"> Item </v-expansion-panel-header>
-                          <v-expansion-panel-content>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                            aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                          </v-expansion-panel-content>
-                        </v-expansion-panel>
-                      </v-expansion-panels> -->
+                    <div class="questions py-2 px-4">
+                      <v-expansion-panels v-if="myListsQuestions[index] !== null" accordion multiple>
+                          <v-expansion-panel v-for="(question, i) in myListsQuestions[index]" :key="i">
+                            <v-expansion-panel-header class="question-body" color="blue lighten-5">{{ question.text }}</v-expansion-panel-header>
+                            <v-expansion-panel-content>
+                              <div class="review-content pt-4 pt-sm-2">
+                                <span class="question-data grey--text text--darken-2">{{ question | formatQuestionData }}</span>
+                                <div v-if="question.questionImageUrl !== null" class="text-center my-2 my-sm-4">
+                                  <img :src="question.questionImageUrl" alt="Question Image" style="max-width: 100%" />
+                                  <v-divider class="my-2 my-sm-4"></v-divider>
+                                </div>
+                                <div v-if="question.answerAllImageUrl !== null" class="text-center my-2 my-sm-4">
+                                  <img :src="question.answerAllImageUrl" alt="Answer Image" />
+                                </div>
+                                <ul class="pl-0">
+                                  <li v-for="(value, index) in [question.ans1, question.ans2, question.ans3, question.ans4]" :key="index" class="my-2 my-sm-4">
+                                    <div v-if="value !== null" class="question-option">
+                                      <v-icon size="1.2rem">{{ options[index] }}</v-icon>
+                                      <span v-if="value !== null" class="question-option-text pl-2 pl-sm-4">{{ value }}</span>
+                                      <img v-if="question['answerImageUrl' + (index+1)] !== null" :src="question['answerImageUrl' + (index+1)]" alt="Option Image" class="pl-2 pl-sm-4" />
+                                    </div>
+                                  </li>
+                                </ul>
+
+                                <v-divider class="my-2 my-sm-4"></v-divider>
+
+                                <div class="judge mt-2 mt-sm-4">
+                                  <p class="mb-0">
+                                    正答:<span class="judge-correctAns pl-1">{{ options[question.correctAns - 1] }}</span>
+                                  </p>
+                                </div>
+                              </div>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
+                      </v-expansion-panels>
+
+                      <v-alert v-else type="warning" dense icon="mdi-alert"><span style="font-size:0.9rem">問題が登録されていません。</span></v-alert>
                     </div>
                   </v-list-group>
                 </v-list>
@@ -191,6 +222,7 @@
                   </div>
                 </div>
               </v-tab-item>
+
               <v-tab-item>
                 <v-list v-if="myListsAP.length !== 0" dense>
                   <v-subheader>AP</v-subheader>
@@ -202,16 +234,43 @@
                       </v-list-item-content>
                     </template>
 
-                    <div class="pa-2">
-                      <!-- <v-expansion-panels>
-                        <v-expansion-panel v-for="(item, i) in 5" :key="i">
-                          <v-expansion-panel-header> Item </v-expansion-panel-header>
-                          <v-expansion-panel-content>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                          </v-expansion-panel-content>
-                        </v-expansion-panel>
-                      </v-expansion-panels> -->
+                    <div class="questions py-2 px-4">
+                      <v-expansion-panels v-if="myListsQuestionsAP[index] !== null" accordion multiple>
+                          <v-expansion-panel v-for="(question, i) in myListsQuestionsAP[index]" :key="i">
+                            <v-expansion-panel-header class="question-body" color="red lighten-5">{{ question.text }}</v-expansion-panel-header>
+                            <v-expansion-panel-content>
+                              <div class="review-content pt-4 pt-sm-2">
+                                <span class="question-data grey--text text--darken-2">{{ question | formatQuestionData }}</span>
+                                <div v-if="question.questionImageUrl !== null" class="text-center my-2 my-sm-4">
+                                  <img :src="question.questionImageUrl" alt="Question Image" style="max-width: 100%" />
+                                  <v-divider class="my-2 my-sm-4"></v-divider>
+                                </div>
+                                <div v-if="question.answerAllImageUrl !== null" class="text-center my-2 my-sm-4">
+                                  <img :src="question.answerAllImageUrl" alt="Answer Image" />
+                                </div>
+                                <ul class="pl-0">
+                                  <li v-for="(value, index) in [question.ans1, question.ans2, question.ans3, question.ans4]" :key="index" class="my-2 my-sm-4">
+                                    <div v-if="value !== null" class="question-option">
+                                      <v-icon size="1.2rem">{{ options[index] }}</v-icon>
+                                      <span v-if="value !== null" class="question-option-text pl-2 pl-sm-4">{{ value }}</span>
+                                      <img v-if="question['answerImageUrl' + (index+1)] !== null" :src="question['answerImageUrl' + (index+1)]" alt="Option Image" class="pl-2 pl-sm-4" />
+                                    </div>
+                                  </li>
+                                </ul>
+
+                                <v-divider class="my-2 my-sm-4"></v-divider>
+
+                                <div class="judge mt-2 mt-sm-4">
+                                  <p class="mb-0">
+                                    正答:<span class="judge-correctAns pl-1">{{ options[question.correctAns - 1] }}</span>
+                                  </p>
+                                </div>
+                              </div>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
+                      </v-expansion-panels>
+
+                      <v-alert v-else type="warning" dense icon="mdi-alert"><span style="font-size:0.9rem">問題が登録されていません。</span></v-alert>
                     </div>
                   </v-list-group>
                 </v-list>
@@ -399,10 +458,14 @@ export default {
       ],
       myLists: [],
       myListsAP: [],
+      myListsQuestions: [],
+      myListsQuestionsAP: [],
       battleRecords: null,
       battleRecords4: null,
 
       activeTab: 0,
+
+      options:["ア", "イ", "ウ", "エ"],
     };
   },
   computed: {
@@ -419,6 +482,22 @@ export default {
     /** 日付をフォーマットする */
     formatDate(date) {
       return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日" + date.getHours() + "時" + date.getMinutes() + "分";
+    },
+
+    /** 出題日付をフォーマット */
+    formatQuestionData: function (question) {
+      const season = question.season === "spring" ? "春" : "秋";
+      const date = question.season === "spring" ? new Date(question.year, 4, 1, 0, 0, 0) : new Date(question.year, 10, 1, 0, 0, 0);
+      const dateParts = new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {era: 'long'}).formatToParts(date);
+
+      let era = "";
+
+      // 例: "令和元年"
+      for (let i = 0; i < 3; i++) {
+        era += dateParts[i].value
+      }
+
+      return era + "(" + question.year + ")" + season + " 問" + question.no;
     },
   },
   methods: {
@@ -614,7 +693,7 @@ export default {
           querySnapshot.forEach((queryDocumentSnapshot) => {
             this.myLists.push(queryDocumentSnapshot.data());
           });
-          this.getQuestion();
+          this.getQuestion(); // 問題を取得する
         })
         .catch(() => {
           // キャッシュの取得に失敗した場合にサーバから取得する
@@ -624,7 +703,7 @@ export default {
               querySnapshot.forEach((queryDocumentSnapshot) => {
                 this.myLists.push(queryDocumentSnapshot.data());
               });
-              this.getQuestionAP();
+              this.getQuestion();
             })
             .catch(() => {
               alert("エラーが発生しました。");
@@ -638,6 +717,7 @@ export default {
           querySnapshot.forEach((queryDocumentSnapshot) => {
             this.myListsAP.push(queryDocumentSnapshot.data());
           });
+          this.getQuestionAP(); // 問題を取得する
         })
         .catch(() => {
           // キャッシュの取得に失敗した場合にサーバから取得する
@@ -647,6 +727,7 @@ export default {
               querySnapshot.forEach((queryDocumentSnapshot) => {
                 this.myListsAP.push(queryDocumentSnapshot.data());
               });
+              this.getQuestionAP();
             })
             .catch(() => {
               alert("エラーが発生しました。");
@@ -656,12 +737,103 @@ export default {
 
     /** 問題を取得する: FE */
     getQuestion() {
+      let q_tmp = [];
 
+      // myListsを元に問題を取得
+      for(const myList of this.myLists) {
+        if(Object.keys(myList).length === 1) {
+          this.myListsQuestions.push(null);
+        } else {
+          Object.keys(myList).forEach((key, index) => {
+            if (key !== "listName") {
+              // myList[key]は参照
+              const questionRef = this.db.doc(myList[key].path);
+              questionRef.get({ source: "cache" }).then((snapshot) => {
+                const data = snapshot.data();
+                data.no = questionRef.id
+                data.season = questionRef.parent.id;
+                data.year = questionRef.parent.parent.id;
+
+                q_tmp.push(data);
+
+                // 追加終了
+                if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
+                  this.myListsQuestions.push(q_tmp);
+                  q_tmp = [];
+                }
+              }).catch(() => {
+                const questionRef = this.db.doc(myList[key].path);
+                questionRef.get({ source: "server" }).then((snapshot) => {
+                  const data = snapshot.data();
+                  data.no = questionRef.id
+                  data.season = questionRef.parent.id;
+                  data.year = questionRef.parent.parent.id;
+
+                  q_tmp.push(data);
+
+                  // 追加終了
+                  if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
+                    this.myListsQuestions.push(q_tmp);
+                    q_tmp = [];
+                  }
+                })
+              });
+            }
+          });
+        }
+      }
     },
 
     /** 問題を取得する: AP */
     getQuestionAP() {
+      let q_tmp = [];
 
+      // myListsAPを元に問題を取得
+      for(const myList of this.myListsAP) {
+        if(Object.keys(myList).length === 1) {
+          this.myListsQuestionsAP.push(null);
+        } else {
+          Object.keys(myList).forEach((key, index) => {
+
+            if (key !== "listName") {
+              // myList[key]は参照
+              const questionRef = this.db.doc(myList[key].path);
+              questionRef.get({ source: "cache" }).then((snapshot) => {
+                const data = snapshot.data();
+                data.no = questionRef.id
+                data.season = questionRef.parent.id;
+                data.year = questionRef.parent.parent.id;
+
+                q_tmp.push(data);
+
+                // 追加終了
+                if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
+                  this.myListsQuestionsAP.push(q_tmp);
+                  q_tmp = [];
+                }
+              }).catch(() => {
+                const questionRef = this.db.doc(myList[key].path);
+                questionRef.get({ source: "server" }).then((snapshot) => {
+                  const data = snapshot.data();
+                  data.no = questionRef.id
+                  data.season = questionRef.parent.id;
+                  data.year = questionRef.parent.parent.id;
+
+                  q_tmp.push(data);
+
+                  // 追加終了
+                  if (Object.keys(myList).length === index+1 || Object.keys(myList).length === index+2) {
+                    this.myListsQuestionsAP.push(q_tmp);
+                    q_tmp = [];
+                  }
+                })
+              });
+            }
+
+
+          });
+        }
+      }
     },
 
     /** エラーメッセージを表示する */
@@ -862,6 +1034,40 @@ export default {
     .opp_name {
       font-size: 0.75rem;
     }
+
+    .questions {
+      .question-body,
+      .question-option-text,
+      .judge {
+        letter-spacing: 0.05rem;
+        line-height: 1.5;
+        font-size: 0.875rem;
+      }
+      .review-content {
+        position: relative;
+
+        .question-data {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          font-size: 0.75rem;
+          letter-spacing: 0.05rem;
+        }
+
+        .question-option {
+          display: flex;
+          align-items: center;
+        }
+        .judge {
+          text-indent: 1rem;
+          .judge-myAns,
+          .judge-correctAns {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+
   }
 }
 </style>
