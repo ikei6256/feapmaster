@@ -243,7 +243,7 @@ export default {
 
       isJudging: false,  // 判定中フラグ
 
-      TIMER_LIMIT_DEFAULT: 5, // 制限時間のデフォルト値 150
+      TIMER_LIMIT_DEFAULT: 150, // 制限時間のデフォルト値 150
       timer_limit: 0, // 制限時間
       timer_valuenow: 0, // 経過時間
       timerId: null, // カウントダウンタイマーのIDを保存する
