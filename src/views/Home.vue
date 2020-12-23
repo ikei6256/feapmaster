@@ -43,7 +43,7 @@
 
       <div class="links-ext mt-16 text-center">
         <p>
-          <v-btn class="external-btn" color="primary" href="https://feapmaster-mobile.web.app" target="_blank" text>
+          <v-btn class="external-btn" color="primary" href="https://feapmaster-mobile.web.app" target="_blank" text disabled style="text-decoration:line-through">
             Flutter for Web お試し版<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon>
           </v-btn>
         </p>
