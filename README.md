@@ -8,13 +8,13 @@ https://feapmaster.web.app/
 
 # 開発環境構築 (Windows)
 
-## 手順1: git インストール
+## 準備/手順1: git インストール
 https://git-scm.com/downloads
 
-## 手順2: Node.js インストール
+## 準備/手順2: Node.js インストール
 https://nodejs.org/ja/
 
-## 手順3: GitHubからソースコードをダウンロード
+## 準備/手順3: GitHubからソースファイルをダウンロード
 
 ・ターミナルで以下のコマンドを入力
 
@@ -22,13 +22,20 @@ https://nodejs.org/ja/
 git clone "https://github.com/ikei6256/feapmaster.git"
 ```
 
-## 手順4: 実行
+## 準備/手順4: パッケージインストール
 
-・ターミナルでコマンド入力 ( カレントディレクトリ: feapmaster )
+・ターミナルで以下のコマンドを入力 ( カレントディレクトリ: feapmaster )
 
 ```sh
-npm install # パッケージインストール
-npm run serve # 開発サーバ起動
+npm install
+```
+
+## 実行: 開発サーバを起動
+
+・ターミナルで以下のコマンドを入力 ( カレントディレクトリ: feapmaster )
+
+```sh
+npm run serve
 ```
 
 ・コンソールに表示されたアドレスをブラウザで開く ( 例:  http://localhost:8080/ )
