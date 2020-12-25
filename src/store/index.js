@@ -40,6 +40,16 @@ export default new Vuex.Store({
     setUserEmail (state, payload) {
       state.currentUser.email = payload.email;
     },
+    /** 勝敗を加算する */
+    incrementScore (state, payload) {
+      if (state.currentUser !== null) {
+        if (state.currentUser[payload.prop] !== undefined) {
+          state.currentUser[payload.prop]++;
+        } else {
+          state.currentUser[payload.prop] = 1;
+        }
+      }
+    },
 
     /** ユーザデータをクリア */
     unsetUser (state) {

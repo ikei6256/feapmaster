@@ -1,11 +1,24 @@
 <template>
   <div class="home">
+    <v-fade-transition>
+      <v-card v-if="isFirstVisit" class="firstVisit">
+        <v-card-title class="title">
+          <v-icon>mdi-alert-circle-outline</v-icon>
+          <span class="ml-1">始めての方へ</span>
+        </v-card-title>
+        <div class="text pa-2">データベースの1日あたりのアクセス数に上限があり、データ取得ができない可能性があります。ご了承ください。</div>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text color="cyan" @click="visited">OK</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-fade-transition>
+
     <div class="logo px-1 px-md-0">
       <img src="/img/logo/logo.png" alt="FE AP Master" />
     </div>
     <div class="select">
       <div class="links-battle">
-
         <div class="wrap-battle2">
           <div class="battle2">
             <router-link :to="{ name: 'Battle' }">
@@ -31,6 +44,7 @@
               </v-btn>
             </router-link>
           </div>
+
           <!-- <div class="battle4_input">
             <router-link :to="{ name: 'Battle4' }">
               <v-btn text color="pink darken-1" disabled>
@@ -43,7 +57,15 @@
 
       <div class="links-ext mt-16 text-center">
         <p>
-          <v-btn class="external-btn" color="primary" href="https://feapmaster-mobile.web.app" target="_blank" text disabled style="text-decoration:line-through">
+          <v-btn
+            class="external-btn"
+            color="primary"
+            href="https://feapmaster-mobile.web.app"
+            target="_blank"
+            text
+            disabled
+            style="text-decoration: line-through"
+          >
             Flutter for Web お試し版<v-icon class="external-icon ml-1">{{ icons.mdiOpenInNew }}</v-icon>
           </v-btn>
         </p>
@@ -74,10 +96,27 @@ import { mdiOpenInNew } from "@mdi/js";
 export default {
   data() {
     return {
+      isFirstVisit: false,
       icons: {
         mdiOpenInNew: mdiOpenInNew,
       },
     };
+  },
+  mounted() {
+    this.checkFirstVisit();
+  },
+  methods: {
+    /** 初訪問の場合注意事項を出現させる */
+    checkFirstVisit() {
+      if (!localStorage.getItem("feapmaser_visited")) {
+        // 注意事項を出現させる
+        this.isFirstVisit = true;
+      }
+    },
+    visited() {
+      localStorage.setItem("feapmaser_visited", "on"); // ローカルストレージに登録
+      this.isFirstVisit = false;
+    },
   },
 };
 </script>
@@ -126,7 +165,8 @@ export default {
       }
     }
 
-    .wrap-battle2, .wrap-battle4 {
+    .wrap-battle2,
+    .wrap-battle4 {
       display: flex;
       justify-content: center;
     }
@@ -223,5 +263,25 @@ $footer-height: 3rem;
   justify-self: right;
   font-size: 0.8rem;
   color: rgb(90, 90, 90);
+}
+
+.firstVisit {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1;
+  width: 300px;
+  height: 184px;
+
+  .title {
+    background-color: #fff176;
+  }
+
+  .text {
+    font-size: 0.875rem;
+    color: #424242;
+    letter-spacing: 0.01rem;
+    line-height: 1.2rem;
+  }
 }
 </style>

@@ -398,7 +398,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(["stateBattleTrue", "stateBattleFalse"]),
+    ...mapMutations(["stateBattleTrue", "stateBattleFalse", "incrementScore"]),
 
     /** **対戦に関わるデータを初期化する** */
     initData() {
@@ -1460,16 +1460,19 @@ export default {
             docUser.update({
               battle_win: firebase.firestore.FieldValue.increment(1),
             });
+            this.incrementScore({ prop: "battle_win" });
           } else if (this.myData.score < this.oppData1.score) {
             record.result = "lose";
             docUser.update({
               battle_lose: firebase.firestore.FieldValue.increment(1),
             });
+            this.incrementScore({ prop: "battle_lose" });
           } else {
             record.result = "draw";
             docUser.update({
               battle_draw: firebase.firestore.FieldValue.increment(1),
             });
+            this.incrementScore({ prop: "battle_draw" });
           }
 
           this.db.collection(`users/${this.currentUser.uid}/battleRecords`).add(record);
@@ -1494,21 +1497,25 @@ export default {
               docUser.update({
                 battle4_1: firebase.firestore.FieldValue.increment(1),
               });
+              this.incrementScore({ prop: "battle4_1" });
               break;
             case 2:
               docUser.update({
                 battle4_2: firebase.firestore.FieldValue.increment(1),
               });
+              this.incrementScore({ prop: "battle4_2" });
               break;
             case 3:
               docUser.update({
                 battle4_3: firebase.firestore.FieldValue.increment(1),
               });
+              this.incrementScore({ prop: "battle4_3" });
               break;
             case 4:
               docUser.update({
                 battle4_4: firebase.firestore.FieldValue.increment(1),
               });
+              this.incrementScore({ prop: "battle4_4" });
               break;
           }
 
