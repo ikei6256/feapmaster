@@ -162,10 +162,10 @@
     <div class="userDetails">
       <transition name="fade" mode="out-in">
         <!-- マイ問題集 -->
-        <div v-if="selectedItem === 0" key="mylist">
+        <div v-if="selectedItem === 2" key="mylist">
           <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">
             <v-icon>mdi-folder</v-icon>
-            <span class="ml-2">マイ問題集</span>
+            <span class="ml-2">マイ問題集 (モバイルユーザ専用)</span>
           </h1>
 
           <v-card>
@@ -302,7 +302,7 @@
         </div>
 
         <!-- 2人対戦データ -->
-        <div v-else-if="selectedItem === 1" key="history-battle">
+        <div v-else-if="selectedItem === 0" key="history-battle">
           <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">
             <v-icon>mdi-sword-cross</v-icon>
             <span class="ml-2">過去10戦 (2人対戦)</span>
@@ -344,7 +344,7 @@
         </div>
 
         <!-- 4人対戦データ -->
-        <div v-else-if="selectedItem === 2" key="history-battle4">
+        <div v-else-if="selectedItem === 1" key="history-battle4">
           <h1 class="userDetails-headline blue-grey--text text--darken-4 my-2 mb-6 px-2">
             <v-icon>mdi-sword-cross</v-icon>
             <span class="ml-2">過去10戦 (4人対戦)</span>
@@ -468,9 +468,9 @@ export default {
 
       selectedItem: 0,
       items: [
-        { text: "マイ問題集", icon: "mdi-folder" },
         { text: "過去10戦(2人対戦)", icon: "mdi-sword-cross" },
         { text: "過去10戦(4人対戦)", icon: "mdi-sword-cross" },
+        { text: "マイ問題集", icon: "mdi-folder" },
       ],
       myLists: [],
       myListsAP: [],
