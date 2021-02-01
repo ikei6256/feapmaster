@@ -241,7 +241,7 @@ export default {
       isSearchingOpp2: true,
       isSearchingOpp3: true,
 
-      isJudging: false,  // 判定中フラグ
+      isJudging: false, // 判定中フラグ
 
       TIMER_LIMIT_DEFAULT: 150, // 制限時間のデフォルト値 150
       timer_limit: 0, // 制限時間
@@ -651,246 +651,235 @@ export default {
 
     /** **部屋ドキュメントのリアルタイムリスナーを作成する** */
     createObserver() {
-      this.unsubscribe = this.room.onSnapshot(
-        (snapshot) => {
-          // 部屋が削除された場合の処理
-          if (!snapshot.exists) {
-            this.unsubscribe(); // リアルタイムリスナーを破棄する
-            this.unsubscribe = null;
-            this.room = null;
-            this.connectionError();
-            return;
+      this.unsubscribe = this.room.onSnapshot((snapshot) => {
+        // 部屋が削除された場合の処理
+        if (!snapshot.exists) {
+          this.unsubscribe(); // リアルタイムリスナーを破棄する
+          this.unsubscribe = null;
+          this.room = null;
+          this.connectionError();
+          return;
+        }
+
+        const data = snapshot.data(); // ドキュメントのデータ
+
+        if (!this.MODE_4PLAYERS) {
+          /***** 2人対戦時の処理 *****/
+
+          // 検索中の処理
+          if (this.isSearchingOpp1) {
+            if (this.player_no === 2) {
+              // プレイヤー2であれば検索を終了する
+              this.isSearchingOpp1 = false; // 相手表示
+              this.searched(); // 検索終了
+              return;
+            } else if (data.player2_name !== null) {
+              // プレイヤー1で相手が見つかれば検索終了
+              this.oppData1.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
+              this.oppData1.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
+              this.isSearchingOpp1 = false; // 相手表示
+
+              this.searched(); // 検索終了
+              return;
+            }
           }
 
-          const data = snapshot.data(); // ドキュメントのデータ
+          // 相手の回答をローカルに保存する
+          if (
+            (this.player_no === 1 ? data.player2_ans : data.player1_ans !== null) &&
+            (this.player_no === 1 ? data.player2_ans : data.player1_ans !== this.oppData1.select)
+          ) {
+            this.oppData1.select = this.player_no === 1 ? data.player2_ans : data.player1_ans;
+            this.oppData1.time = this.player_no === 1 ? data.player2_time : data.player1_time;
+            this.oppData1.status = "waiting";
+            this.judgeOrWait();
+          }
 
-          if (!this.MODE_4PLAYERS) {
-            /***** 2人対戦時の処理 *****/
+          // 相手が時間切れの場合
+          if ((this.player_no === 1 ? data.player2_time : data.player1_time) === "timeup") {
+            // 相手が時間切れの場合
+            this.oppData1.status = "timeup";
+            this.judgeOrWait();
+          }
+        } else {
+          /***** 4人対戦時の処理 *****/
 
-            // 検索中の処理
+          // 現在の人数を把握する
+          this.concurrent_sessions = [data.player1_name, data.player2_name, data.player3_name, data.player4_name].filter((i) => i !== null).length;
+
+          if (!this.isPlaying) {
+            /*** 検索中の処理 ***/
+            // 相手1が見つかった
             if (this.isSearchingOpp1) {
-              if (this.player_no === 2) {
-                // プレイヤー2であれば検索を終了する
-                this.isSearchingOpp1 = false; // 相手表示
-                this.searched(); // 検索終了
-                return;
-              } else if (data.player2_name !== null) {
-                // プレイヤー1で相手が見つかれば検索終了
+              if (data.player1_name !== null && this.player_no !== 1) {
+                this.oppData1.name = data.player1_name !== "あなた" ? data.player1_name : "ゲストさん";
+                this.oppData1.photoURL = data.player1_photoURL !== null ? data.player1_photoURL : "/img/no-image.png";
+                this.opp1_no = 1;
+                this.isSearchingOpp1 = false;
+              } else if (data.player2_name !== null && this.player_no !== 2 && this.opp2_no !== 2) {
                 this.oppData1.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
                 this.oppData1.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
-                this.isSearchingOpp1 = false; // 相手表示
-
-                this.searched(); // 検索終了
-                return;
+                this.opp1_no = 2;
+                this.isSearchingOpp1 = false;
               }
             }
 
-            // 相手の回答をローカルに保存する
-            if (
-              (this.player_no === 1 ? data.player2_ans : data.player1_ans !== null) &&
-              (this.player_no === 1 ? data.player2_ans : data.player1_ans !== this.oppData1.select)
-            ) {
-              this.oppData1.select = this.player_no === 1 ? data.player2_ans : data.player1_ans;
-              this.oppData1.time = this.player_no === 1 ? data.player2_time : data.player1_time;
+            // 相手2が見つかった
+            if (this.isSearchingOpp2) {
+              if (data.player2_name !== null && this.player_no !== 2 && this.opp1_no !== 2) {
+                this.oppData2.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
+                this.oppData2.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
+                this.opp2_no = 2;
+                this.isSearchingOpp2 = false;
+              } else if (data.player3_name !== null && this.player_no !== 3 && this.opp3_no !== 3) {
+                this.oppData2.name = data.player3_name !== "あなた" ? data.player3_name : "ゲストさん";
+                this.oppData2.photoURL = data.player3_photoURL !== null ? data.player3_photoURL : "/img/no-image.png";
+                this.opp2_no = 3;
+                this.isSearchingOpp2 = false;
+              }
+            }
+
+            // 相手3が見つかった
+            if (this.isSearchingOpp3) {
+              if (data.player3_name !== null && this.player_no !== 3 && this.opp2_no !== 3) {
+                this.oppData3.name = data.player3_name !== "あなた" ? data.player3_name : "ゲストさん";
+                this.oppData3.photoURL = data.player3_photoURL !== null ? data.player3_photoURL : "/img/no-image.png";
+                this.opp3_no = 3;
+                this.isSearchingOpp3 = false;
+              } else if (data.player4_name !== null && this.player_no !== 4) {
+                this.oppData3.name = data.player4_name !== "あなた" ? data.player4_name : "ゲストさん";
+                this.oppData3.photoURL = data.player4_photoURL !== null ? data.player4_photoURL : "/img/no-image.png";
+                this.opp3_no = 4;
+                this.isSearchingOpp3 = false;
+              }
+            }
+
+            /*** 検索中にプレイヤーが抜けた場合の処理 ***/
+            // 相手1が抜けた
+            if (!this.isSearchingOpp1 && ((data.player1_name === null && this.opp1_no === 1) || (data.player2_name === null && this.opp1_no === 2))) {
+              this.isSearchingOpp1 = true;
+              this.oppData1.name = null;
+              this.oppData1.photoURL = null;
+              this.opp1_no = null;
+            }
+
+            // 相手2が抜けた
+            if (!this.isSearchingOpp2 && ((data.player2_name === null && this.opp2_no === 2) || (data.player3_name === null && this.opp2_no === 3))) {
+              this.isSearchingOpp2 = true;
+              this.oppData2.name = null;
+              this.oppData2.photoURL = null;
+              this.opp2_no = null;
+            }
+
+            // 相手3が抜けた
+            if (!this.isSearchingOpp3 && ((data.player3_name === null && this.opp3_no === 3) || (data.player4_name === null && this.opp3_no === 4))) {
+              this.isSearchingOpp3 = true;
+              this.oppData3.name = null;
+              this.oppData3.photoURL = null;
+              this.opp3_no = null;
+            }
+
+            // 4人揃っていた場合検索終了
+            if (this.concurrent_sessions === 4) {
+              this.searched();
+            }
+          } else {
+            /*** 対戦中の処理 ***/
+
+            if (this.concurrent_sessions === 1) {
+              this.connectionError();
+              return;
+            }
+
+            /*** 対戦中に相手が抜けた時の処理 ***/
+            // 相手1が抜けた
+            if ((data.player1_name === null && this.opp1_no === 1) || (data.player2_name === null && this.opp1_no === 2)) {
+              this.oppData1.status = "error";
+              this.opp1_no = null;
+            }
+
+            // 相手2が抜けた
+            if ((data.player2_name === null && this.opp2_no === 2) || (data.player3_name === null && this.opp2_no === 3)) {
+              this.oppData2.status = "error";
+              this.opp2_no = null;
+            }
+
+            // 相手3が抜けた
+            if ((data.player3_name === null && this.opp3_no === 3) || (data.player4_name === null && this.opp3_no === 4)) {
+              this.oppData3.status = "error";
+              this.opp3_no = null;
+            }
+
+            /*** 相手が回答した時の処理 ***/
+            // プレイヤー1が回答した
+            if (data.player1_ans !== null && this.opp1_no === 1 && data.player1_ans !== this.oppData1.select) {
+              this.oppData1.select = data.player1_ans;
+              this.oppData1.time = data.player1_time;
+              this.oppData1.status = "waiting";
+              this.judgeOrWait();
+            } else if (data.player2_ans !== null && this.opp1_no === 2 && data.player2_ans !== this.oppData1.select) {
+              this.oppData1.select = data.player2_ans;
+              this.oppData1.time = data.player2_time;
               this.oppData1.status = "waiting";
               this.judgeOrWait();
             }
 
-            // 相手が時間切れの場合
-            if ((this.player_no === 1 ? data.player2_time : data.player1_time) === "timeup") {
-              // 相手が時間切れの場合
+            // 相手2が回答した
+            if (data.player2_ans !== null && this.opp2_no === 2 && data.player2_ans !== this.oppData2.select) {
+              this.oppData2.select = data.player2_ans;
+              this.oppData2.time = data.player2_time;
+              this.oppData2.status = "waiting";
+              this.judgeOrWait();
+            } else if (data.player3_ans !== null && this.opp2_no === 3 && data.player3_ans !== this.oppData2.select) {
+              this.oppData2.select = data.player3_ans;
+              this.oppData2.time = data.player3_time;
+              this.oppData2.status = "waiting";
+              this.judgeOrWait();
+            }
+
+            // 相手3が回答した
+            if (data.player3_ans !== null && this.opp3_no === 3 && data.player3_ans !== this.oppData3.select) {
+              this.oppData3.select = data.player3_ans;
+              this.oppData3.time = data.player3_time;
+              this.oppData3.status = "waiting";
+              this.judgeOrWait();
+            } else if (data.player4_ans !== null && this.opp3_no === 4 && data.player4_ans !== this.oppData3.select) {
+              this.oppData3.select = data.player4_ans;
+              this.oppData3.time = data.player4_time;
+              this.oppData3.status = "waiting";
+              this.judgeOrWait();
+            }
+
+            /*** 相手が時間切れ ***/
+            // 相手1が時間切れ
+            if (
+              this.oppData1.status !== "timeup" &&
+              ((data.player1_time === "timeup" && this.opp1_no === 1) || (data.player2_time === "timeup" && this.opp1_no === 2))
+            ) {
               this.oppData1.status = "timeup";
               this.judgeOrWait();
             }
-          } else {
-            /***** 4人対戦時の処理 *****/
 
-            // 現在の人数を把握する
-            this.concurrent_sessions = [data.player1_name, data.player2_name, data.player3_name, data.player4_name].filter((i) => i !== null).length;
+            // 相手2が時間切れ
+            if (
+              this.oppData2.status !== "timeup" &&
+              ((data.player2_time === "timeup" && this.opp2_no === 2) || (data.player3_time === "timeup" && this.opp2_no === 3))
+            ) {
+              this.oppData2.status = "timeup";
+              this.judgeOrWait();
+            }
 
-            if (!this.isPlaying) {
-              /*** 検索中の処理 ***/
-              // 相手1が見つかった
-              if (this.isSearchingOpp1) {
-                if (data.player1_name !== null && this.player_no !== 1) {
-                  this.oppData1.name = data.player1_name !== "あなた" ? data.player1_name : "ゲストさん";
-                  this.oppData1.photoURL = data.player1_photoURL !== null ? data.player1_photoURL : "/img/no-image.png";
-                  this.opp1_no = 1;
-                  this.isSearchingOpp1 = false;
-                } else if (data.player2_name !== null && this.player_no !== 2 && this.opp2_no !== 2) {
-                  this.oppData1.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
-                  this.oppData1.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
-                  this.opp1_no = 2;
-                  this.isSearchingOpp1 = false;
-                }
-              }
-
-              // 相手2が見つかった
-              if (this.isSearchingOpp2) {
-                if (data.player2_name !== null && this.player_no !== 2 && this.opp1_no !== 2) {
-                  this.oppData2.name = data.player2_name !== "あなた" ? data.player2_name : "ゲストさん";
-                  this.oppData2.photoURL = data.player2_photoURL !== null ? data.player2_photoURL : "/img/no-image.png";
-                  this.opp2_no = 2;
-                  this.isSearchingOpp2 = false;
-                } else if (data.player3_name !== null && this.player_no !== 3 && this.opp3_no !== 3) {
-                  this.oppData2.name = data.player3_name !== "あなた" ? data.player3_name : "ゲストさん";
-                  this.oppData2.photoURL = data.player3_photoURL !== null ? data.player3_photoURL : "/img/no-image.png";
-                  this.opp2_no = 3;
-                  this.isSearchingOpp2 = false;
-                }
-              }
-
-              // 相手3が見つかった
-              if (this.isSearchingOpp3) {
-                if (data.player3_name !== null && this.player_no !== 3 && this.opp2_no !== 3) {
-                  this.oppData3.name = data.player3_name !== "あなた" ? data.player3_name : "ゲストさん";
-                  this.oppData3.photoURL = data.player3_photoURL !== null ? data.player3_photoURL : "/img/no-image.png";
-                  this.opp3_no = 3;
-                  this.isSearchingOpp3 = false;
-                } else if (data.player4_name !== null && this.player_no !== 4) {
-                  this.oppData3.name = data.player4_name !== "あなた" ? data.player4_name : "ゲストさん";
-                  this.oppData3.photoURL = data.player4_photoURL !== null ? data.player4_photoURL : "/img/no-image.png";
-                  this.opp3_no = 4;
-                  this.isSearchingOpp3 = false;
-                }
-              }
-
-              /*** 検索中にプレイヤーが抜けた場合の処理 ***/
-              // 相手1が抜けた
-              if (
-                !this.isSearchingOpp1 &&
-                ((data.player1_name === null && this.opp1_no === 1) || (data.player2_name === null && this.opp1_no === 2))
-              ) {
-                this.isSearchingOpp1 = true;
-                this.oppData1.name = null;
-                this.oppData1.photoURL = null;
-                this.opp1_no = null;
-              }
-
-              // 相手2が抜けた
-              if (
-                !this.isSearchingOpp2 &&
-                ((data.player2_name === null && this.opp2_no === 2) || (data.player3_name === null && this.opp2_no === 3))
-              ) {
-                this.isSearchingOpp2 = true;
-                this.oppData2.name = null;
-                this.oppData2.photoURL = null;
-                this.opp2_no = null;
-              }
-
-              // 相手3が抜けた
-              if (
-                !this.isSearchingOpp3 &&
-                ((data.player3_name === null && this.opp3_no === 3) || (data.player4_name === null && this.opp3_no === 4))
-              ) {
-                this.isSearchingOpp3 = true;
-                this.oppData3.name = null;
-                this.oppData3.photoURL = null;
-                this.opp3_no = null;
-              }
-
-              // 4人揃っていた場合検索終了
-              if (this.concurrent_sessions === 4) {
-                this.searched();
-              }
-            } else {
-              /*** 対戦中の処理 ***/
-
-              if (this.concurrent_sessions === 1) {
-                this.connectionError();
-                return;
-              }
-
-              /*** 対戦中に相手が抜けた時の処理 ***/
-              // 相手1が抜けた
-              if ((data.player1_name === null && this.opp1_no === 1) || (data.player2_name === null && this.opp1_no === 2)) {
-                this.oppData1.status = "error";
-                this.opp1_no = null;
-              }
-
-              // 相手2が抜けた
-              if ((data.player2_name === null && this.opp2_no === 2) || (data.player3_name === null && this.opp2_no === 3)) {
-                this.oppData2.status = "error";
-                this.opp2_no = null;
-              }
-
-              // 相手3が抜けた
-              if ((data.player3_name === null && this.opp3_no === 3) || (data.player4_name === null && this.opp3_no === 4)) {
-                this.oppData3.status = "error";
-                this.opp3_no = null;
-              }
-
-              /*** 相手が回答した時の処理 ***/
-              // プレイヤー1が回答した
-              if (data.player1_ans !== null && this.opp1_no === 1 && data.player1_ans !== this.oppData1.select) {
-                this.oppData1.select = data.player1_ans;
-                this.oppData1.time = data.player1_time;
-                this.oppData1.status = "waiting";
-                this.judgeOrWait();
-              } else if (data.player2_ans !== null && this.opp1_no === 2 && data.player2_ans !== this.oppData1.select) {
-                this.oppData1.select = data.player2_ans;
-                this.oppData1.time = data.player2_time;
-                this.oppData1.status = "waiting";
-                this.judgeOrWait();
-              }
-
-              // 相手2が回答した
-              if (data.player2_ans !== null && this.opp2_no === 2 && data.player2_ans !== this.oppData2.select) {
-                this.oppData2.select = data.player2_ans;
-                this.oppData2.time = data.player2_time;
-                this.oppData2.status = "waiting";
-                this.judgeOrWait();
-              } else if (data.player3_ans !== null && this.opp2_no === 3 && data.player3_ans !== this.oppData2.select) {
-                this.oppData2.select = data.player3_ans;
-                this.oppData2.time = data.player3_time;
-                this.oppData2.status = "waiting";
-                this.judgeOrWait();
-              }
-
-              // 相手3が回答した
-              if (data.player3_ans !== null && this.opp3_no === 3 && data.player3_ans !== this.oppData3.select) {
-                this.oppData3.select = data.player3_ans;
-                this.oppData3.time = data.player3_time;
-                this.oppData3.status = "waiting";
-                this.judgeOrWait();
-              } else if (data.player4_ans !== null && this.opp3_no === 4 && data.player4_ans !== this.oppData3.select) {
-                this.oppData3.select = data.player4_ans;
-                this.oppData3.time = data.player4_time;
-                this.oppData3.status = "waiting";
-                this.judgeOrWait();
-              }
-
-              /*** 相手が時間切れ ***/
-              // 相手1が時間切れ
-              if (
-                this.oppData1.status !== "timeup" &&
-                ((data.player1_time === "timeup" && this.opp1_no === 1) || (data.player2_time === "timeup" && this.opp1_no === 2))
-              ) {
-                this.oppData1.status = "timeup";
-                this.judgeOrWait();
-              }
-
-              // 相手2が時間切れ
-              if (
-                this.oppData2.status !== "timeup" &&
-                ((data.player2_time === "timeup" && this.opp2_no === 2) || (data.player3_time === "timeup" && this.opp2_no === 3))
-              ) {
-                this.oppData2.status = "timeup";
-                this.judgeOrWait();
-              }
-
-              // 相手3が時間切れ
-              if (
-                this.oppData3.status !== "timeup" &&
-                ((data.player3_time === "timeup" && this.opp3_no === 3) || (data.player4_time === "timeup" && this.opp3_no === 4))
-              ) {
-                this.oppData3.status = "timeup";
-                this.judgeOrWait();
-              }
+            // 相手3が時間切れ
+            if (
+              this.oppData3.status !== "timeup" &&
+              ((data.player3_time === "timeup" && this.opp3_no === 3) || (data.player4_time === "timeup" && this.opp3_no === 4))
+            ) {
+              this.oppData3.status = "timeup";
+              this.judgeOrWait();
             }
           }
         }
-      );
+      });
     },
 
     /** **接続エラー時の処理** */
@@ -1317,7 +1306,7 @@ export default {
             this.intervalId_judgeModal = setInterval(() => {
               this.time_judgeModal--;
 
-              if(this.time_judgeModal <= 0) {
+              if (this.time_judgeModal <= 0) {
                 clearInterval(this.intervalId_judgeModal);
                 this.intervalId_judgeModal = null;
                 this.nextQuestion(); // 次の問題
@@ -1394,7 +1383,7 @@ export default {
             this.intervalId_judgeModal = setInterval(() => {
               this.time_judgeModal--;
 
-              if(this.time_judgeModal <= 0) {
+              if (this.time_judgeModal <= 0) {
                 clearInterval(this.intervalId_judgeModal);
                 this.intervalId_judgeModal = null;
                 this.nextQuestion(); // 次の問題
@@ -1781,11 +1770,9 @@ $battle-blue: #113bad;
 .area-players4 {
   display: grid;
   grid-template:
-    "... player1 ... player2 ... player3 ... player4 ..."
-    / minmax(0.1rem, auto) minmax(auto, 250px)
-    minmax(0.1rem, auto) minmax(auto, 250px)
-    minmax(0.1rem, auto) minmax(auto, 250px)
-    minmax(0.1rem, auto) minmax(auto, 250px) minmax(0.1rem, auto);
+    "player1 player2"
+    "player3 player4";
+
 
   .player1 {
     grid-area: player1;
@@ -1798,6 +1785,16 @@ $battle-blue: #113bad;
   }
   .player4 {
     grid-area: player4;
+  }
+
+  @media screen and(min-width: 600px) {
+    // display: grid;
+    grid-template:
+      "... player1 ... player2 ... player3 ... player4 ..."
+      / minmax(0.1rem, auto) minmax(auto, 250px)
+      minmax(0.1rem, auto) minmax(auto, 250px)
+      minmax(0.1rem, auto) minmax(auto, 250px)
+      minmax(0.1rem, auto) minmax(auto, 250px) minmax(0.1rem, auto);
   }
 }
 </style>
